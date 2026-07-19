@@ -67,3 +67,116 @@ Weekly Snapshot
 | Reward | Core | Planned |
 | Transaction | Wallet Analytics | Planned |
 | Weekly Snapshot | Analytics | Planned |
+
+---
+
+# Core Entity Definitions
+
+## Player
+
+Represents the owner of one or more wallets and all associated Axie assets.
+
+---
+
+## Wallet
+
+Stores blockchain assets and records all on-chain transactions.
+
+A player may own multiple wallets.
+
+---
+
+## Asset
+
+Represents a blockchain asset.
+
+Examples:
+
+- AXS
+- bAXS
+- RON
+- SLP
+
+---
+
+## Axie
+
+Represents an NFT owned by a player.
+
+An Axie may participate in multiple games and activities.
+
+---
+
+## Task
+
+Represents a single bounty board objective.
+
+Examples:
+
+- Breed an Axie
+- Feed Cocochoco
+- Reach Floor 3
+- Buy an Axie
+
+---
+
+## Bounty
+
+Represents a daily bounty board containing multiple tasks.
+
+---
+
+## Reward
+
+Represents assets earned after completing gameplay.
+
+Examples:
+
+- bAXS
+- AXS
+- Event Rewards
+
+---
+
+## Stake
+
+Represents assets deposited into staking.
+
+Supports:
+
+- AXS
+- bAXS
+
+---
+
+## Transaction
+
+Represents any movement of assets.
+
+Examples:
+
+- Marketplace Purchase
+- Marketplace Sale
+- Staking Deposit
+- Staking Withdrawal
+- Reward Claim
+- Token Swap
+
+---
+
+## Terrarium
+
+Represents one Homeland land plot producing Atia Flame and rewards.
+
+---
+
+## Weekly Snapshot
+
+Represents one completed bounty week.
+
+Stores:
+
+- Rank
+- Points
+- Rewards
+- Efficiency Metrics
