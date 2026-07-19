@@ -152,6 +152,25 @@ Examples:
 - Transaction ID
 
 ---
+## Asset Registry
+
+The Asset Registry defines every asset recognized by AxieOS.
+
+All operational tables must reference assets through AssetID rather than storing asset names directly.
+
+| Field | Type | Required | Source | Description |
+|--------|------|----------|--------|-------------|
+| AssetID | Text | Yes | Manual | Unique Asset Identifier (e.g., TOK-AXS) |
+| AssetName | Text | Yes | Manual | Human-readable asset name |
+| AssetType | Enum | Yes | Manual | Token, NFT, Land, Item, Position |
+| Blockchain | Text | Yes | Manual | Ronin |
+| Symbol | Text | No | Manual | AXS, bAXS, RON |
+| Decimals | Integer | No | Blockchain | Token decimals |
+| Tradable | Boolean | Yes | Manual | Can this asset be traded? |
+| Active | Boolean | Yes | Manual | Active in AxieOS |
+| Notes | Text | No | Manual | Additional remarks |
+
+---
 
 # Notes
 
