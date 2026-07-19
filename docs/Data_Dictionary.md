@@ -11,6 +11,16 @@ This document defines every data field used throughout AxieOS.
 - Which module uses it?
 - Where does the data come from?
 
+## Sources
+
+Data may originate from:
+
+- Blockchain
+- Sky Mavis API
+- Manual Input
+- Calculated Fields
+
+  
 ## Audience
 
 - Project Owner
@@ -76,3 +86,9 @@ Examples:
 # Notes
 
 The Data Dictionary is the single source of truth for all data collected and analyzed by AxieOS.
+
+## Status
+
+Version: 0.1
+
+This document will evolve throughout the project.
