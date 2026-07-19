@@ -44,7 +44,20 @@ Data may originate from:
 *(No fields have been defined yet. They will be added during Sprint 1.)*
 
 ---
+| Field        | Type | Required | Source     | Description                     |
+| ------------ | ---- | -------- | ---------- | ------------------------------- |
+| WalletID     | Text | Yes      | Manual     | Unique identifier (ex. WAL-001) |
+| WalletName   | Text | Yes      | Manual     | Friendly name                   |
+| Blockchain   | Text | Yes      | Manual     | Ronin                           |
+| Address      | Text | Yes      | Blockchain | Wallet address                  |
+| Purpose      | Text | Yes      | Manual     | Gameplay, Treasury, Trading...  |
+| OwnerAccount | Text | Yes      | Manual     | Parent Account                  |
+| Status       | Enum | Yes      | Manual     | Active / Archived               |
+| RiskLevel    | Enum | No       | Manual     | Low / Medium / High             |
+| CreatedDate  | Date | No       | Manual     | Date added                      |
+| Notes        | Text | No       | Manual     | Comments                        |
 
+---
 # Naming Conventions
 
 ## Dates
