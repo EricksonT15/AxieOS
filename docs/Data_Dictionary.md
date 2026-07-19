@@ -58,6 +58,63 @@ Data may originate from:
 | Notes        | Text | No       | Manual     | Comments                        |
 
 ---
+
+# AxieOS Data Dictionary
+
+## Purpose
+...
+
+## Sources
+...
+
+## Data Standards          ← (We'll add this later)
+
+## Master Data             ← (Section)
+
+### Wallet                ← AO-014 ✅
+
+| Field | Type | Required | Source | Description |
+|--------|------|----------|--------|-------------|
+...
+
+### Portfolio             ← AO-015 ✅
+
+| Field | Type | Required | Source | Description |
+|--------|------|----------|--------|-------------|
+...
+
+### Asset Registry        ← AO-016 (Next)
+
+...
+
+## Operational Data
+
+### Transactions
+
+...
+
+### Daily Bounty
+
+...
+
+### Weekly Snapshot
+
+...
+
+## Calculated Fields
+
+ROI
+
+APR
+
+Efficiency
+
+...
+
+## Revision History
+
+----
+
 # Naming Conventions
 
 ## Dates
