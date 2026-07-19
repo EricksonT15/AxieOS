@@ -1,28 +1,35 @@
-# Domain Model
+# AxieOS Domain Model
 
-## Purpose
+Version: 2.0 (Draft)
 
-This document defines the core business entities of AxieOS and the relationships between them.
+---
 
-## This document answers
+# Purpose
 
-- What objects exist in AxieOS?
-- How are they related?
-- Which module owns each object?
-- What data belongs to each object?
+The Domain Model defines the core business concepts of AxieOS and the relationships between them.
 
-## Audience
+AxieOS models a user's GameFi operation as a **Digital Twin**. The domain model is intentionally independent of spreadsheets, databases, APIs, or programming languages.
 
-- Project Owner
-- Contributors
-- Future AI assistants
-- Future developers
+It represents **what exists**, not **how it is implemented**.
 
-## Update Rules
+---
 
-- New entities should be added before implementation.
-- Changes to existing entities should be recorded in the Decision Log.
-- Relationships should remain consistent across all modules.
+# This Document Answers
+
+- What entities exist in AxieOS?
+- How are those entities related?
+- What responsibilities does each entity have?
+- Which concepts are considered part of the core domain?
+
+---
+
+# Domain Philosophy
+
+AxieOS models a GameFi operation rather than a single blockchain or game.
+
+The objective is to build a reusable Digital Twin capable of representing assets, gameplay, investments, and strategies across the Axie Infinity ecosystem.
+
+As the ecosystem evolves, implementation details may change, but the business concepts should remain stable.
 
 ---
 
@@ -30,111 +37,180 @@ This document defines the core business entities of AxieOS and the relationships
 
 The following entities form the foundation of AxieOS.
 
-These definitions will evolve as the project grows.
+## Core
 
-```
-Player
-Wallet
-Asset
-Axie
-Bounty
-Task
-Terrarium
-Land Item
-Accessory
-Stake
-Reward
-Transaction
-Weekly Snapshot
-```
+- Account
+- Digital Twin
+- Wallet
+- Portfolio
+- Asset
+- Transaction
+- Reward
 
----
+## Gameplay
 
-# Entity Status
+- Axie
+- Terrarium
+- Land Item
+- Accessory
+- Stake
+- Delegation
 
-| Entity | Module | Status |
-|---------|--------|--------|
-| Player | Core | Planned |
-| Wallet | Core | Planned |
-| Asset | Core | Planned |
-| Axie | Core | Planned |
-| Bounty | Bounty Board | Planned |
-| Task | Bounty Board | Planned |
-| Terrarium | Terrariums | Planned |
-| Land Item | Terrariums | Planned |
-| Accessory | Terrariums | Planned |
-| Stake | Staking | Planned |
-| Reward | Core | Planned |
-| Transaction | Wallet Analytics | Planned |
-| Weekly Snapshot | Analytics | Planned |
+## Bounty Board
+
+- Bounty
+- Task
+- Weekly Snapshot
 
 ---
 
 # Core Entity Definitions
 
-## Player
+---
 
-Represents the owner of one or more wallets and all associated Axie assets.
+## Account
+
+Represents the owner of one or more wallets.
+
+An Account may represent:
+
+- Individual player
+- Business
+- Guild
+- Organization
+- Future AI-controlled account
+
+### Responsibilities
+
+- Own wallets
+- Own portfolios
+- Receive analytics
+- Configure strategies
+
+---
+
+## Digital Twin
+
+Represents the virtual model of an Account.
+
+The Digital Twin combines blockchain data, gameplay history, portfolio information, and analytics into a single decision-support model.
+
+The Digital Twin is the primary object analyzed by AxieOS.
+
+### Responsibilities
+
+- Synchronize wallet data
+- Maintain portfolio state
+- Generate analytics
+- Support simulations
+- Provide AI recommendations
 
 ---
 
 ## Wallet
 
-Stores blockchain assets and records all on-chain transactions.
+Represents a blockchain wallet.
 
-A player may own multiple wallets.
+A Wallet stores assets and records transactions.
+
+Multiple wallets may belong to the same Account.
+
+Examples include:
+
+- Gameplay wallet
+- Treasury wallet
+- Trading wallet
+- Cold storage wallet
+
+### Responsibilities
+
+- Hold assets
+- Record blockchain activity
+- Participate in staking
+- Delegate NFTs
+
+---
+
+## Portfolio
+
+Represents the collection of assets owned by an Account.
+
+A Portfolio contains current balances and asset allocation.
+
+Portfolio values are calculated from Transactions.
+
+### Responsibilities
+
+- Track asset balances
+- Measure allocation
+- Support ROI analysis
+- Support performance analysis
 
 ---
 
 ## Asset
 
-Represents a blockchain asset.
+Represents any asset recognized by AxieOS.
 
-Examples:
+Examples include:
+
+### Tokens
 
 - AXS
 - bAXS
 - RON
 - SLP
+- USDC
+- WETH
+
+### NFTs
+
+- Axies
+- Land Plots
+- Land Items
+- Accessories
+
+### Responsibilities
+
+- Represent ownership
+- Store metadata
+- Support valuation
 
 ---
 
-## Axie
+## Transaction
 
-Represents an NFT owned by a player.
+Represents any event that changes the state of a Portfolio.
 
-An Axie may participate in multiple games and activities.
+Examples include:
 
----
+- Marketplace purchase
+- Marketplace sale
+- Reward claim
+- Stake deposit
+- Stake withdrawal
+- Token swap
+- NFT purchase
+- NFT sale
+- Breeding
+- Evolution
+- Ascension
 
-## Task
-
-Represents a single bounty board objective.
-
-Examples:
-
-- Breed an Axie
-- Feed Cocochoco
-- Reach Floor 3
-- Buy an Axie
-
----
-
-## Bounty
-
-Represents a daily bounty board containing multiple tasks.
+Transactions form the historical record of the Digital Twin.
 
 ---
 
 ## Reward
 
-Represents assets earned after completing gameplay.
+Represents assets earned through gameplay or participation.
 
-Examples:
+Examples include:
 
 - bAXS
 - AXS
-- Event Rewards
+- Event rewards
+
+Rewards contribute to Portfolio growth.
 
 ---
 
@@ -142,31 +218,97 @@ Examples:
 
 Represents assets deposited into staking.
 
-Supports:
+Current supported assets include:
 
 - AXS
 - bAXS
 
+Future staking products may be added without changing the core model.
+
 ---
 
-## Transaction
+## Delegation
 
-Represents any movement of assets.
+Represents the temporary assignment of NFTs to another wallet.
 
-Examples:
+Delegation includes:
 
-- Marketplace Purchase
-- Marketplace Sale
-- Staking Deposit
-- Staking Withdrawal
-- Reward Claim
-- Token Swap
+- Delegated assets
+- Permissions
+- Expiration date
+- Slip sharing
+- Gameplay permissions
+
+Delegation does not transfer ownership.
+
+---
+
+## Axie
+
+Represents an Axie NFT.
+
+An Axie may participate in multiple games and activities across the ecosystem.
+
+Examples include:
+
+- Origins
+- Homeland
+- Atia's Legacy (future)
+
+Axie attributes may evolve over time.
 
 ---
 
 ## Terrarium
 
-Represents one Homeland land plot producing Atia Flame and rewards.
+Represents a Homeland land plot producing Atia Flame and rewards.
+
+Terrariums may contain:
+
+- Land Items
+- Accessories
+
+Terrariums contribute to weekly production.
+
+---
+
+## Land Item
+
+Represents equipment placed inside a Terrarium.
+
+Land Items improve Terrarium performance.
+
+---
+
+## Accessory
+
+Represents decorative or functional equipment used within a Terrarium.
+
+Accessories may influence Atia Flame generation or future mechanics.
+
+---
+
+## Bounty
+
+Represents one daily Bounty Board.
+
+A Bounty contains multiple Tasks.
+
+---
+
+## Task
+
+Represents a single objective on the Bounty Board.
+
+Examples include:
+
+- Breed an Axie
+- Feed Cocochoco
+- Reach Floor 3
+- Buy an Axie
+- Release an Axie
+
+Tasks award points toward weekly rankings.
 
 ---
 
@@ -174,9 +316,83 @@ Represents one Homeland land plot producing Atia Flame and rewards.
 
 Represents one completed bounty week.
 
-Stores:
+A Weekly Snapshot stores historical performance.
 
-- Rank
-- Points
-- Rewards
-- Efficiency Metrics
+Examples include:
+
+- Week number
+- Total points
+- Final rank
+- bAXS rewards
+- Efficiency metrics
+
+Weekly Snapshots support long-term analysis.
+
+---
+
+# Entity Relationships
+
+The following diagram illustrates the high-level relationships between the core entities.
+
+```mermaid
+classDiagram
+
+Account "1" --> "*" Wallet
+Account "1" --> "1" Portfolio
+Account "1" --> "1" DigitalTwin
+
+Wallet --> "*" Asset
+Wallet --> "*" Transaction
+Wallet --> "*" Stake
+Wallet --> "*" Delegation
+
+Portfolio --> "*" Asset
+Portfolio --> "*" Reward
+
+Wallet --> "*" Axie
+
+Terrarium --> "*" LandItem
+Terrarium --> "*" Accessory
+
+Bounty --> "*" Task
+
+WeeklySnapshot --> "*" Reward
+```
+
+---
+
+# Design Principles
+
+The Domain Model follows these principles:
+
+- Model real-world GameFi concepts.
+- Separate business concepts from implementation details.
+- Support multiple wallets per account.
+- Preserve historical records.
+- Design for future expansion across the Axie ecosystem.
+- Remain blockchain-agnostic whenever practical.
+
+---
+
+# Future Expansion
+
+The following entities are expected to be introduced in future releases:
+
+- Marketplace
+- Strategy
+- Prediction
+- Recommendation
+- Simulation
+- AI Agent
+- Guild
+- Scholarship
+- Treasury
+- Governance
+
+---
+
+# Revision History
+
+| Version | Date | Notes |
+|----------|------------|------------------------------------------|
+| 2.0 | 2026-07-19 | Complete refactor of the Domain Model adopting the Digital Twin architecture. |
