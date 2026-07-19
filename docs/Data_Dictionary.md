@@ -1,183 +1,191 @@
-# Data Dictionary
-
-## Purpose
-
-This document defines every data field used throughout AxieOS.
-
-## This document answers
-
-- What does each field mean?
-- What data type is expected?
-- Which module uses it?
-- Where does the data come from?
-
-## Sources
-
-Data may originate from:
-
-- Blockchain
-- Sky Mavis API
-- Manual Input
-- Calculated Fields
-
-  
-## Audience
-
-- Project Owner
-- Contributors
-- Future AI assistants
-- Future developers
-
-## Update Rules
-
-- Every new data field should be documented before it is added to the workbook or database.
-- Field names should remain stable whenever possible.
-- If a field changes meaning, update this document and record the change in the Engineering Journal.
-
----
-
-# Field Definitions
-
-| Field | Data Type | Module | Description | Source |
-|--------|-----------|--------|-------------|--------|
-
-*(No fields have been defined yet. They will be added during Sprint 1.)*
-
----
-| Field        | Type | Required | Source     | Description                     |
-| ------------ | ---- | -------- | ---------- | ------------------------------- |
-| WalletID     | Text | Yes      | Manual     | Unique identifier (ex. WAL-001) |
-| WalletName   | Text | Yes      | Manual     | Friendly name                   |
-| Blockchain   | Text | Yes      | Manual     | Ronin                           |
-| Address      | Text | Yes      | Blockchain | Wallet address                  |
-| Purpose      | Text | Yes      | Manual     | Gameplay, Treasury, Trading...  |
-| OwnerAccount | Text | Yes      | Manual     | Parent Account                  |
-| Status       | Enum | Yes      | Manual     | Active / Archived               |
-| RiskLevel    | Enum | No       | Manual     | Low / Medium / High             |
-| CreatedDate  | Date | No       | Manual     | Date added                      |
-| Notes        | Text | No       | Manual     | Comments                        |
-
----
-
 # AxieOS Data Dictionary
 
-## Purpose
-...
+Version: 1.0 (Draft)
 
-## Sources
-...
+---
 
-## Data Standards          ← (We'll add this later)
+# Purpose
 
-## Master Data             ← (Section)
+The Data Dictionary is the single source of truth for all data used by AxieOS.
 
-### Wallet                ← AO-014 ✅
+It defines every entity, field, data type, source, and naming convention used throughout the project.
 
-| Field | Type | Required | Source | Description |
-|--------|------|----------|--------|-------------|
-...
+All spreadsheets, databases, Python scripts, APIs, dashboards, and machine learning models must follow this specification.
 
-### Portfolio             ← AO-015 ✅
+---
 
-| Field | Type | Required | Source | Description |
-|--------|------|----------|--------|-------------|
-...
+# This Document Answers
 
-### Asset Registry        ← AO-016 (Next)
+- What data does AxieOS store?
+- What does each field mean?
+- What data type is expected?
+- Where does the data originate?
+- Which entity owns the field?
 
-...
+---
 
-## Operational Data
+# Data Sources
 
-### Transactions
+Data within AxieOS may originate from one of the following sources:
 
-...
+| Source | Description |
+|---------|-------------|
+| Blockchain | Ronin blockchain transactions and balances |
+| Sky Mavis API | Official Axie ecosystem data |
+| Manual | Entered by the user |
+| Calculated | Derived from existing data |
 
-### Daily Bounty
+---
 
-...
-
-### Weekly Snapshot
-
-...
-
-## Calculated Fields
-
-ROI
-
-APR
-
-Efficiency
-
-...
-
-## Revision History
-
-----
-
-# Naming Conventions
+# Data Standards
 
 ## Dates
 
-Use ISO 8601 format whenever possible.
+Use ISO 8601.
 
-Example:
+Example
 
 2026-07-19
 
 ---
 
-## Currency / Tokens
+## Token Symbols
 
-Use official token symbols.
+Always use official symbols.
 
-Examples:
+Examples
 
 - AXS
 - bAXS
 - RON
 - SLP
+- WETH
+- USDC
 
 ---
 
-## IDs
+## Naming Convention
 
-Every unique object should have an ID where appropriate.
+Entity IDs should remain permanent.
 
-Examples:
+Examples
 
-- Task ID
-- Axie ID
-- Wallet Address
-- Transaction ID
+| Entity | Example |
+|---------|----------|
+| Wallet | WAL-001 |
+| Asset | TOK-AXS |
+| Portfolio | PORT-001 |
+| Transaction | TXN-000001 |
+| Weekly Snapshot | WKS-2026-30 |
 
 ---
-## Asset Registry
 
-The Asset Registry defines every asset recognized by AxieOS.
+# Reference Data
 
-All operational tables must reference assets through AssetID rather than storing asset names directly.
+Reference Data changes infrequently.
+
+## Wallet
 
 | Field | Type | Required | Source | Description |
-|--------|------|----------|--------|-------------|
-| AssetID | Text | Yes | Manual | Unique Asset Identifier (e.g., TOK-AXS) |
-| AssetName | Text | Yes | Manual | Human-readable asset name |
-| AssetType | Enum | Yes | Manual | Token, NFT, Land, Item, Position |
+|---------|------|----------|---------|-------------|
+| WalletID | Text | Yes | Manual | Internal unique identifier |
+| WalletName | Text | Yes | Manual | Friendly wallet name |
 | Blockchain | Text | Yes | Manual | Ronin |
-| Symbol | Text | No | Manual | AXS, bAXS, RON |
-| Decimals | Integer | No | Blockchain | Token decimals |
-| Tradable | Boolean | Yes | Manual | Can this asset be traded? |
-| Active | Boolean | Yes | Manual | Active in AxieOS |
+| Address | Text | Yes | Blockchain | Wallet address |
+| Purpose | Text | Yes | Manual | Primary wallet purpose |
+| OwnerAccount | Text | Yes | Manual | Parent account |
+| Status | Enum | Yes | Manual | Active / Archived |
+| RiskLevel | Enum | No | Manual | Low / Medium / High |
+| CreatedDate | Date | No | Manual | Date added |
 | Notes | Text | No | Manual | Additional remarks |
 
 ---
 
-# Notes
+## Asset Registry
 
-The Data Dictionary is the single source of truth for all data collected and analyzed by AxieOS.
+The Asset Registry defines every asset recognized by AxieOS.
 
-## Status
+Operational entities should reference AssetID instead of storing asset names directly.
 
-Version: 0.1
+| Field | Type | Required | Source | Description |
+|---------|------|----------|---------|-------------|
+| AssetID | Text | Yes | Manual | Unique asset identifier |
+| AssetName | Text | Yes | Manual | Human-readable name |
+| AssetType | Enum | Yes | Manual | Token, NFT, Land, Item, Position |
+| Blockchain | Text | Yes | Manual | Ronin |
+| Symbol | Text | No | Manual | Official token symbol |
+| Decimals | Integer | No | Blockchain | Token decimals |
+| Tradable | Boolean | Yes | Manual | Tradable asset |
+| Active | Boolean | Yes | Manual | Active within AxieOS |
+| Notes | Text | No | Manual | Additional remarks |
 
-This document will evolve throughout the project.
+---
+
+# Operational Data
+
+Operational Data changes frequently during gameplay.
+
+## Portfolio
+
+| Field | Type | Required | Source | Description |
+|---------|------|----------|---------|-------------|
+| PortfolioID | Text | Yes | Generated | Portfolio record identifier |
+| WalletID | Text | Yes | Reference | References Wallet |
+| AssetID | Text | Yes | Reference | References Asset Registry |
+| AssetType | Enum | Yes | Reference | Token, NFT, Stake, Position |
+| Quantity | Decimal | Yes | Blockchain / Manual | Current quantity |
+| Unit | Text | Yes | Reference | Token, NFT, Plot, Item |
+| Location | Enum | Yes | Manual | Wallet, Staked, Delegated, Marketplace |
+| LastUpdated | DateTime | Yes | Generated | Last synchronization |
+| Remarks | Text | No | Manual | Notes |
+
+---
+
+## Transactions
+
+*To be defined during Sprint 1.*
+
+---
+
+## Daily Bounty
+
+*To be defined during Sprint 1.*
+
+---
+
+## Weekly Snapshot
+
+*To be defined during Sprint 1.*
+
+---
+
+# Calculated Data
+
+Calculated entities are generated automatically from operational data.
+
+Examples include:
+
+- Portfolio Value
+- ROI
+- APR
+- Weekly Efficiency
+- Slip Efficiency
+- Prediction Scores
+
+---
+
+# Design Principles
+
+- Every entity has a unique ID.
+- Raw data should never be overwritten.
+- Historical records should remain immutable.
+- Analytics are derived from raw data.
+- Asset names should never be duplicated across entities.
+
+---
+
+# Revision History
+
+| Version | Date | Notes |
+|----------|------|-------|
+| 1.0 | 2026-07-19 | Initial refactored Data Dictionary |
