@@ -175,3 +175,107 @@ Whenever a decision becomes permanent, it should eventually be documented inside
 ---
 
 End of Document
+
+---
+
+# Data Management Rules
+
+These rules apply to all datasets used by AxieOS.
+
+## Rule 1 — Immutable Raw Data
+
+Raw imported data must never be modified.
+
+Examples
+
+- Blockchain transaction exports
+- Marketplace exports
+- Wallet exports
+- API responses
+
+If an error is discovered, correct it in the processed data or classification layer—not in the original source.
+
+---
+
+## Rule 2 — Separation of Data
+
+AxieOS data is divided into three layers.
+
+### Raw
+
+Original data from external sources.
+
+Never edited.
+
+### Processed
+
+Data cleaned, classified, or transformed by AxieOS.
+
+May be regenerated from Raw at any time.
+
+### Reference
+
+Master data maintained by the user.
+
+Examples
+
+- Axie collection
+- Land collection
+- Accessories
+- Collectibles
+- Categories
+
+---
+
+## Rule 3 — Naming Convention
+
+Files should use predictable names.
+
+Examples
+
+wallet_transactions_001.csv
+
+wallet_transactions_002.csv
+
+wallet_transactions_003.csv
+
+marketplace_transactions_001.csv
+
+nft_transactions_001.csv
+
+staking_transactions_001.csv
+
+This allows future automation without renaming files.
+
+---
+
+## Rule 4 — Source of Truth
+
+Only one source of truth exists for each type of information.
+
+Examples
+
+Blockchain
+→ Financial transactions
+
+Manual Logs
+→ Gameplay and decisions
+
+Marketplace
+→ Current market prices
+
+Reference Files
+→ Portfolio assets
+
+Processed Data
+→ Analytics
+
+---
+
+## Rule 5 — Reproducibility
+
+AxieOS should always be able to rebuild the processed datasets from the raw datasets.
+
+Nothing in the analytics layer should depend on manually edited transaction history.
+
+This ensures the database remains accurate, auditable, and reproducible.
