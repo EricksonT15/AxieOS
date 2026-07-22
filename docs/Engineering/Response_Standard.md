@@ -6,185 +6,172 @@ Version: 1.0
 
 # Purpose
 
-This document defines the communication standard between the User and ChatGPT during the development of AxieOS.
+This document defines how ChatGPT should structure responses while assisting with the development of AxieOS.
 
-The objective is to make every response predictable, reusable, and easy to copy into the GitHub repository.
-
-Every response should clearly indicate whether it is:
-
-- Discussion
-- Repository content
-- Design proposal
-- Development task
-- Analysis
-
-This prevents confusion and reduces editing time.
+The goal is to make every response predictable, easy to understand, and easy to integrate into the repository.
 
 ---
 
 # General Principles
 
-1. Repository-ready content should always be separated from discussion.
-
-2. A single response may contain multiple sections.
-
-3. Every section must have an explicit header.
-
-4. Repository content should never contain explanations.
-
-5. Discussion should never be mixed inside repository content.
+1. Every response must clearly indicate its purpose.
+2. Repository content must always be separated from discussion.
+3. Multiple response sections may be used in a single reply.
+4. Repository-ready content must not include explanations.
+5. Discussion and analysis should never be mixed into repository content.
 
 ---
 
 # Response Types
 
----
-
-## 1. Discussion
-
-Purpose
-
-General conversation, brainstorming, clarifications, and decision making.
-
-Header
-
-```
 ## DISCUSSION
-```
-
-Contains
-
-- opinions
-- explanations
-- reasoning
-- trade-offs
-- recommendations
-
-Never intended to be copied into GitHub.
-
----
-
-## 2. Analysis
 
 Purpose
 
-Evaluate a problem before making a decision.
+General conversation, brainstorming, clarifications, recommendations, and explanations.
 
-Header
+This section is **not** intended for the repository.
 
-```
+---
+
 ## ANALYSIS
-```
 
-Typical contents
+Purpose
+
+Evaluate alternatives before making a decision.
+
+Typical contents include:
 
 - Cost analysis
 - ROI analysis
-- Strategy comparison
 - Risk assessment
-- Market observations
+- Strategy comparison
+- Trade-offs
 
-Example
-
-```
-## ANALYSIS
-
-Pros
-
-Cons
-
-Recommendation
-```
+This section is **not** intended for the repository.
 
 ---
 
-## 3. Markdown Output
+## MARKDOWN OUTPUT
 
 Purpose
 
-Repository-ready markdown.
+Generate repository-ready Markdown.
 
-Header
+Requirements
+
+- Must begin with:
 
 ```
 ## MARKDOWN OUTPUT
 ```
 
-Must include
-
-Destination
-
-```
-Destination:
-docs/example.md
-```
-
-Only markdown follows.
-
-No discussion.
-
-No explanations.
-
-No comments.
+- Must specify the destination file.
 
 Example
 
-## Repository Update
-
-Purpose
-
-Used when ChatGPT wants to modify an existing repository file.
-
-Format
-
-```text
-## REPOSITORY UPDATE
-
-File:
-docs/Decision_Log.md
-
-Action:
-Append
+```
+Destination:
+logs/daily/2026-07-22.md
 ```
 
-The text following this header is the content that should be added to the specified file.
+- After the destination, only Markdown content should follow.
 
-````markdown
-# Title
+No explanations.
 
-Content
+No discussion.
 
-
-
-
-# Repository Update
-
-Purpose
-
-Indicates that ChatGPT is generating content to modify an existing file.
-
-Expected Format
-
-```text
-## REPOSITORY UPDATE
-
-File:
-...
-
-Action:
-...
-```
+No comments.
 
 ---
 
-# Example
-
-```text
 ## REPOSITORY UPDATE
 
-File:
-docs/Decision_Log.md
+Purpose
 
-Action:
-Append
+Modify an existing repository file.
+
+Requirements
+
+- Must begin with:
+
 ```
+## REPOSITORY UPDATE
+```
+
+- Must specify:
+
+- File
+- Action
+
+Valid Actions
+
+- Create
+- Append
+- Replace
+- Rename
+- Delete
+
+Only the repository content should follow.
+
+---
+
+## DESIGN PROPOSAL
+
+Purpose
+
+Present ideas that have **not yet been accepted**.
+
+Typical contents
+
+- Reason
+- Benefits
+- Drawbacks
+- Recommendation
+
+This section is for discussion only.
+
+---
+
+## IMPLEMENTATION TASK
+
+Purpose
+
+Create work items for future development.
+
+Typical contents
+
+- Priority
+- Module
+- Status
+- Description
+- Acceptance Criteria
+
+This section is intended for project planning.
+
+---
+
+# Default Response Order
+
+When multiple sections are used, they should appear in the following order.
+
+1. Discussion
+2. Analysis
+3. Markdown Output
+4. Repository Update
+5. Design Proposal
+6. Implementation Task
+
+---
+
+# Repository Philosophy
+
+The repository is the permanent source of truth.
+
+Chat conversations are temporary.
+
+Whenever a decision becomes permanent, it should eventually be documented inside the repository.
+
+---
+
+End of Document
