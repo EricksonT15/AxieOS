@@ -153,3 +153,38 @@ The text following this header is the content that should be added to the specif
 # Title
 
 Content
+
+
+
+
+# Repository Update
+
+Purpose
+
+Indicates that ChatGPT is generating content to modify an existing file.
+
+Expected Format
+
+```text
+## REPOSITORY UPDATE
+
+File:
+...
+
+Action:
+...
+```
+
+---
+
+# Example
+
+```text
+## REPOSITORY UPDATE
+
+File:
+docs/Decision_Log.md
+
+Action:
+Append
+```
