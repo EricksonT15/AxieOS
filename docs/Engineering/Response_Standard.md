@@ -129,6 +129,26 @@ No comments.
 
 Example
 
+## Repository Update
+
+Purpose
+
+Used when ChatGPT wants to modify an existing repository file.
+
+Format
+
+```text
+## REPOSITORY UPDATE
+
+File:
+docs/Decision_Log.md
+
+Action:
+Append
+```
+
+The text following this header is the content that should be added to the specified file.
+
 ````markdown
 # Title
 
