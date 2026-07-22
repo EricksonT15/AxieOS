@@ -279,3 +279,60 @@ AxieOS should always be able to rebuild the processed datasets from the raw data
 Nothing in the analytics layer should depend on manually edited transaction history.
 
 This ensures the database remains accurate, auditable, and reproducible.
+
+---
+
+# Daily Logging Workflow
+
+AxieOS uses an **Event → Daily Report** workflow.
+
+## During the Day
+
+Record events only.
+
+Examples
+
+- Purchased assets
+- Sold assets
+- Completed Bounty tasks
+- Claimed rewards
+- Swapped tokens
+- Crafted items
+- Released Axies
+- Marketplace listings
+- Strategy observations
+
+No Markdown is generated during the day.
+
+---
+
+## End of Day (or Next Morning)
+
+Generate a single Daily Log.
+
+The generated log should:
+
+- Group related events.
+- Remove duplicate information.
+- Verify totals.
+- Include all events recorded during the day.
+- Be repository-ready.
+- Require only one copy-and-paste operation.
+
+The Daily Log becomes the permanent record for that date.
+
+---
+
+## Corrections
+
+Corrections made during the day should be applied only to the final Daily Log generation.
+
+Avoid creating multiple append operations unless the user explicitly requests an intermediate update.
+
+---
+
+## Principle
+
+Capture events continuously.
+
+Generate documents only once.
