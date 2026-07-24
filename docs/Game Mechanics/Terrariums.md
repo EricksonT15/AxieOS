@@ -119,3 +119,75 @@ Perform an economic ROI analysis by comparing:
 - Alternative Fortune Slip usage (Bounty Board rerolls)
 
 This experiment validates the mechanical behavior of the Shrine Buff. Future experiments will determine whether activating the buff is economically optimal.
+
+---
+
+## Experiment Update: Post-Distribution Observation
+
+### Distribution Snapshot
+
+#### Global
+
+| Metric | Value |
+|--------|------:|
+| Global Lunium | 688,365 |
+| Forest Global Flame | 894,449 |
+| Savannah Global Flame | 397,475 |
+
+---
+
+### Forest
+
+| Metric | Value |
+|--------|------:|
+| Atia Flame | 1,557 |
+| Rank | 153 |
+| Next Distribution | 0.0420 |
+| Total Acquired | 34.26 bAXS |
+
+---
+
+### Savannah #1
+
+| Metric | Value |
+|--------|------:|
+| Atia Flame | 177 |
+| Next Distribution | 0.0034 |
+| Total Acquired | 3.04 bAXS |
+
+---
+
+### Savannah #2
+
+| Metric | Value |
+|--------|------:|
+| Atia Flame | 210 |
+| Next Distribution | 0.0040 |
+| Total Acquired | 3.15 bAXS |
+
+Combined Savannah Rank
+
+- 225
+
+---
+
+## Findings
+
+Despite changes in the global environment after the distribution:
+
+- Forest rank improved from **169 → 153**.
+- Combined Savannah rank improved from **246 → 225**.
+- The +10% Shrine Buff maintained a higher competitive position even as total global flame increased.
+
+## Research Direction
+
+Future evaluations should measure the **economic value** of the Shrine Buff rather than only its direct ROI.
+
+Evaluation metrics will include:
+
+- Additional bAXS earned
+- Rank improvement
+- Global Atia Flame changes
+- Global Lunium changes
+- Fortune Slips spent
+- Competitive positioning
