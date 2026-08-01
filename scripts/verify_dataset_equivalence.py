@@ -16,12 +16,12 @@ import pandas as pd
 # Configuration
 # --------------------------------------------------
 
-DATA_DIR = Path("data/blockchain/legacy/raw")
+DATA_DIR = Path("data/blockchain/raw")
 
 FILES = {
     "Transactions": "legacy_transactions_2021.csv",
     "Transfers": "legacy_transfers_2021.csv",
-    "Internal Transfers": "legacy_internal_transfers_2021.csv",
+    "Internal": "legacy_internal_transactions_2021.csv",
 }
 
 
