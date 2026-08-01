@@ -1,28 +1,6 @@
-import sqlite3
-from pathlib import Path
+"""Generate a high-level summary of the AxieOS blockchain database."""
 
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-DATABASE_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "blockchain"
-    / "database"
-    / "axieos.db"
-)
-
-
-def connect_database():
-    """Connect to the existing AxieOS SQLite database."""
-
-    if not DATABASE_PATH.exists():
-        raise FileNotFoundError(
-            f"Database not found: {DATABASE_PATH}"
-        )
-
-    return sqlite3.connect(DATABASE_PATH)
-
+from database import connect_database
 
 def print_header():
     """Display the report header."""
