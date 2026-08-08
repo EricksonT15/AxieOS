@@ -23,4 +23,6 @@ def connect_database() -> sqlite3.Connection:
             f"AxieOS database not found: {DATABASE_PATH}"
         )
 
-    return sqlite3.connect(DATABASE_PATH)
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
