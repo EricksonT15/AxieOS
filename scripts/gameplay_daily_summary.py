@@ -188,24 +188,48 @@ def get_inventory_summary(conn, daily_session_id):
                 player_id
             FROM gameplay_daily_sessions
             WHERE id = ?
+        ),
+
+        inventory_movements AS (
+            SELECT
+                session.session_date,
+                session.player_id,
+                inventory.item_name,
+                inventory.quantity_change
+            FROM inventory_events inventory
+
+            JOIN gameplay_daily_sessions session
+              ON inventory.daily_session_id = session.id
+
+            UNION ALL
+
+            SELECT
+                session.session_date,
+                session.player_id,
+                reward.item_name,
+                reward.quantity AS quantity_change
+            FROM pouch_reward_items reward
+
+            JOIN pouch_opening_events pouch
+              ON reward.pouch_opening_event_id = pouch.id
+
+            JOIN gameplay_daily_sessions session
+              ON pouch.daily_session_id = session.id
         )
 
         SELECT
-            inventory.item_name,
-            SUM(inventory.quantity_change) AS quantity
-        FROM inventory_events inventory
-
-        JOIN gameplay_daily_sessions session
-          ON inventory.daily_session_id = session.id
+            movement.item_name,
+            SUM(movement.quantity_change) AS quantity
+        FROM inventory_movements movement
 
         JOIN target_session target
-          ON session.player_id = target.player_id
+          ON movement.player_id = target.player_id
 
-        WHERE session.session_date <= target.session_date
+        WHERE movement.session_date <= target.session_date
 
-        GROUP BY inventory.item_name
+        GROUP BY movement.item_name
 
-        ORDER BY inventory.item_name
+        ORDER BY movement.item_name
         """,
         (daily_session_id,),
     ).fetchall()
@@ -267,23 +291,84 @@ def get_open_marketplace_positions(conn, daily_session_id):
         FROM marketplace_events buy
 
         LEFT JOIN marketplace_events list
-          ON buy.asset_id = list.asset_id
-         AND list.event_type = 'list'
+          ON list.event_type = 'list'
+         AND list.daily_session_id = buy.daily_session_id
+         AND (
+                (
+                    buy.asset_id IS NOT NULL
+                    AND buy.asset_id = list.asset_id
+                )
+                OR
+                (
+                    buy.asset_id IS NULL
+                    AND list.asset_id IS NULL
+                    AND buy.asset_type = list.asset_type
+                    AND buy.asset_name = list.asset_name
+                    AND buy.quantity = list.quantity
+                )
+             )
 
         LEFT JOIN marketplace_events sale
-          ON buy.asset_id = sale.asset_id
-         AND sale.event_type = 'sale'
+          ON sale.event_type = 'sale'
+         AND sale.daily_session_id = buy.daily_session_id
+         AND (
+                (
+                    buy.asset_id IS NOT NULL
+                    AND buy.asset_id = sale.asset_id
+                )
+                OR
+                (
+                    buy.asset_id IS NULL
+                    AND sale.asset_id IS NULL
+                    AND buy.asset_type = sale.asset_type
+                    AND buy.asset_name = sale.asset_name
+                    AND buy.quantity = sale.quantity
+                )
+             )
 
         WHERE buy.daily_session_id = ?
           AND buy.event_type = 'buy'
-          AND buy.asset_type = 'Axie'
           AND sale.id IS NULL
 
-        ORDER BY buy.event_datetime
+        ORDER BY buy.event_datetime, buy.id
         """,
         (daily_session_id,),
     ).fetchall()
 
+
+def get_pouch_activity(conn, daily_session_id):
+    return conn.execute(
+        """
+        SELECT
+            pouch.id,
+            pouch.event_datetime,
+            pouch.pouch_type,
+            pouch.quantity_opened,
+            pouch.slips_spent,
+            pouch.upfront_ron,
+            pouch.user_tx_fee_ron,
+            pouch.refund_ron,
+            pouch.net_ron_cost
+        FROM pouch_opening_events pouch
+        WHERE pouch.daily_session_id = ?
+        ORDER BY pouch.event_datetime, pouch.id
+        """,
+        (daily_session_id,),
+    ).fetchall()
+
+
+def get_pouch_rewards(conn, pouch_opening_event_id):
+    return conn.execute(
+        """
+        SELECT
+            item_name,
+            quantity
+        FROM pouch_reward_items
+        WHERE pouch_opening_event_id = ?
+        ORDER BY id
+        """,
+        (pouch_opening_event_id,),
+    ).fetchall()
 
 
 def main():
@@ -339,6 +424,13 @@ def main():
         daily_session_id,
     )
 
+    pouch_activity = get_pouch_activity(
+        conn,
+        daily_session_id,
+    )
+
+
+
     print("=" * 60)
     print("AXIEOS DAILY GAMEPLAY SUMMARY")
     print("=" * 60)
@@ -385,7 +477,70 @@ def main():
         )
 
 # TERRARIUM BLOCK STARTS HERE
-    if len(terrarium_snapshots) >= 2:
+    if len(terrarium_snapshots) == 1:
+        snapshot = terrarium_snapshots[0]
+
+        snapshot_plots = get_terrarium_plot_data(
+            conn,
+            snapshot[0],
+        )
+
+        snapshot_rankings = get_terrarium_rankings(
+            conn,
+            snapshot[0],
+        )
+
+        print()
+        print("TERRARIUM")
+        print("-" * 60)
+
+        print(f"Snapshot type: {snapshot[1]}")
+        print(f"Global Lunium: {snapshot[2]}")
+        print(f"Claimable bAXS: {snapshot[3]:.2f}")
+
+        print()
+        print("Plots:")
+
+        for plot in snapshot_plots:
+            plot_type = plot[0]
+            plot_number = plot[1]
+            flame = plot[2]
+            next_distribution = plot[3]
+            total_acquired = plot[4]
+
+            if plot_number is not None:
+                plot_name = f"{plot_type} #{plot_number}"
+            else:
+                plot_name = plot_type
+
+            print(f"  {plot_name}")
+            print(f"    Flame: {flame}")
+            print(
+                f"    Next distribution: "
+                f"{next_distribution:.4f}"
+            )
+            print(
+                f"    Total acquired: "
+                f"{total_acquired:.2f}"
+            )
+
+        if snapshot_rankings:
+            print()
+            print("Rankings:")
+
+            for ranking in snapshot_rankings:
+                group_type = ranking[0]
+                rank = ranking[1]
+                global_flame = ranking[2]
+
+                print(
+                    f"  {group_type}: "
+                    f"rank {rank}, "
+                    f"global flame {global_flame}"
+                )
+
+
+    elif len(terrarium_snapshots) >= 2:
         morning = terrarium_snapshots[0]
         evening = terrarium_snapshots[-1]
 
@@ -596,7 +751,10 @@ def main():
             list_time = position[6]
             list_price = position[7]
 
-            print(f"{asset_name} #{asset_id}")
+            if asset_id is not None:
+                print(f"{asset_name} #{asset_id}")
+            else:
+                print(f"{asset_name}")
 
             print(
                 f"  Buy: {buy_price:.8f} {currency} "
@@ -671,6 +829,69 @@ def main():
                         )
 
                 print()
+
+    if pouch_activity:
+        print()
+        print("POUCH ACTIVITY")
+        print("-" * 60)
+
+        for pouch in pouch_activity:
+            pouch_event_id = pouch[0]
+            event_datetime = pouch[1]
+            pouch_type = pouch[2]
+            quantity_opened = pouch[3]
+            slips_spent = pouch[4]
+            upfront_ron = pouch[5]
+            user_tx_fee_ron = pouch[6]
+            refund_ron = pouch[7]
+            net_ron_cost = pouch[8]
+
+            print(
+                f"{pouch_type} Pouches: "
+                f"{quantity_opened} opened"
+            )
+
+            print(f"  Date/time: {event_datetime}")
+            print(f"  Fortune Slips spent: {slips_spent}")
+
+            rewards = get_pouch_rewards(
+                conn,
+                pouch_event_id,
+            )
+
+            if rewards:
+                print("  Rewards:")
+
+                for reward in rewards:
+                    item_name = reward[0]
+                    quantity = reward[1]
+
+                    print(
+                        f"    {item_name}: {quantity}"
+                    )
+
+            if upfront_ron is not None:
+                print(f"  Upfront RON: {upfront_ron}")
+
+            if user_tx_fee_ron is not None:
+                print(
+                    f"  User transaction fee: "
+                    f"{user_tx_fee_ron} RON"
+                )
+
+            if refund_ron is not None:
+                print(f"  VRF refund: {refund_ron} RON")
+
+            if net_ron_cost is not None:
+                print(
+                    f"  Net RON cost: "
+                    f"{net_ron_cost} RON"
+                )
+
+            print()
+
+
+
 
     if inventory_summary:
         print()
