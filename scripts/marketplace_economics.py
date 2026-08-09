@@ -302,6 +302,13 @@ def main():
         selling_fee = list_price * fee_rate
         net_proceeds = list_price - selling_fee
         net_profit = net_proceeds - buy_price
+        break_even_price = (
+            buy_price / (1 - fee_rate)
+            if fee_rate < 1
+            else 0
+        )
+
+
 
         net_roi = (
             net_profit / buy_price * 100
@@ -315,6 +322,11 @@ def main():
         print(f"  Gross profit: {gross_profit:+.8f} ETH")
         print(f"  Gross ROI: {gross_roi:.2f}%")
         print(f"  Selling fee: {selling_fee:.8f} ETH")
+        print(
+            f"  Break-even sale price: "
+            f"{break_even_price:.8f} ETH"
+        )
+
         print(f"  Net profit: {net_profit:+.8f} ETH")
         print(f"  Net ROI: {net_roi:.2f}%")
         print()
