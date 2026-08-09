@@ -239,6 +239,58 @@ def create_gameplay_schema():
         """
     )
 
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS pouch_opening_events (
+            id INTEGER PRIMARY KEY,
+            daily_session_id INTEGER NOT NULL,
+
+            event_datetime TEXT,
+
+            pouch_type TEXT NOT NULL,
+            quantity_opened INTEGER NOT NULL,
+            slips_spent INTEGER NOT NULL,
+
+            request_tx_hash TEXT,
+            fulfillment_tx_hash TEXT,
+
+            upfront_ron TEXT,
+            user_tx_fee_ron TEXT,
+            refund_ron TEXT,
+            net_ron_cost TEXT,
+
+            notes TEXT,
+
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (daily_session_id)
+                REFERENCES gameplay_daily_sessions(id)
+                ON DELETE CASCADE
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS pouch_reward_items (
+            id INTEGER PRIMARY KEY,
+            pouch_opening_event_id INTEGER NOT NULL,
+
+            item_name TEXT NOT NULL,
+            quantity INTEGER NOT NULL,
+
+            notes TEXT,
+
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (pouch_opening_event_id)
+                REFERENCES pouch_opening_events(id)
+                ON DELETE CASCADE
+        )
+        """
+    )
+
+
 
     conn.execute(
         """
@@ -320,6 +372,8 @@ def create_gameplay_schema():
     print("Created/verified table: marketplace_events")
     print("Created/verified table: inventory_events")
     print("Created/verified table: inventory_event_bounty_tasks")
+    print("Created/verified table: pouch_opening_events")
+    print("Created/verified table: pouch_reward_items")
     print("Created/verified table: staking_reward_events")
     print(
         "Created/verified table: marketplace_event_bounty_tasks"
