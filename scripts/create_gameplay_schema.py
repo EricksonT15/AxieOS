@@ -244,6 +244,44 @@ def create_gameplay_schema():
         """
     )
 
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS marketplace_event_bounty_tasks (
+            marketplace_event_id INTEGER NOT NULL,
+            bounty_task_id INTEGER NOT NULL,
+
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (
+                marketplace_event_id,
+                bounty_task_id
+            ),
+
+            FOREIGN KEY (marketplace_event_id)
+                REFERENCES marketplace_events(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (bounty_task_id)
+                REFERENCES bounty_board_tasks(id)
+                ON DELETE CASCADE
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO marketplace_event_bounty_tasks (
+            marketplace_event_id,
+            bounty_task_id
+        )
+        SELECT
+            id,
+            related_bounty_task_id
+        FROM marketplace_events
+        WHERE related_bounty_task_id IS NOT NULL
+        """
+    )
+
     conn.commit()
     conn.close()
 
@@ -256,7 +294,9 @@ def create_gameplay_schema():
     print("Created/verified table: marketplace_events")
     print("Created/verified table: inventory_events")
     print("Created/verified table: staking_reward_events")
-    
+    print(
+        "Created/verified table: marketplace_event_bounty_tasks"
+    )
 
 
 if __name__ == "__main__":
