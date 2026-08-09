@@ -177,19 +177,40 @@ def get_bounty_task_by_id(conn, task_id):
         (task_id,),
     ).fetchone()
 
+
+
 def get_inventory_summary(conn, daily_session_id):
     return conn.execute(
         """
+        WITH target_session AS (
+            SELECT
+                session_date,
+                player_id
+            FROM gameplay_daily_sessions
+            WHERE id = ?
+        )
+
         SELECT
-            item_name,
-            SUM(quantity_change) AS balance
-        FROM inventory_events
-        WHERE daily_session_id = ?
-        GROUP BY item_name
-        ORDER BY item_name
+            inventory.item_name,
+            SUM(inventory.quantity_change) AS quantity
+        FROM inventory_events inventory
+
+        JOIN gameplay_daily_sessions session
+          ON inventory.daily_session_id = session.id
+
+        JOIN target_session target
+          ON session.player_id = target.player_id
+
+        WHERE session.session_date <= target.session_date
+
+        GROUP BY inventory.item_name
+
+        ORDER BY inventory.item_name
         """,
         (daily_session_id,),
     ).fetchall()
+
+
 
 def get_staking_reward_events(conn, daily_session_id):
     return conn.execute(

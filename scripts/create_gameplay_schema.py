@@ -214,6 +214,32 @@ def create_gameplay_schema():
         """
     )
 
+
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS inventory_event_bounty_tasks (
+            inventory_event_id INTEGER NOT NULL,
+            bounty_task_id INTEGER NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (
+                inventory_event_id,
+                bounty_task_id
+            ),
+
+            FOREIGN KEY (inventory_event_id)
+                REFERENCES inventory_events(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (bounty_task_id)
+                REFERENCES bounty_board_tasks(id)
+                ON DELETE CASCADE
+        )
+        """
+    )
+
+
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS staking_reward_events (
@@ -293,10 +319,12 @@ def create_gameplay_schema():
     print("Created/verified table: terrarium_group_rankings")
     print("Created/verified table: marketplace_events")
     print("Created/verified table: inventory_events")
+    print("Created/verified table: inventory_event_bounty_tasks")
     print("Created/verified table: staking_reward_events")
     print(
         "Created/verified table: marketplace_event_bounty_tasks"
     )
+    
 
 
 if __name__ == "__main__":
