@@ -290,6 +290,29 @@ def create_gameplay_schema():
         """
     )
 
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS weekly_bounty_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_id TEXT NOT NULL DEFAULT 'primary',
+            week_end_date TEXT NOT NULL,
+            final_rank INTEGER,
+            total_bounty_points INTEGER,
+            master_quest_earnings INTEGER DEFAULT 0,
+            baxs_reward TEXT,
+            reward_status TEXT,
+            claim_datetime TEXT,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE(player_id, week_end_date)
+        )
+        """
+    )
+
+
+
 
 
     conn.execute(
@@ -374,10 +397,12 @@ def create_gameplay_schema():
     print("Created/verified table: inventory_event_bounty_tasks")
     print("Created/verified table: pouch_opening_events")
     print("Created/verified table: pouch_reward_items")
+    print("Created/verified table: weekly_bounty_results")
     print("Created/verified table: staking_reward_events")
     print(
         "Created/verified table: marketplace_event_bounty_tasks"
     )
+    
     
 
 
