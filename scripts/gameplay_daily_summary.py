@@ -302,7 +302,7 @@ def get_open_marketplace_positions(conn, daily_session_id):
                 (
                     buy.asset_id IS NULL
                     AND list.asset_id IS NULL
-                    AND buy.asset_type = list.asset_type
+                    AND LOWER(buy.asset_type) = LOWER(list.asset_type)
                     AND buy.asset_name = list.asset_name
                     AND buy.quantity = list.quantity
                 )
@@ -320,7 +320,7 @@ def get_open_marketplace_positions(conn, daily_session_id):
                 (
                     buy.asset_id IS NULL
                     AND sale.asset_id IS NULL
-                    AND buy.asset_type = sale.asset_type
+                    AND LOWER(buy.asset_type) = LOWER(sale.asset_type)
                     AND buy.asset_name = sale.asset_name
                     AND buy.quantity = sale.quantity
                 )
