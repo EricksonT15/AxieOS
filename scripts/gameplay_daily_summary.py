@@ -445,8 +445,25 @@ def main():
     print()
     print("BOUNTY BOARD")
     print("-" * 60)
-    print(f"Final tasks: {bounty[0]}")
-    print(f"Total BP: {bounty[1]}")
+    
+    completed_tasks = bounty[0]
+    final_task_bp = bounty[1]
+
+    if completed_tasks >= 6:
+        milestone_bp = 550
+    elif completed_tasks == 5:
+        milestone_bp = 200
+    elif completed_tasks == 4:
+        milestone_bp = 50
+    else:
+        milestone_bp = 0
+
+    daily_total_bp = final_task_bp + milestone_bp
+
+    print(f"Final tasks: {completed_tasks}")
+    print(f"Final-task BP: {final_task_bp}")
+    print(f"Milestone BP: {milestone_bp}")
+    print(f"Daily total BP: {daily_total_bp}")
     print(f"Bonus bAXS: {bounty[2]}")
     print(f"Rerolls: {rerolls[0]}")
     print(f"Reroll slips spent: {rerolls[1]}")
