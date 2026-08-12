@@ -283,11 +283,36 @@ def get_open_marketplace_positions(conn, daily_session_id):
             buy.id AS marketplace_event_id,
             buy.asset_id,
             buy.asset_name,
+            buy.quantity AS buy_quantity,
             buy.event_datetime AS buy_time,
             CAST(buy.amount AS REAL) AS buy_price,
             buy.currency,
             list.event_datetime AS list_time,
-            CAST(list.amount AS REAL) AS list_price
+            CAST(list.amount AS REAL) AS list_price,
+            list.currency AS list_currency,
+            list.quantity AS list_quantity,
+            COALESCE(
+                (
+                    SELECT SUM(s.quantity)
+                    FROM marketplace_events s
+                    WHERE s.event_type = 'sale'
+                      AND s.daily_session_id = buy.daily_session_id
+                      AND (
+                          (
+                              buy.asset_id IS NOT NULL
+                              AND buy.asset_id = s.asset_id
+                          )
+                          OR
+                          (
+                              buy.asset_id IS NULL
+                              AND s.asset_id IS NULL
+                              AND LOWER(buy.asset_type) = LOWER(s.asset_type)
+                              AND buy.asset_name = s.asset_name
+                          )
+                      )
+                ),
+                0
+            ) AS sold_quantity
         FROM marketplace_events buy
 
         LEFT JOIN marketplace_events list
@@ -326,9 +351,22 @@ def get_open_marketplace_positions(conn, daily_session_id):
                 )
              )
 
+        LEFT JOIN marketplace_events released
+            ON released.event_type = 'release'
+            AND released.daily_session_id = buy.daily_session_id
+            AND buy.asset_id IS NOT NULL
+            AND buy.asset_id = released.asset_id
+             
+
+
         WHERE buy.daily_session_id = ?
           AND buy.event_type = 'buy'
           AND sale.id IS NULL
+          AND released.id IS NULL
+          AND (
+            buy.asset_id IS NOT NULL
+            OR list.id IS NOT NULL
+        )
 
         ORDER BY buy.event_datetime, buy.id
         """,
@@ -762,11 +800,24 @@ def main():
             marketplace_event_id = position[0]
             asset_id = position[1]
             asset_name = position[2] or "Axie"
-            buy_time = position[3]
-            buy_price = position[4]
-            currency = position[5]
-            list_time = position[6]
-            list_price = position[7]
+            buy_quantity = position[3]
+            buy_time = position[4]
+            buy_price = position[5]
+            buy_currency = position[6]
+            list_time = position[7]
+            list_price = position[8]
+            list_currency = position[9]
+            list_quantity = position[10]
+            sold_quantity = position[11]
+            buy_quantity = buy_quantity or 0
+            list_quantity = list_quantity or 0
+            sold_quantity = sold_quantity or 0
+
+            remaining_quantity = max(
+                list_quantity - sold_quantity,
+                0,
+            )
+
 
             if asset_id is not None:
                 print(f"{asset_name} #{asset_id}")
@@ -774,30 +825,53 @@ def main():
                 print(f"{asset_name}")
 
             print(
-                f"  Buy: {buy_price:.8f} {currency} "
+                f"  Buy: {buy_price:.8f} {buy_currency} "
                 f"at {buy_time}"
                 )
 
             if list_price is not None:
                 print(
-                    f"  Listed: {list_price:.8f} {currency} "
+                    f"  Listed: {list_price:.8f} {list_currency} "
                     f"at {list_time}"
                     )
 
+            if list_quantity:
+                print(
+                    f"  Original quantity: {list_quantity}"
+                )
+                print(
+                    f"  Sold: {sold_quantity}"
+                )
+                print(
+                    f"  Remaining listed: "
+                    f"{remaining_quantity}"
+                )
+
+
+            if buy_currency == list_currency:
                 target_spread = list_price - buy_price
                 target_roi = (
                     target_spread / buy_price
-                    ) * 100
+                ) * 100
 
                 print(
                     f"  Target gross spread: "
-                    f"{target_spread:+.8f} {currency}"
-                    )
+                    f"{target_spread:+.8f} "
+                    f"{buy_currency}"
+                )
 
                 print(
                     f"  Target gross ROI: "
                     f"{target_roi:.2f}%"
-                    )
+                )
+            else:
+                print(
+                    "  Target gross spread: "
+                    "N/A (currency conversion required)"
+                )
+                print(
+                    "  Target gross ROI: N/A"
+                )
 
                 linked_tasks = get_bounty_tasks_for_marketplace_event(
                     conn,
