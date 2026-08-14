@@ -61,6 +61,12 @@ def get_open_axie_capital(conn):
         WHERE buy.event_type = 'buy'
           AND buy.asset_type = 'Axie'
           AND sale.id IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM marketplace_events released
+            WHERE released.event_type = 'release'
+            AND released.asset_id = buy.asset_id
+        )
         """
     ).fetchone()
 
@@ -90,6 +96,12 @@ def get_open_axie_target_value(conn):
         WHERE buy.event_type = 'buy'
           AND buy.asset_type = 'Axie'
           AND sale.id IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM marketplace_events released
+            WHERE released.event_type = 'release'
+            AND released.asset_id = buy.asset_id
+          )
         """
     ).fetchone()
 
@@ -122,6 +134,12 @@ def get_open_axie_positions(conn):
         WHERE buy.event_type = 'buy'
           AND buy.asset_type = 'Axie'
           AND sale.id IS NULL
+          AND NOT EXISTS (
+                SELECT 1
+                FROM marketplace_events released
+                WHERE released.event_type = 'release'
+                  AND released.asset_id = buy.asset_id
+          )
 
         ORDER BY buy.id
         """
@@ -285,7 +303,7 @@ def main():
 
     for asset_id, asset_name, buy_price, list_price in open_axies:
         if list_price is None:
-            print(f"{asset_name} #{asset_id}")
+            print(f"Axie #{asset_id}")
             print(f"  Buy price: {buy_price:.8f} ETH")
             print("  No active listing found")
             print()
@@ -316,7 +334,7 @@ def main():
             else 0
         )
 
-        print(f"{asset_name} #{asset_id}")
+        print(f"Axie #{asset_id}")
         print(f"  Buy price: {buy_price:.8f} ETH")
         print(f"  List price: {list_price:.8f} ETH")
         print(f"  Gross profit: {gross_profit:+.8f} ETH")
@@ -403,22 +421,22 @@ def main():
 
 
         
-    print(f"{asset_name} #{asset_id}")
-    print(f"  Buy price: {buy_price:.8f} ETH")
-    print(f"  Sale price: {sale_price:.8f} ETH")
-    print(f"  Gross profit: {gross_profit:+.8f} ETH")
-    print(f"  Gross ROI: {gross_roi:.2f}%")
-    print(f"  Selling fee: {selling_fee:.8f} ETH")
-    print(f"  Net proceeds: {net_proceeds:.8f} ETH")
-    print(f"  Net profit: {net_profit:+.8f} ETH")
-    print(f"  Net ROI: {net_roi:.2f}%")
-    print(f"  Bought: {buy_time}")
-    print(f"  Sold: {sale_time}")
-    print(f"  Holding time: {holding_time}")
-    print(
-        f"  Net profit per hour: "
-        f"{profit_per_hour:.10f} ETH"
-    )
+        print(f"Axie #{asset_id}")
+        print(f"  Buy price: {buy_price:.8f} ETH")
+        print(f"  Sale price: {sale_price:.8f} ETH")
+        print(f"  Gross profit: {gross_profit:+.8f} ETH")
+        print(f"  Gross ROI: {gross_roi:.2f}%")
+        print(f"  Selling fee: {selling_fee:.8f} ETH")
+        print(f"  Net proceeds: {net_proceeds:.8f} ETH")
+        print(f"  Net profit: {net_profit:+.8f} ETH")
+        print(f"  Net ROI: {net_roi:.2f}%")
+        print(f"  Bought: {buy_time}")
+        print(f"  Sold: {sale_time}")
+        print(f"  Holding time: {holding_time}")
+        print(
+            f"  Net profit per hour: "
+            f"{profit_per_hour:.10f} ETH"
+        )
     print()
 
 
