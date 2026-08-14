@@ -1,6 +1,8 @@
 from database import connect_database
 import argparse
 
+MARKETPLACE_FEE_RATE = 0.0425
+
 
 def get_daily_session(conn, session_date, player_id="primary"):
     return conn.execute(
@@ -848,22 +850,52 @@ def main():
                 )
 
 
-            if buy_currency == list_currency:
+            if (
+                buy_currency == list_currency
+                or {buy_currency, list_currency} == {"ETH", "WETH"}
+            ):
                 target_spread = list_price - buy_price
                 target_roi = (
                     target_spread / buy_price
                 ) * 100
 
+                net_proceeds = list_price * (1 - MARKETPLACE_FEE_RATE)
+                net_profit = net_proceeds - buy_price
+                net_roi = (net_profit / buy_price) * 100
+                break_even_price = buy_price / (1 - MARKETPLACE_FEE_RATE)
+
                 print(
                     f"  Target gross spread: "
                     f"{target_spread:+.8f} "
-                    f"{buy_currency}"
+                    f"{'ETH/WETH' if {buy_currency, list_currency} == {'ETH', 'WETH'} else buy_currency}"
                 )
 
                 print(
                     f"  Target gross ROI: "
                     f"{target_roi:.2f}%"
                 )
+
+                print(
+                    f"  Target net proceeds: "
+                    f"{net_proceeds:.8f} ETH/WETH"
+                )
+
+                print(
+                    f"  Target net profit: "
+                    f"{net_profit:+.8f} ETH/WETH"
+                )
+
+                print(
+                    f"  Target net ROI: "
+                    f"{net_roi:.2f}%"
+                )
+
+                print(
+                    f"  Break-even listing: "
+                    f"{break_even_price:.8f} ETH/WETH"
+                )
+
+
             else:
                 print(
                     "  Target gross spread: "
