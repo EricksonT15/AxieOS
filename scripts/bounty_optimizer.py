@@ -129,6 +129,7 @@ BOUNTY_TASK_CATALOG = {
         "action": "feed",
         "target": "axie",
         "quantity": 10,
+        "resource": "regular_choco",
         "target_filters": {},
     },
 
@@ -139,6 +140,7 @@ BOUNTY_TASK_CATALOG = {
         "action": "feed",
         "target": "axie",
         "quantity": 10,
+        "resource": "regular_choco",
         "target_filters": {
             "class": "$random_class",
         },
@@ -655,6 +657,179 @@ def recommend_task_action(
     }
 
 
+def find_shared_action_pairs(task_map, asset):
+    overlaps = []
+
+    task_items = list(task_map.items())
+
+    for i in range(len(task_items)):
+        task_id_a, task_a = task_items[i]
+
+        for j in range(i + 1, len(task_items)):
+            task_id_b, task_b = task_items[j]
+
+            shared_score = score_shared_action(
+                task_a,
+                task_b,
+                asset,
+            )
+
+            if shared_score is not None:
+                overlaps.append(
+                    {
+                        "task_a": task_id_a,
+                        "task_b": task_id_b,
+                        **shared_score,
+                    }
+                )
+
+    return overlaps
+
+
+
+def summarize_task_board(task_map):
+    total_bp = 0
+
+    for task in task_map.values():
+        total_bp += task["reward_bp"]
+
+    return {
+        "task_count": len(task_map),
+        "total_bp": total_bp,
+    }
+
+
+def calculate_overlap_savings(
+    task_map,
+    overlap,
+):
+    task_a = task_map[overlap["task_a"]]
+    task_b = task_map[overlap["task_b"]]
+
+    separate_quantity = (
+        task_a["quantity"]
+        + task_b["quantity"]
+    )
+
+    shared_quantity = overlap["quantity"]
+
+    return {
+        "separate_quantity": separate_quantity,
+        "shared_quantity": shared_quantity,
+        "quantity_saved": (
+            separate_quantity - shared_quantity
+        ),
+    }
+
+
+def calculate_overlap_efficiency(
+    overlap,
+    savings,
+):
+    combined_bp = overlap["combined_bp"]
+
+    separate_efficiency = (
+        combined_bp
+        / savings["separate_quantity"]
+    )
+
+    shared_efficiency = (
+        combined_bp
+        / savings["shared_quantity"]
+    )
+
+    return {
+        "separate_bp_per_unit": separate_efficiency,
+        "shared_bp_per_unit": shared_efficiency,
+    }
+
+
+def analyze_task_board(
+    task_map,
+    asset,
+):
+    summary = summarize_task_board(task_map)
+
+    overlaps = find_shared_action_pairs(
+        task_map,
+        asset,
+    )
+
+    overlap_details = []
+
+    for overlap in overlaps:
+        savings = calculate_overlap_savings(
+            task_map,
+            overlap,
+        )
+
+        efficiency = calculate_overlap_efficiency(
+            overlap,
+            savings,
+        )
+
+        overlap_details.append(
+            {
+                **overlap,
+                **savings,
+                **efficiency,
+            }
+        )
+
+    recommendations = []
+    covered_tasks = set()
+
+    for overlap in overlap_details:
+        recommendations.append(
+            build_overlap_recommendation(overlap)
+        )
+
+        covered_tasks.add(overlap["task_a"])
+        covered_tasks.add(overlap["task_b"])
+
+    for task_id, task in task_map.items():
+        if task_id not in covered_tasks:
+            recommendations.append(
+                build_keep_recommendation(
+                    task_id,
+                    task,
+                )
+            )
+
+    return {
+        "task_count": summary["task_count"],
+        "total_bp": summary["total_bp"],
+        "overlap_count": len(overlaps),
+        "overlaps": overlap_details,
+        "recommendations": recommendations,
+    }
+
+
+def build_overlap_recommendation(
+    overlap,
+):
+    return {
+        "decision": "COMBO",
+        "tasks": [
+            overlap["task_a"],
+            overlap["task_b"],
+        ],
+        "combined_bp": overlap["combined_bp"],
+        "resource": overlap["resource"],
+        "quantity_needed": overlap["shared_quantity"],
+        "quantity_saved": overlap["quantity_saved"],
+    }
+
+
+def build_keep_recommendation(
+    task_id,
+    task,
+):
+    return {
+        "decision": "KEEP",
+        "task": task_id,
+        "reward_bp": task["reward_bp"],
+    }
 
 
 
@@ -1179,3 +1354,202 @@ if __name__ == "__main__":
         "Resolved filters:",
         mech_feed["target_filters"],
     )
+
+    generic_feed = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_10_choco_any_axie"
+    ]
+
+    mech_axie = {
+        "class": "mech",
+    }
+
+    mech_overlap = score_shared_action(
+        generic_feed,
+        mech_feed,
+        mech_axie,
+    )
+
+    print(
+        "Can share one 10-Choco feed:",
+        mech_overlap is not None,
+    )
+
+    if mech_overlap is not None:
+        print(
+            "Combined BP:",
+            mech_overlap["combined_bp"],
+        )
+
+    print(
+        "Resource:",
+        mech_overlap["resource"],
+    )
+
+    print(
+        "Quantity consumed:",
+        mech_overlap["quantity"],
+    )        
+
+    plant_axie = {
+        "class": "plant",
+    }
+
+    false_overlap = score_shared_action(
+        generic_feed,
+        mech_feed,
+        plant_axie,
+    )
+
+    print(
+        "Plant can falsely satisfy Mech task:",
+        false_overlap is not None,
+    )
+
+    aug15_feed_tasks = {
+    "generic_feed": generic_feed,
+    "mech_feed": mech_feed,
+}
+
+    aug15_overlaps = find_shared_action_pairs(
+        aug15_feed_tasks,
+        mech_axie,
+    )
+
+    print(
+        "Detected Aug 15 overlaps:",
+        len(aug15_overlaps),
+    )
+
+    for overlap in aug15_overlaps:
+        print(overlap)
+
+    aug15_board_summary = summarize_task_board(
+        aug15_feed_tasks
+    )
+
+    print(
+        "Aug 15 test board task count:",
+        aug15_board_summary["task_count"],
+    )
+
+    print(
+        "Aug 15 test board total BP:",
+        aug15_board_summary["total_bp"],
+    )   
+
+    if aug15_overlaps:
+        savings = calculate_overlap_savings(
+            aug15_feed_tasks,
+            aug15_overlaps[0],
+        )
+
+        print(
+            "Choco needed separately:",
+            savings["separate_quantity"],
+        )
+
+        print(
+            "Choco needed with overlap:",
+            savings["shared_quantity"],
+        )
+
+        print(
+            "Choco saved:",
+            savings["quantity_saved"],
+        )
+
+        efficiency = calculate_overlap_efficiency(
+            aug15_overlaps[0],
+            savings,
+        )
+
+        print(
+            "BP per Choco without overlap:",
+            efficiency["separate_bp_per_unit"],
+        )
+
+        print(
+            "BP per Choco with overlap:",
+            efficiency["shared_bp_per_unit"],
+        )
+
+    aug15_analysis = analyze_task_board(
+        aug15_feed_tasks,
+        mech_axie,
+    )
+
+    print("\nAUG 15 BOARD ANALYSIS")
+
+    print(
+        "Task count:",
+        aug15_analysis["task_count"],
+    )
+
+    print(
+        "Total BP:",
+        aug15_analysis["total_bp"],
+    )
+
+    print(
+        "Overlap count:",
+        aug15_analysis["overlap_count"],
+    )
+
+    print(
+        "Overlap details:",
+        aug15_analysis["overlaps"],
+    )
+
+    print(
+        "Recommendations:",
+        aug15_analysis["recommendations"],
+    )
+
+    keep_test_tasks = {
+        "buy_any_axie": BOUNTY_TASK_CATALOG[
+            "app_axie_buy_any_axie"
+        ],
+    }
+
+    keep_test_analysis = analyze_task_board(
+        keep_test_tasks,
+        {},
+    )
+
+    print("\nKEEP TEST")
+
+    print(
+        "Recommendations:",
+        keep_test_analysis["recommendations"],
+    )
+
+
+    mixed_test_tasks = {
+    "generic_feed": generic_feed,
+    "mech_feed": mech_feed,
+    "buy_any_axie": BOUNTY_TASK_CATALOG[
+        "app_axie_buy_any_axie"
+    ],
+}
+
+mixed_test_analysis = analyze_task_board(
+    mixed_test_tasks,
+    mech_axie,
+)
+
+print("\nMIXED BOARD TEST")
+
+print(
+    "Task count:",
+    mixed_test_analysis["task_count"],
+)
+
+print(
+    "Total BP:",
+    mixed_test_analysis["total_bp"],
+)
+
+print(
+    "Recommendations:",
+    mixed_test_analysis["recommendations"],
+)
