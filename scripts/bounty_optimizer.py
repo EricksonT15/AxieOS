@@ -94,10 +94,204 @@ ACTION_COST_CLASSES = {
 }
 
 
-
 AVOIDED_GAMES = {
     "axie den of mysteries",
 }
+
+
+BOUNTY_TASK_CATALOG = {
+    "app_axie_buy_any_axie": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 200,
+        "action": "buy",
+        "target": "axie",
+        "quantity": 1,
+        "target_filters": {},
+    },
+
+    "app_axie_buy_random_class_axie": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 220,
+        "action": "buy",
+        "target": "axie",
+        "quantity": 1,
+        "target_filters": {
+            "class": "$random_class",
+        },
+    },
+
+    "app_axie_feed_10_choco_any_axie": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 150,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 10,
+        "target_filters": {},
+    },
+
+    "app_axie_feed_10_choco_random_class": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 160,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 10,
+        "target_filters": {
+            "class": "$random_class",
+        },
+    },
+
+    "app_axie_feed_premium_collectible": {
+        "game": "app.axie",
+        "difficulty": "advanced",
+        "reward_bp": 600,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 1,
+        "resource": "premium_choco",
+        "target_filters": {
+            "collectible": True,
+        },
+    },
+
+    "app_axie_feed_premium_evolved": {
+        "game": "app.axie",
+        "difficulty": "advanced",
+        "reward_bp": 650,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 1,
+        "resource": "premium_choco",
+        "target_filters": {
+            "evolved": True,
+        },
+    },
+
+}
+
+
+def can_task_cover_task(candidate_task, other_task):
+    if candidate_task["action"] != other_task["action"]:
+        return False
+
+    if candidate_task["target"] != other_task["target"]:
+        return False
+
+    if candidate_task["quantity"] < other_task["quantity"]:
+        return False
+
+    candidate_filters = candidate_task.get(
+        "target_filters",
+        {},
+    )
+    other_filters = other_task.get(
+        "target_filters",
+        {},
+    )
+
+    for key, value in other_filters.items():
+        if candidate_filters.get(key) != value:
+            return False
+
+    return True
+
+
+def asset_satisfies_task(asset_attributes, task):
+    required_filters = task.get(
+        "target_filters",
+        {},
+    )
+
+    for key, required_value in required_filters.items():
+        if asset_attributes.get(key) != required_value:
+            return False
+
+    return True
+
+
+def can_share_same_action(
+    task_a,
+    task_b,
+    asset_attributes,
+):
+    if task_a["action"] != task_b["action"]:
+        return False
+
+    if task_a["target"] != task_b["target"]:
+        return False
+
+    if task_a.get("resource") != task_b.get("resource"):
+        return False
+
+    if task_a["quantity"] != task_b["quantity"]:
+        return False
+
+    if not asset_satisfies_task(
+        asset_attributes,
+        task_a,
+    ):
+        return False
+
+    if not asset_satisfies_task(
+        asset_attributes,
+        task_b,
+    ):
+        return False
+
+    return True
+
+
+def score_shared_action(
+    task_a,
+    task_b,
+    asset_attributes,
+):
+    if not can_share_same_action(
+        task_a,
+        task_b,
+        asset_attributes,
+    ):
+        return None
+
+    return {
+        "combined_bp": (
+            task_a["reward_bp"]
+            + task_b["reward_bp"]
+        ),
+        "resource": task_a.get("resource"),
+        "quantity": task_a["quantity"],
+    }
+
+
+def instantiate_task(task, **parameters):
+    task_instance = {
+        **task,
+        "target_filters": dict(
+            task.get("target_filters", {})
+        ),
+    }
+
+    for key, value in task_instance[
+        "target_filters"
+    ].items():
+        if (
+            isinstance(value, str)
+            and value.startswith("$")
+        ):
+            parameter_name = value[1:]
+
+            if parameter_name in parameters:
+                task_instance[
+                    "target_filters"
+                ][key] = parameters[
+                    parameter_name
+                ]
+
+    return task_instance
+
 
 
 def is_avoided_game(game_name):
@@ -806,3 +1000,182 @@ if __name__ == "__main__":
             f"{action}: "
             f"{get_action_cost_class(action)}"
         )    
+
+
+
+
+    print("\nBOUNTY CATALOG TEST")
+
+    for key, task in BOUNTY_TASK_CATALOG.items():
+        print(
+            key,
+            "->",
+            task["action"],
+            task["target"],
+            task["reward_bp"],
+            task["target_filters"],
+        )
+    print("\nTASK OVERLAP TEST")
+
+    generic_buy = BOUNTY_TASK_CATALOG[
+        "app_axie_buy_any_axie"
+    ]
+
+    specific_buy = BOUNTY_TASK_CATALOG[
+        "app_axie_buy_random_class_axie"
+    ]
+
+    print(
+        "Specific covers generic:",
+        can_task_cover_task(
+            specific_buy,
+            generic_buy,
+        ),
+    )
+
+    print(
+        "Generic covers specific:",
+        can_task_cover_task(
+            generic_buy,
+            specific_buy,
+        ),
+    )
+
+
+    print("\nCHOCO OVERLAP TEST")
+
+    generic_feed = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_10_choco_any_axie"
+    ]
+
+    specific_feed = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_10_choco_random_class"
+    ]
+
+    print(
+        "Specific feed covers generic:",
+        can_task_cover_task(
+            specific_feed,
+            generic_feed,
+        ),
+    )
+
+    print(
+        "Generic feed covers specific:",
+        can_task_cover_task(
+            generic_feed,
+            specific_feed,
+        ),
+    )
+
+
+    print("\nPREMIUM CHOCO CATALOG TEST")
+
+    for key in [
+        "app_axie_feed_premium_collectible",
+        "app_axie_feed_premium_evolved",
+    ]:
+        task = BOUNTY_TASK_CATALOG[key]
+
+        print(
+            key,
+            "->",
+            task["resource"],
+            task["quantity"],
+            task["target_filters"],
+        )
+
+    print("\nASSET REQUIREMENT TEST")
+
+    test_axie = {
+        "collectible": True,
+        "evolved": True,
+    }
+
+    collectible_task = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_collectible"
+    ]
+
+    evolved_task = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_evolved"
+    ]
+
+    print(
+        "Qualifies for collectible task:",
+        asset_satisfies_task(
+            test_axie,
+            collectible_task,
+        ),
+    )
+
+    print(
+        "Qualifies for evolved task:",
+        asset_satisfies_task(
+            test_axie,
+            evolved_task,
+        ),
+    )
+
+
+    print("\nSAME ACTION OVERLAP TEST")
+
+    test_axie = {
+        "collectible": True,
+        "evolved": True,
+    }
+
+    collectible_task = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_collectible"
+    ]
+
+    evolved_task = BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_evolved"
+    ]
+
+    print(
+        "Can share one Premium Choco feed:",
+        can_share_same_action(
+            collectible_task,
+            evolved_task,
+            test_axie,
+        ),
+    )
+
+
+    print("\nSHARED ACTION VALUE TEST")
+
+    shared_value = score_shared_action(
+        collectible_task,
+        evolved_task,
+        test_axie,
+    )
+
+    print(
+        "Combined BP:",
+        shared_value["combined_bp"],
+    )
+
+    print(
+        "Resource:",
+        shared_value["resource"],
+    )
+
+    print(
+        "Quantity consumed:",
+        shared_value["quantity"],
+    )
+
+
+    print("\nTASK INSTANTIATION TEST")
+
+    mech_feed = instantiate_task(
+        BOUNTY_TASK_CATALOG[
+            "app_axie_feed_10_choco_random_class"
+        ],
+        random_class="mech",
+    )
+
+    print(
+        "Resolved filters:",
+        mech_feed["target_filters"],
+    )
