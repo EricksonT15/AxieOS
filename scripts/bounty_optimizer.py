@@ -99,6 +99,32 @@ AVOIDED_GAMES = {
 }
 
 
+STRATEGY_MODES = {
+    "conserve",
+    "rank_push",
+    "master_chase",
+}
+
+
+RANK_BONUS_TIERS = [
+    (1, 1, 160),
+    (2, 2, 120),
+    (3, 3, 100),
+    (4, 5, 60),
+    (6, 10, 50),
+    (11, 20, 30),
+    (21, 50, 20),
+    (51, 100, 15),
+    (101, 200, 12),
+    (201, 500, 8),
+    (501, 1000, 6),
+    (1001, 3000, 3),
+]
+
+
+
+
+
 BOUNTY_TASK_CATALOG = {
     "app_axie_buy_any_axie": {
         "game": "app.axie",
@@ -171,6 +197,47 @@ BOUNTY_TASK_CATALOG = {
             "evolved": True,
         },
     },
+
+
+    "origins_win_vs_3_beast_bird_mech": {
+        "game": "axie origins",
+        "difficulty": "advanced",
+        "reward_bp": 400,
+        "action": "win",
+        "target": "battle",
+        "quantity": 1,
+        "target_filters": {
+            "opponent_axie_count": 3,
+            "opponent_classes": [
+                "beast",
+                "bird",
+                "mech",
+            ],
+        },
+    },
+
+    "axie_quest_harvest_5": {
+        "game": "axie quest",
+        "difficulty": "basic",
+        "reward_bp": 20,
+        "action": "harvest",
+        "target": "wild_exploration",
+        "quantity": 5,
+        "target_filters": {},
+    },
+
+    "den_defeat_20_enemies": {
+        "game": "axie den of mysteries",
+        "difficulty": "advanced",
+        "reward_bp": 400,
+        "action": "defeat",
+        "target": "enemy",
+        "quantity": 20,
+        "target_filters": {},
+    },
+
+
+
 
 }
 
@@ -789,12 +856,25 @@ def analyze_task_board(
 
     for task_id, task in task_map.items():
         if task_id not in covered_tasks:
-            recommendations.append(
-                build_keep_recommendation(
-                    task_id,
-                    task,
-                )
+            should_reroll, reason = should_reroll_task(
+                task
             )
+
+            if should_reroll:
+                recommendations.append(
+                    build_reroll_recommendation(
+                        task_id,
+                        task,
+                        reason,
+                    )
+                )
+            else:
+                recommendations.append(
+                    build_keep_recommendation(
+                        task_id,
+                        task,
+                    )
+                )
 
     return {
         "task_count": summary["task_count"],
@@ -830,6 +910,1192 @@ def build_keep_recommendation(
         "task": task_id,
         "reward_bp": task["reward_bp"],
     }
+
+
+def summarize_execution_plan(
+    analysis,
+):
+    recommendation_count = len(
+        analysis["recommendations"]
+    )
+
+    task_count = analysis["task_count"]
+
+    return {
+        "task_count": task_count,
+        "action_count": recommendation_count,
+        "actions_saved": (
+            task_count - recommendation_count
+        ),
+    }
+
+
+def build_reroll_recommendation(
+    task_id,
+    task,
+    reason,
+):
+    return {
+        "decision": "REROLL",
+        "task": task_id,
+        "reward_bp": task["reward_bp"],
+        "reason": reason,
+    }
+
+
+def should_reroll_task(task):
+    if task["game"] in AVOIDED_GAMES:
+        return True, "game is on avoid list"
+
+    if task["reward_bp"] < 100:
+        return True, "reward below 100 BP"
+
+    return False, None
+
+
+def summarize_decisions(analysis):
+    counts = {
+        "COMBO": 0,
+        "KEEP": 0,
+        "REROLL": 0,
+    }
+
+    for recommendation in analysis["recommendations"]:
+        decision = recommendation["decision"]
+
+        if decision in counts:
+            counts[decision] += 1
+
+    return counts
+
+
+def summarize_task_coverage(analysis):
+    counts = {
+        "COMBO": 0,
+        "KEEP": 0,
+        "REROLL": 0,
+    }
+
+    for recommendation in analysis["recommendations"]:
+        decision = recommendation["decision"]
+
+        if decision == "COMBO":
+            counts["COMBO"] += len(
+                recommendation["tasks"]
+            )
+
+        elif decision in {"KEEP", "REROLL"}:
+            counts[decision] += 1
+
+    return counts
+
+
+def summarize_bp_by_decision(analysis):
+    bp = {
+        "COMBO": 0,
+        "KEEP": 0,
+        "REROLL": 0,
+    }
+
+    for recommendation in analysis["recommendations"]:
+        decision = recommendation["decision"]
+
+        if decision == "COMBO":
+            bp["COMBO"] += recommendation["combined_bp"]
+
+        elif decision in {"KEEP", "REROLL"}:
+            bp[decision] += recommendation["reward_bp"]
+
+    return bp
+
+
+def get_reroll_info(reroll_number):
+    if reroll_number not in REROLL_TIERS:
+        return None
+
+    tier = REROLL_TIERS[reroll_number]
+
+    return {
+        "reroll_number": reroll_number,
+        "slip_cost": tier["cost"],
+        "master_chance": tier["master"],
+    }
+
+
+def calculate_reroll_path(
+    max_reroll,
+):
+    total_slip_cost = 0
+    no_master_probability = 1.0
+
+    for reroll_number in range(
+        1,
+        max_reroll + 1,
+    ):
+        tier = REROLL_TIERS[
+            reroll_number
+        ]
+
+        total_slip_cost += tier["cost"]
+
+        no_master_probability *= (
+            1 - tier["master"]
+        )
+
+    cumulative_master_chance = (
+        1 - no_master_probability
+    )
+
+    return {
+        "max_reroll": max_reroll,
+        "total_slip_cost": total_slip_cost,
+        "cumulative_master_chance": (
+            cumulative_master_chance
+        ),
+    }
+
+
+def evaluate_reroll_affordability(
+    reroll_number,
+    slip_balance,
+):
+    reroll_info = get_reroll_info(
+        reroll_number
+    )
+
+    if reroll_info is None:
+        return None
+
+    slip_cost = reroll_info["slip_cost"]
+
+    return {
+        "reroll_number": reroll_number,
+        "slip_balance": slip_balance,
+        "slip_cost": slip_cost,
+        "can_afford": (
+            slip_balance >= slip_cost
+        ),
+        "remaining_slips": (
+            slip_balance - slip_cost
+            if slip_balance >= slip_cost
+            else slip_balance
+        ),
+    }
+
+
+def evaluate_reroll_path_affordability(
+    max_reroll,
+    slip_balance,
+):
+    path = calculate_reroll_path(
+        max_reroll
+    )
+
+    total_cost = path[
+        "total_slip_cost"
+    ]
+
+    return {
+        "max_reroll": max_reroll,
+        "slip_balance": slip_balance,
+        "total_slip_cost": total_cost,
+        "can_afford_path": (
+            slip_balance >= total_cost
+        ),
+        "remaining_slips": (
+            slip_balance - total_cost
+            if slip_balance >= total_cost
+            else slip_balance
+        ),
+    }
+
+
+def get_max_affordable_reroll(
+    slip_balance,
+):
+    total_cost = 0
+    max_affordable = 0
+
+    for reroll_number in range(1, 11):
+        next_cost = REROLL_TIERS[
+            reroll_number
+        ]["cost"]
+
+        if total_cost + next_cost > slip_balance:
+            break
+
+        total_cost += next_cost
+        max_affordable = reroll_number
+
+    return {
+        "slip_balance": slip_balance,
+        "max_affordable_reroll": max_affordable,
+        "slips_spent": total_cost,
+        "remaining_slips": (
+            slip_balance - total_cost
+        ),
+    }
+
+
+def evaluate_reroll_capacity(
+    slip_balance,
+):
+    affordability = get_max_affordable_reroll(
+        slip_balance
+    )
+
+    max_reroll = affordability[
+        "max_affordable_reroll"
+    ]
+
+    path = calculate_reroll_path(
+        max_reroll
+    )
+
+    return {
+        **affordability,
+        "cumulative_master_chance": (
+            path["cumulative_master_chance"]
+        ),
+    }
+
+
+def get_max_reroll_with_reserve(
+    slip_balance,
+    minimum_reserve,
+):
+    spendable_slips = max(
+        0,
+        slip_balance - minimum_reserve,
+    )
+
+    affordability = get_max_affordable_reroll(
+        spendable_slips
+    )
+
+    return {
+        "slip_balance": slip_balance,
+        "minimum_reserve": minimum_reserve,
+        "spendable_slips": spendable_slips,
+        "max_affordable_reroll": affordability[
+            "max_affordable_reroll"
+        ],
+        "slips_spent": affordability[
+            "slips_spent"
+        ],
+        "remaining_slips": (
+            slip_balance
+            - affordability["slips_spent"]
+        ),
+    }
+
+
+def evaluate_reroll_capacity_with_reserve(
+    slip_balance,
+    minimum_reserve,
+):
+    reserve_plan = get_max_reroll_with_reserve(
+        slip_balance,
+        minimum_reserve,
+    )
+
+    max_reroll = reserve_plan[
+        "max_affordable_reroll"
+    ]
+
+    if max_reroll == 0:
+        master_chance = 0.0
+    else:
+        path = calculate_reroll_path(
+            max_reroll
+        )
+
+        master_chance = path[
+            "cumulative_master_chance"
+        ]
+
+    return {
+        **reserve_plan,
+        "cumulative_master_chance": master_chance,
+    }
+
+
+def evaluate_next_reroll(
+    reroll_number,
+    slip_balance,
+    minimum_reserve,
+):
+    reroll_info = get_reroll_info(
+        reroll_number
+    )
+
+    if reroll_info is None:
+        return None
+
+    slip_cost = reroll_info["slip_cost"]
+
+    projected_remaining = (
+        slip_balance - slip_cost
+    )
+
+    can_afford = (
+        slip_balance >= slip_cost
+    )
+
+    reserve_protected = (
+        projected_remaining
+        >= minimum_reserve
+    )
+
+    can_reroll = (
+        can_afford
+        and reserve_protected
+    )
+
+    actual_remaining = (
+        projected_remaining
+        if can_reroll
+        else slip_balance
+    )
+
+    return {
+        "reroll_number": reroll_number,
+        "slip_balance": slip_balance,
+        "slip_cost": slip_cost,
+        "master_chance": reroll_info[
+            "master_chance"
+        ],
+        "minimum_reserve": minimum_reserve,
+        "projected_remaining": (
+            projected_remaining
+        ),
+        "remaining_after_reroll": (
+            actual_remaining
+        ),
+        "reserve_protected": reserve_protected,
+        "can_reroll": can_reroll,
+    }
+
+
+def check_next_reroll_guardrail(
+    reroll_number,
+    slip_balance,
+    minimum_reserve,
+):
+    evaluation = evaluate_next_reroll(
+        reroll_number,
+        slip_balance,
+        minimum_reserve,
+    )
+
+    if evaluation is None:
+        return None
+
+    if evaluation["can_reroll"]:
+        status = "ALLOWED"
+        reason = (
+            "reroll is affordable and "
+            "slip reserve is protected"
+        )
+    else:
+        status = "BLOCKED"
+        reason = (
+            "reroll would violate "
+            "slip reserve"
+        )
+
+    return {
+        **evaluation,
+        "status": status,
+        "reason": reason,
+    }
+
+
+def evaluate_task_reroll(
+    task_id,
+    task,
+    reroll_number,
+    slip_balance,
+    minimum_reserve,
+):
+    should_reroll, task_reason = should_reroll_task(
+        task
+    )
+
+    if not should_reroll:
+        return {
+            "task": task_id,
+            "task_decision": "KEEP",
+            "reroll_status": "NOT_NEEDED",
+            "reason": "task does not meet reroll rules",
+        }
+
+    guardrail = check_next_reroll_guardrail(
+        reroll_number,
+        slip_balance,
+        minimum_reserve,
+    )
+
+    return {
+        "task": task_id,
+        "task_decision": "REROLL",
+        "task_reason": task_reason,
+        "reroll_number": reroll_number,
+        "slip_cost": guardrail["slip_cost"],
+        "master_chance": guardrail[
+            "master_chance"
+        ],
+        "reroll_status": guardrail["status"],
+        "remaining_after_reroll": guardrail[
+            "remaining_after_reroll"
+        ],
+    }
+
+
+def evaluate_board_rerolls(
+    analysis,
+    task_map,
+    reroll_number,
+    slip_balance,
+    minimum_reserve,
+):
+    results = []
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        if recommendation["decision"] != "REROLL":
+            continue
+
+        task_id = recommendation["task"]
+
+        result = evaluate_task_reroll(
+            task_id=task_id,
+            task=task_map[task_id],
+            reroll_number=reroll_number,
+            slip_balance=slip_balance,
+            minimum_reserve=minimum_reserve,
+        )
+
+        results.append(result)
+
+    return results
+
+
+def evaluate_board_rerolls_sequentially(
+    analysis,
+    task_map,
+    reroll_number,
+    slip_balance,
+    minimum_reserve,
+):
+    results = []
+    current_balance = slip_balance
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        if recommendation["decision"] != "REROLL":
+            continue
+
+        task_id = recommendation["task"]
+
+        result = evaluate_task_reroll(
+            task_id=task_id,
+            task=task_map[task_id],
+            reroll_number=reroll_number,
+            slip_balance=current_balance,
+            minimum_reserve=minimum_reserve,
+        )
+
+        results.append(result)
+
+        if result["reroll_status"] == "ALLOWED":
+            current_balance = result[
+                "remaining_after_reroll"
+            ]
+
+    return {
+        "starting_slips": slip_balance,
+        "ending_slips": current_balance,
+        "reroll_results": results,
+    }
+
+
+def evaluate_board_rerolls_by_task(
+    analysis,
+    task_map,
+    reroll_numbers,
+    slip_balance,
+    minimum_reserve,
+):
+    results = []
+    current_balance = slip_balance
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        if recommendation["decision"] != "REROLL":
+            continue
+
+        task_id = recommendation["task"]
+
+        reroll_number = reroll_numbers[
+            task_id
+        ]
+
+        result = evaluate_task_reroll(
+            task_id=task_id,
+            task=task_map[task_id],
+            reroll_number=reroll_number,
+            slip_balance=current_balance,
+            minimum_reserve=minimum_reserve,
+        )
+
+        results.append(result)
+
+        if result["reroll_status"] == "ALLOWED":
+            current_balance = result[
+                "remaining_after_reroll"
+            ]
+
+    return {
+        "starting_slips": slip_balance,
+        "ending_slips": current_balance,
+        "reroll_results": results,
+    }
+
+
+def summarize_board_rerolls(
+    reroll_evaluation,
+):
+    results = reroll_evaluation[
+        "reroll_results"
+    ]
+
+    allowed = 0
+    blocked = 0
+    slips_spent = 0
+
+    allowed_tasks = []
+    blocked_tasks = []
+
+    for result in results:
+        if result["reroll_status"] == "ALLOWED":
+            allowed += 1
+            slips_spent += result["slip_cost"]
+
+            allowed_tasks.append(
+                result["task"]
+            )
+
+        elif result["reroll_status"] == "BLOCKED":
+            blocked += 1
+
+            blocked_tasks.append(
+                result["task"]
+            )
+
+    return {
+        "rerolls_considered": len(results),
+        "rerolls_allowed": allowed,
+        "rerolls_blocked": blocked,
+        "slips_spent": slips_spent,
+        "starting_slips": reroll_evaluation[
+            "starting_slips"
+        ],
+        "ending_slips": reroll_evaluation[
+            "ending_slips"
+        ],
+        "allowed_tasks": allowed_tasks,
+        "blocked_tasks": blocked_tasks,
+    }
+
+
+def validate_strategy_mode(
+    strategy_mode,
+):
+    if strategy_mode not in STRATEGY_MODES:
+        raise ValueError(
+            f"Unknown strategy mode: {strategy_mode}"
+        )
+
+    return strategy_mode
+
+
+def build_strategy_context(
+    strategy_mode,
+    minimum_reserve,
+    current_rank=None,
+    current_weekly_bp=None,
+    days_remaining=None,
+):
+    strategy_mode = validate_strategy_mode(
+        strategy_mode
+    )
+
+    if strategy_mode == "rank_push":
+        if current_rank is None:
+            raise ValueError(
+                "rank_push requires current_rank"
+            )
+
+        if current_weekly_bp is None:
+            raise ValueError(
+                "rank_push requires current_weekly_bp"
+            )
+
+        if days_remaining is None:
+            raise ValueError(
+                "rank_push requires days_remaining"
+            )
+
+    context = {
+        "strategy_mode": strategy_mode,
+        "minimum_reserve": minimum_reserve,
+        "current_rank": current_rank,
+        "current_weekly_bp": current_weekly_bp,
+        "days_remaining": days_remaining,
+    }
+
+    if current_rank is not None:
+        context["rank_bonus_target"] = (
+            get_next_rank_bonus_target(
+                current_rank
+            )
+        )
+    else:
+        context["rank_bonus_target"] = None
+
+    return context
+
+
+def evaluate_task_reroll_with_strategy(
+    task_id,
+    task,
+    reroll_number,
+    slip_balance,
+    strategy_context,
+):
+    minimum_reserve = strategy_context[
+        "minimum_reserve"
+    ]
+
+    result = evaluate_task_reroll(
+        task_id=task_id,
+        task=task,
+        reroll_number=reroll_number,
+        slip_balance=slip_balance,
+        minimum_reserve=minimum_reserve,
+    )
+
+    return {
+        **result,
+        "strategy_mode": strategy_context[
+            "strategy_mode"
+        ],
+    }
+
+
+def get_rank_bonus(
+    rank,
+):
+    for min_rank, max_rank, bonus_baxs in (
+        RANK_BONUS_TIERS
+    ):
+        if min_rank <= rank <= max_rank:
+            return bonus_baxs
+
+    return 0
+
+
+def get_next_rank_bonus_target(
+    rank,
+):
+    if rank < 1:
+        return None
+
+    for index, tier in enumerate(
+        RANK_BONUS_TIERS
+    ):
+        min_rank, max_rank, bonus_baxs = tier
+
+        if min_rank <= rank <= max_rank:
+            if index == 0:
+                return {
+                    "current_rank": rank,
+                    "current_bonus_baxs": bonus_baxs,
+                    "target_rank": None,
+                    "next_bonus_baxs": None,
+                    "bonus_increase_baxs": 0,
+                }
+
+            next_better_tier = RANK_BONUS_TIERS[
+                index - 1
+            ]
+
+            target_rank = next_better_tier[1]
+            next_bonus = next_better_tier[2]
+
+            return {
+                "current_rank": rank,
+                "current_bonus_baxs": bonus_baxs,
+                "target_rank": target_rank,
+                "next_bonus_baxs": next_bonus,
+                "bonus_increase_baxs": (
+                    next_bonus - bonus_baxs
+                ),
+            }
+
+    return {
+        "current_rank": rank,
+        "current_bonus_baxs": 0,
+        "target_rank": 3000,
+        "next_bonus_baxs": 3,
+        "bonus_increase_baxs": 3,
+    }
+
+
+def evaluate_board_rerolls_with_strategy(
+    analysis,
+    task_map,
+    reroll_numbers,
+    slip_balance,
+    strategy_context,
+):
+    results = []
+    current_balance = slip_balance
+
+    minimum_reserve = strategy_context[
+        "minimum_reserve"
+    ]
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        if recommendation["decision"] != "REROLL":
+            continue
+
+        task_id = recommendation["task"]
+
+        reroll_number = reroll_numbers[
+            task_id
+        ]
+
+        result = evaluate_task_reroll_with_strategy(
+            task_id=task_id,
+            task=task_map[task_id],
+            reroll_number=reroll_number,
+            slip_balance=current_balance,
+            strategy_context=strategy_context,
+        )
+
+        results.append(result)
+
+        if result["reroll_status"] == "ALLOWED":
+            current_balance = result[
+                "remaining_after_reroll"
+            ]
+
+    return {
+        "strategy_mode": strategy_context[
+            "strategy_mode"
+        ],
+        "starting_slips": slip_balance,
+        "ending_slips": current_balance,
+        "reroll_results": results,
+    }
+
+
+def check_combo_resource_availability(
+    recommendation,
+    inventory,
+):
+    if recommendation["decision"] != "COMBO":
+        return None
+
+    resource = recommendation["resource"]
+    quantity_needed = recommendation[
+        "quantity_needed"
+    ]
+
+    quantity_available = inventory.get(
+        resource,
+        0,
+    )
+
+    return {
+        "resource": resource,
+        "quantity_needed": quantity_needed,
+        "quantity_available": quantity_available,
+        "can_execute": (
+            quantity_available >= quantity_needed
+        ),
+        "shortfall": max(
+            0,
+            quantity_needed - quantity_available,
+        ),
+    }
+
+
+def evaluate_combo_inventory(
+    analysis,
+    inventory,
+):
+    results = []
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        if recommendation["decision"] != "COMBO":
+            continue
+
+        availability = (
+            check_combo_resource_availability(
+                recommendation,
+                inventory,
+            )
+        )
+
+        results.append(
+            {
+                "tasks": recommendation["tasks"],
+                **availability,
+            }
+        )
+
+    return results
+
+
+def summarize_combo_inventory(
+    combo_inventory_results,
+):
+    executable = 0
+    blocked = 0
+    resource_shortfalls = {}
+
+    for result in combo_inventory_results:
+        if result["can_execute"]:
+            executable += 1
+        else:
+            blocked += 1
+
+            resource = result["resource"]
+
+            resource_shortfalls[resource] = (
+                resource_shortfalls.get(
+                    resource,
+                    0,
+                )
+                + result["shortfall"]
+            )
+
+    return {
+        "combos_considered": len(
+            combo_inventory_results
+        ),
+        "combos_executable": executable,
+        "combos_blocked": blocked,
+        "resource_shortfalls": (
+            resource_shortfalls
+        ),
+    }
+
+
+def add_inventory_to_recommendations(
+    analysis,
+    inventory,
+):
+    updated_recommendations = []
+
+    for recommendation in analysis[
+        "recommendations"
+    ]:
+        updated = dict(recommendation)
+
+        if recommendation["decision"] == "COMBO":
+            availability = (
+                check_combo_resource_availability(
+                    recommendation,
+                    inventory,
+                )
+            )
+
+            updated["inventory_status"] = (
+                "READY"
+                if availability["can_execute"]
+                else "SHORTFALL"
+            )
+
+            updated["quantity_available"] = (
+                availability["quantity_available"]
+            )
+
+            updated["shortfall"] = availability[
+                "shortfall"
+            ]
+
+        updated_recommendations.append(
+            updated
+        )
+
+    return updated_recommendations
+
+
+def build_execution_plan(
+    analysis,
+    task_map,
+    inventory,
+    reroll_numbers,
+    slip_balance,
+    strategy_context,
+):
+    recommendations = (
+        add_inventory_to_recommendations(
+            analysis,
+            inventory,
+        )
+    )
+
+    reroll_plan = (
+        evaluate_board_rerolls_with_strategy(
+            analysis=analysis,
+            task_map=task_map,
+            reroll_numbers=reroll_numbers,
+            slip_balance=slip_balance,
+            strategy_context=strategy_context,
+        )
+    )
+
+    execution_summary = summarize_execution_plan(
+    analysis
+    )
+
+    return {
+        "strategy_mode": strategy_context[
+            "strategy_mode"
+        ],
+        "task_count": analysis["task_count"],
+        "total_bp": analysis["total_bp"],
+        "action_count": execution_summary[
+            "action_count"
+        ],
+        "actions_saved": execution_summary[
+            "actions_saved"
+        ],
+        "recommendations": recommendations,
+        "starting_slips": reroll_plan[
+            "starting_slips"
+        ],
+        "ending_slips": reroll_plan[
+            "ending_slips"
+        ],
+        "reroll_results": reroll_plan[
+            "reroll_results"
+        ],
+    }
+
+
+def format_execution_plan(
+    execution_plan,
+):
+    lines = []
+
+    reroll_results_by_task = {
+        result["task"]: result
+        for result in execution_plan[
+            "reroll_results"
+        ]
+    }
+
+    for recommendation in execution_plan[
+        "recommendations"
+    ]:
+        decision = recommendation["decision"]
+
+        if decision == "COMBO":
+            tasks = " + ".join(
+                recommendation["tasks"]
+            )
+
+            status = recommendation.get(
+                "inventory_status",
+                "UNKNOWN",
+            )
+
+            line = (
+                f"COMBO: {tasks} -> "
+                f"{recommendation['combined_bp']} BP | "
+                f"{recommendation['quantity_needed']} "
+                f"{recommendation['resource']} | "
+                f"{status}"
+            )
+
+            if recommendation.get(
+                "shortfall",
+                0,
+            ) > 0:
+                line += (
+                    f" | shortfall "
+                    f"{recommendation['shortfall']}"
+                )
+
+            lines.append(line)
+
+        elif decision == "KEEP":
+            lines.append(
+                f"KEEP: {recommendation['task']} -> "
+                f"{recommendation['reward_bp']} BP"
+            )
+
+        elif decision == "REROLL":
+            task_id = recommendation["task"]
+
+            reroll_result = (
+                reroll_results_by_task.get(
+                    task_id
+                )
+            )
+
+            if reroll_result is None:
+                lines.append(
+                    f"REROLL: {task_id}"
+                )
+            else:
+                lines.append(
+                    f"REROLL: {task_id} -> "
+                    f"reroll {reroll_result['reroll_number']} | "
+                    f"{reroll_result['slip_cost']} slips | "
+                    f"Master {reroll_result['master_chance'] * 100:.0f}% | "
+                    f"{reroll_result['reroll_status']} | "
+                    f"{reroll_result['task_reason']}"
+                )
+
+    return lines
+
+
+def format_execution_summary(
+    execution_plan,
+):
+    return [
+        (
+            f"Strategy: "
+            f"{execution_plan['strategy_mode']}"
+        ),
+        (
+            f"Bounty tasks: "
+            f"{execution_plan['task_count']}"
+        ),
+        (
+            f"Total BP: "
+            f"{execution_plan['total_bp']}"
+        ),
+        (
+            f"Execution actions: "
+            f"{execution_plan['action_count']}"
+        ),
+        (
+            f"Actions saved: "
+            f"{execution_plan['actions_saved']}"
+        ),
+        (
+            f"Slips: "
+            f"{execution_plan['starting_slips']} "
+            f"-> "
+            f"{execution_plan['ending_slips']}"
+        ),
+    ]
+
+
+def validate_execution_plan(
+    execution_plan,
+):
+    accounted_tasks = []
+
+    for recommendation in execution_plan[
+        "recommendations"
+    ]:
+        decision = recommendation["decision"]
+
+        if decision == "COMBO":
+            accounted_tasks.extend(
+                recommendation["tasks"]
+            )
+
+        elif decision in {"KEEP", "REROLL"}:
+            accounted_tasks.append(
+                recommendation["task"]
+            )
+
+    unique_tasks = set(accounted_tasks)
+
+    return {
+        "expected_task_count": execution_plan[
+            "task_count"
+        ],
+        "accounted_task_count": len(
+            accounted_tasks
+        ),
+        "unique_task_count": len(
+            unique_tasks
+        ),
+        "all_tasks_accounted_for": (
+            len(accounted_tasks)
+            == execution_plan["task_count"]
+        ),
+        "no_duplicate_tasks": (
+            len(accounted_tasks)
+            == len(unique_tasks)
+        ),
+    }
+
+
+def evaluate_v1_readiness(
+    execution_plan,
+):
+    validation = validate_execution_plan(
+        execution_plan
+    )
+
+    ready = (
+        validation["all_tasks_accounted_for"]
+        and validation["no_duplicate_tasks"]
+    )
+
+    return {
+        **validation,
+        "v1_status": (
+            "READY"
+            if ready
+            else "NOT_READY"
+        ),
+    }
+
+
+def run_v1_demo():
+    print("\nAXIEOS BOUNTY OPTIMIZER V1")
+
+    for line in format_execution_summary(
+        aug15_execution_plan_test
+    ):
+        print(line)
+
+    print("\nActions:")
+
+    for line in format_execution_plan(
+        aug15_execution_plan_test
+    ):
+        print(line)
+
+    readiness = evaluate_v1_readiness(
+        aug15_execution_plan_test
+    )
+
+    print(
+        "\nV1 Status:",
+        readiness["v1_status"],
+    )
+
 
 
 
@@ -1553,3 +2819,1102 @@ print(
     "Recommendations:",
     mixed_test_analysis["recommendations"],
 )
+
+aug15_buy_mech = instantiate_task(
+    BOUNTY_TASK_CATALOG[
+        "app_axie_buy_random_class_axie"
+    ],
+    random_class="mech",
+)
+
+aug15_combo_axie = {
+    "class": "mech",
+    "collectible": True,
+    "evolved": True,
+}
+
+aug15_full_board = {
+    "feed_10_choco_mech": mech_feed,
+    "buy_mech_axie": aug15_buy_mech,
+    "feed_10_choco_any": generic_feed,
+    "feed_premium_collectible": BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_collectible"
+    ],
+    "feed_premium_evolved": BOUNTY_TASK_CATALOG[
+        "app_axie_feed_premium_evolved"
+    ],
+    "origins_battle": BOUNTY_TASK_CATALOG[
+        "origins_win_vs_3_beast_bird_mech"
+    ],
+}
+
+aug15_full_analysis = analyze_task_board(
+    aug15_full_board,
+    aug15_combo_axie,
+)
+
+print("\nAUG 15 FULL 6-TASK BOARD")
+
+print(
+    "Task count:",
+    aug15_full_analysis["task_count"],
+)
+
+print(
+    "Total BP:",
+    aug15_full_analysis["total_bp"],
+)
+
+print(
+    "Overlap count:",
+    aug15_full_analysis["overlap_count"],
+)
+
+print(
+    "Recommendations:",
+    aug15_full_analysis["recommendations"],
+)
+
+aug15_execution_plan = summarize_execution_plan(
+    aug15_full_analysis
+)
+
+print("\nAUG 15 EXECUTION PLAN")
+
+print(
+    "Bounty tasks:",
+    aug15_execution_plan["task_count"],
+)
+
+print(
+    "Execution actions:",
+    aug15_execution_plan["action_count"],
+)
+
+print(
+    "Actions saved by combos:",
+    aug15_execution_plan["actions_saved"],
+)
+
+
+reroll_test_tasks = {
+    "harvest_5": BOUNTY_TASK_CATALOG[
+        "axie_quest_harvest_5"
+    ],
+}
+
+reroll_test_analysis = analyze_task_board(
+    reroll_test_tasks,
+    {},
+)
+
+
+den_test_tasks = {
+    "den_defeat_20_enemies": BOUNTY_TASK_CATALOG[
+        "den_defeat_20_enemies"
+    ],
+}
+
+den_test_analysis = analyze_task_board(
+    den_test_tasks,
+    {},
+)
+
+
+print("\nDEN AVOID TEST")
+
+print(
+    "Recommendations:",
+    den_test_analysis["recommendations"],
+)
+
+
+decision_test_board = {
+    "generic_feed": generic_feed,
+    "mech_feed": mech_feed,
+    "buy_any_axie": BOUNTY_TASK_CATALOG[
+        "app_axie_buy_any_axie"
+    ],
+    "harvest_5": BOUNTY_TASK_CATALOG[
+        "axie_quest_harvest_5"
+    ],
+    "den_defeat_20_enemies": BOUNTY_TASK_CATALOG[
+        "den_defeat_20_enemies"
+    ],
+}
+
+decision_test_analysis = analyze_task_board(
+    decision_test_board,
+    mech_axie,
+)
+
+print("\nFULL DECISION TEST")
+
+print(
+    "Task count:",
+    decision_test_analysis["task_count"],
+)
+
+print(
+    "Recommendations:",
+    decision_test_analysis["recommendations"],
+)
+
+
+decision_summary = summarize_decisions(
+    decision_test_analysis
+)
+
+print("\nDECISION SUMMARY")
+
+print(
+    "COMBO:",
+    decision_summary["COMBO"],
+)
+
+print(
+    "KEEP:",
+    decision_summary["KEEP"],
+)
+
+print(
+    "REROLL:",
+    decision_summary["REROLL"],
+)
+
+
+task_coverage = summarize_task_coverage(
+    decision_test_analysis
+)
+
+print("\nTASK COVERAGE SUMMARY")
+
+print(
+    "Tasks in COMBO:",
+    task_coverage["COMBO"],
+)
+
+print(
+    "Tasks to KEEP:",
+    task_coverage["KEEP"],
+)
+
+print(
+    "Tasks to REROLL:",
+    task_coverage["REROLL"],
+)
+
+print(
+    "Total tasks accounted for:",
+    sum(task_coverage.values()),
+)
+
+
+bp_summary = summarize_bp_by_decision(
+    decision_test_analysis
+)
+
+print("\nBP DECISION SUMMARY")
+
+print(
+    "BP in COMBO:",
+    bp_summary["COMBO"],
+)
+
+print(
+    "BP to KEEP:",
+    bp_summary["KEEP"],
+)
+
+print(
+    "BP marked for REROLL:",
+    bp_summary["REROLL"],
+)
+
+print(
+    "Total board BP:",
+    sum(bp_summary.values()),
+)
+
+
+print("\nREROLL TIER TEST")
+
+print(
+    "Reroll 1:",
+    REROLL_TIERS[1],
+)
+
+print(
+    "Reroll 7:",
+    REROLL_TIERS[7],
+)
+
+print(
+    "Reroll 10:",
+    REROLL_TIERS[10],
+)
+
+
+reroll_info_test = get_reroll_info(7)
+
+print("\nREROLL INFO TEST")
+print(reroll_info_test)
+
+
+reroll_path_test = calculate_reroll_path(
+    10
+)
+
+print("\nREROLL PATH TEST")
+
+print(
+    "Total slip cost:",
+    reroll_path_test[
+        "total_slip_cost"
+    ],
+)
+
+print(
+    "Cumulative Master chance:",
+    round(
+        reroll_path_test[
+            "cumulative_master_chance"
+        ] * 100,
+        2,
+    ),
+    "%",
+)
+
+
+affordability_test = (
+    evaluate_reroll_affordability(
+        reroll_number=7,
+        slip_balance=100,
+    )
+)
+
+print("\nREROLL AFFORDABILITY TEST")
+print(affordability_test)
+
+
+path_affordability_test = (
+    evaluate_reroll_path_affordability(
+        max_reroll=7,
+        slip_balance=100,
+    )
+)
+
+print("\nREROLL PATH AFFORDABILITY TEST")
+print(path_affordability_test)
+
+
+max_reroll_test = get_max_affordable_reroll(
+    slip_balance=100
+)
+
+print("\nMAX AFFORDABLE REROLL TEST")
+print(max_reroll_test)
+
+
+reroll_capacity_test = evaluate_reroll_capacity(
+    slip_balance=100
+)
+
+print("\nREROLL CAPACITY TEST")
+
+print(
+    "Max affordable reroll:",
+    reroll_capacity_test[
+        "max_affordable_reroll"
+    ],
+)
+
+print(
+    "Slips spent:",
+    reroll_capacity_test[
+        "slips_spent"
+    ],
+)
+
+print(
+    "Remaining slips:",
+    reroll_capacity_test[
+        "remaining_slips"
+    ],
+)
+
+print(
+    "Cumulative Master chance:",
+    round(
+        reroll_capacity_test[
+            "cumulative_master_chance"
+        ] * 100,
+        2,
+    ),
+    "%",
+)
+
+
+reserve_test = get_max_reroll_with_reserve(
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nREROLL RESERVE TEST")
+print(reserve_test)
+
+
+reserve_capacity_test = (
+    evaluate_reroll_capacity_with_reserve(
+        slip_balance=100,
+        minimum_reserve=20,
+    )
+)
+
+print("\nRESERVE CAPACITY TEST")
+
+print(
+    "Max reroll:",
+    reserve_capacity_test[
+        "max_affordable_reroll"
+    ],
+)
+
+print(
+    "Slips spent:",
+    reserve_capacity_test[
+        "slips_spent"
+    ],
+)
+
+print(
+    "Remaining slips:",
+    reserve_capacity_test[
+        "remaining_slips"
+    ],
+)
+
+print(
+    "Cumulative Master chance:",
+    round(
+        reserve_capacity_test[
+            "cumulative_master_chance"
+        ] * 100,
+        2,
+    ),
+    "%",
+)
+
+
+next_reroll_test = evaluate_next_reroll(
+    reroll_number=7,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nNEXT REROLL TEST")
+print(next_reroll_test)
+
+
+blocked_reroll_test = evaluate_next_reroll(
+    reroll_number=9,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nBLOCKED REROLL TEST")
+print(blocked_reroll_test)
+
+
+reroll_action_test = check_next_reroll_guardrail(
+    reroll_number=7,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+blocked_action_test = check_next_reroll_guardrail(
+    reroll_number=9,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nREROLL GUARDRAIL TEST")
+print(reroll_action_test)
+
+print("\nBLOCKED GUARDRAIL TEST")
+print(blocked_action_test)
+
+
+task_reroll_allowed_test = evaluate_task_reroll(
+    task_id="harvest_5",
+    task=BOUNTY_TASK_CATALOG[
+        "axie_quest_harvest_5"
+    ],
+    reroll_number=7,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+task_reroll_blocked_test = evaluate_task_reroll(
+    task_id="harvest_5",
+    task=BOUNTY_TASK_CATALOG[
+        "axie_quest_harvest_5"
+    ],
+    reroll_number=9,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nTASK REROLL ALLOWED TEST")
+print(task_reroll_allowed_test)
+
+print("\nTASK REROLL BLOCKED TEST")
+print(task_reroll_blocked_test)
+
+
+task_keep_test = evaluate_task_reroll(
+    task_id="buy_any_axie",
+    task=BOUNTY_TASK_CATALOG[
+        "app_axie_buy_any_axie"
+    ],
+    reroll_number=7,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nTASK KEEP TEST")
+print(task_keep_test)
+
+
+board_reroll_test = evaluate_board_rerolls(
+    analysis=decision_test_analysis,
+    task_map=decision_test_board,
+    reroll_number=7,
+    slip_balance=100,
+    minimum_reserve=20,
+)
+
+print("\nBOARD REROLL TEST")
+
+for result in board_reroll_test:
+    print(result)
+
+
+sequential_reroll_test = (
+    evaluate_board_rerolls_sequentially(
+        analysis=decision_test_analysis,
+        task_map=decision_test_board,
+        reroll_number=7,
+        slip_balance=100,
+        minimum_reserve=20,
+    )
+)
+
+print("\nSEQUENTIAL BOARD REROLL TEST")
+
+print(
+    "Starting slips:",
+    sequential_reroll_test["starting_slips"],
+)
+
+for result in sequential_reroll_test[
+    "reroll_results"
+]:
+    print(result)
+
+print(
+    "Ending slips:",
+    sequential_reroll_test["ending_slips"],
+)
+
+
+reroll_numbers_test = {
+    "harvest_5": 4,
+    "den_defeat_20_enemies": 7,
+}
+
+per_task_reroll_test = (
+    evaluate_board_rerolls_by_task(
+        analysis=decision_test_analysis,
+        task_map=decision_test_board,
+        reroll_numbers=reroll_numbers_test,
+        slip_balance=100,
+        minimum_reserve=20,
+    )
+)
+
+print("\nPER-TASK REROLL TEST")
+
+print(
+    "Starting slips:",
+    per_task_reroll_test["starting_slips"],
+)
+
+for result in per_task_reroll_test[
+    "reroll_results"
+]:
+    print(result)
+
+print(
+    "Ending slips:",
+    per_task_reroll_test["ending_slips"],
+)
+
+
+mixed_guardrail_numbers = {
+    "harvest_5": 4,
+    "den_defeat_20_enemies": 9,
+}
+
+mixed_guardrail_test = (
+    evaluate_board_rerolls_by_task(
+        analysis=decision_test_analysis,
+        task_map=decision_test_board,
+        reroll_numbers=mixed_guardrail_numbers,
+        slip_balance=100,
+        minimum_reserve=20,
+    )
+)
+
+print("\nMIXED GUARDRAIL TEST")
+
+print(
+    "Starting slips:",
+    mixed_guardrail_test["starting_slips"],
+)
+
+for result in mixed_guardrail_test[
+    "reroll_results"
+]:
+    print(result)
+
+print(
+    "Ending slips:",
+    mixed_guardrail_test["ending_slips"],
+)
+
+
+mixed_reroll_summary = summarize_board_rerolls(
+    mixed_guardrail_test
+)
+
+print("\nBOARD REROLL SUMMARY")
+
+print(
+    "Rerolls considered:",
+    mixed_reroll_summary[
+        "rerolls_considered"
+    ],
+)
+
+print(
+    "Rerolls allowed:",
+    mixed_reroll_summary[
+        "rerolls_allowed"
+    ],
+)
+
+print(
+    "Rerolls blocked:",
+    mixed_reroll_summary[
+        "rerolls_blocked"
+    ],
+)
+
+print(
+    "Slips spent:",
+    mixed_reroll_summary[
+        "slips_spent"
+    ],
+)
+
+print(
+    "Starting slips:",
+    mixed_reroll_summary[
+        "starting_slips"
+    ],
+)
+
+print(
+    "Ending slips:",
+    mixed_reroll_summary[
+        "ending_slips"
+    ],
+)
+
+
+print(
+    "Allowed tasks:",
+    mixed_reroll_summary[
+        "allowed_tasks"
+    ],
+)
+
+print(
+    "Blocked tasks:",
+    mixed_reroll_summary[
+        "blocked_tasks"
+    ],
+)
+
+
+strategy_mode_test = validate_strategy_mode(
+    "conserve"
+)
+
+print("\nSTRATEGY MODE TEST")
+print(strategy_mode_test)
+
+
+strategy_context_test = build_strategy_context(
+    strategy_mode="conserve",
+    minimum_reserve=20,
+)
+
+print("\nSTRATEGY CONTEXT TEST")
+print(strategy_context_test)
+
+
+strategy_reroll_test = (
+    evaluate_task_reroll_with_strategy(
+        task_id="harvest_5",
+        task=BOUNTY_TASK_CATALOG[
+            "axie_quest_harvest_5"
+        ],
+        reroll_number=7,
+        slip_balance=100,
+        strategy_context=strategy_context_test,
+    )
+)
+
+print("\nSTRATEGY REROLL TEST")
+print(strategy_reroll_test)
+
+
+print("\nRANK BONUS TEST")
+
+print(
+    "Rank 412:",
+    get_rank_bonus(412),
+)
+
+print(
+    "Rank 218:",
+    get_rank_bonus(218),
+)
+
+print(
+    "Rank 1200:",
+    get_rank_bonus(1200),
+)
+
+print(
+    "Rank 4000:",
+    get_rank_bonus(4000),
+)
+
+
+print("\nNEXT RANK BONUS TARGET TEST")
+
+print(
+    "Rank 412:",
+    get_next_rank_bonus_target(412),
+)
+
+print(
+    "Rank 1200:",
+    get_next_rank_bonus_target(1200),
+)
+
+print(
+    "Rank 1:",
+    get_next_rank_bonus_target(1),
+)
+
+
+rank_push_context_test = build_strategy_context(
+    strategy_mode="rank_push",
+    minimum_reserve=20,
+    current_rank=412,
+    current_weekly_bp=16189,
+    days_remaining=2,
+)
+
+print("\nRANK PUSH CONTEXT TEST")
+print(rank_push_context_test)
+
+
+print("\nRANK PUSH VALIDATION TEST")
+
+try:
+    build_strategy_context(
+        strategy_mode="rank_push",
+        minimum_reserve=20,
+    )
+except ValueError as error:
+    print(error)
+
+
+weekly_context_test = build_strategy_context(
+    strategy_mode="rank_push",
+    minimum_reserve=20,
+    current_rank=412,
+    current_weekly_bp=16189,
+    days_remaining=2,
+)
+
+print("\nWEEKLY STRATEGY CONTEXT TEST")
+print(weekly_context_test)
+
+
+print("\nRANK PUSH COMPLETE VALIDATION TEST")
+
+try:
+    build_strategy_context(
+        strategy_mode="rank_push",
+        minimum_reserve=20,
+        current_rank=412,
+        current_weekly_bp=16189,
+    )
+except ValueError as error:
+    print(error)
+
+
+strategy_board_test = (
+    evaluate_board_rerolls_with_strategy(
+        analysis=decision_test_analysis,
+        task_map=decision_test_board,
+        reroll_numbers={
+            "harvest_5": 4,
+            "den_defeat_20_enemies": 7,
+        },
+        slip_balance=100,
+        strategy_context=strategy_context_test,
+    )
+)
+
+print("\nSTRATEGY BOARD REROLL TEST")
+
+print(
+    "Strategy:",
+    strategy_board_test["strategy_mode"],
+)
+
+print(
+    "Starting slips:",
+    strategy_board_test["starting_slips"],
+)
+
+for result in strategy_board_test[
+    "reroll_results"
+]:
+    print(result)
+
+print(
+    "Ending slips:",
+    strategy_board_test["ending_slips"],
+)
+
+
+rank_push_board_test = (
+    evaluate_board_rerolls_with_strategy(
+        analysis=decision_test_analysis,
+        task_map=decision_test_board,
+        reroll_numbers={
+            "harvest_5": 4,
+            "den_defeat_20_enemies": 7,
+        },
+        slip_balance=100,
+        strategy_context=rank_push_context_test,
+    )
+)
+
+print("\nRANK PUSH BOARD TEST")
+
+print(
+    "Strategy:",
+    rank_push_board_test["strategy_mode"],
+)
+
+print(
+    "Current rank:",
+    rank_push_context_test["current_rank"],
+)
+
+print(
+    "Target rank:",
+    rank_push_context_test[
+        "rank_bonus_target"
+    ]["target_rank"],
+)
+
+print(
+    "Potential bonus increase:",
+    rank_push_context_test[
+        "rank_bonus_target"
+    ]["bonus_increase_baxs"],
+    "bAXS",
+)
+
+print(
+    "Ending slips:",
+    rank_push_board_test["ending_slips"],
+)
+
+
+inventory_test = {
+    "regular_choco": 6,
+    "premium_choco": 1,
+}
+
+regular_combo = (
+    aug15_full_analysis["recommendations"][0]
+)
+
+regular_inventory_test = (
+    check_combo_resource_availability(
+        regular_combo,
+        inventory_test,
+    )
+)
+
+print("\nCOMBO INVENTORY TEST")
+print(regular_inventory_test)
+
+
+all_combo_inventory_test = (
+    evaluate_combo_inventory(
+        analysis=aug15_full_analysis,
+        inventory=inventory_test,
+    )
+)
+
+print("\nALL COMBO INVENTORY TEST")
+
+for result in all_combo_inventory_test:
+    print(result)
+
+
+combo_inventory_summary = (
+    summarize_combo_inventory(
+        all_combo_inventory_test
+    )
+)
+
+print("\nCOMBO INVENTORY SUMMARY")
+
+print(
+    "Combos considered:",
+    combo_inventory_summary[
+        "combos_considered"
+    ],
+)
+
+print(
+    "Combos executable:",
+    combo_inventory_summary[
+        "combos_executable"
+    ],
+)
+
+print(
+    "Combos blocked:",
+    combo_inventory_summary[
+        "combos_blocked"
+    ],
+)
+
+print(
+    "Resource shortfalls:",
+    combo_inventory_summary[
+        "resource_shortfalls"
+    ],
+)
+
+
+inventory_recommendation_test = (
+    add_inventory_to_recommendations(
+        analysis=aug15_full_analysis,
+        inventory=inventory_test,
+    )
+)
+
+print("\nINVENTORY-AWARE RECOMMENDATIONS")
+
+for recommendation in (
+    inventory_recommendation_test
+):
+    print(recommendation)
+
+
+
+execution_plan_test = build_execution_plan(
+    analysis=decision_test_analysis,
+    task_map=decision_test_board,
+    inventory=inventory_test,
+    reroll_numbers={
+        "harvest_5": 4,
+        "den_defeat_20_enemies": 7,
+    },
+    slip_balance=100,
+    strategy_context=strategy_context_test,
+)
+
+print("\nINTEGRATED EXECUTION PLAN")
+
+print(
+    "Strategy:",
+    execution_plan_test["strategy_mode"],
+)
+
+print(
+    "Starting slips:",
+    execution_plan_test["starting_slips"],
+)
+
+print("\nRecommendations:")
+
+for recommendation in execution_plan_test[
+    "recommendations"
+]:
+    print(recommendation)
+
+print("\nReroll results:")
+
+for result in execution_plan_test[
+    "reroll_results"
+]:
+    print(result)
+
+print(
+    "\nEnding slips:",
+    execution_plan_test["ending_slips"],
+)
+
+
+aug15_execution_plan_test = build_execution_plan(
+    analysis=aug15_full_analysis,
+    task_map=aug15_full_board,
+    inventory={
+        "regular_choco": 10,
+        "premium_choco": 1,
+    },
+    reroll_numbers={},
+    slip_balance=100,
+    strategy_context=strategy_context_test,
+)
+
+print("\nAUG 15 END-TO-END PLAN")
+
+print(
+    "Strategy:",
+    aug15_execution_plan_test["strategy_mode"],
+)
+
+print(
+    "Starting slips:",
+    aug15_execution_plan_test["starting_slips"],
+)
+
+print("\nRecommendations:")
+
+for recommendation in aug15_execution_plan_test[
+    "recommendations"
+]:
+    print(recommendation)
+
+print(
+    "\nEnding slips:",
+    aug15_execution_plan_test["ending_slips"],
+)
+
+
+print("\nAUG 15 PLAN SUMMARY")
+
+print(
+    "Bounty tasks:",
+    aug15_execution_plan_test[
+        "task_count"
+    ],
+)
+
+print(
+    "Total BP:",
+    aug15_execution_plan_test[
+        "total_bp"
+    ],
+)
+
+print(
+    "Execution actions:",
+    aug15_execution_plan_test[
+        "action_count"
+    ],
+)
+
+print(
+    "Actions saved:",
+    aug15_execution_plan_test[
+        "actions_saved"
+    ],
+)
+
+
+readable_plan_test = format_execution_plan(
+    execution_plan_test
+)
+
+print("\nHUMAN-READABLE EXECUTION PLAN")
+
+for line in readable_plan_test:
+    print(line)
+
+
+readable_summary_test = format_execution_summary(
+    execution_plan_test
+)
+
+print("\nDAILY BOUNTY PLAN")
+
+for line in readable_summary_test:
+    print(line)
+
+print("\nActions:")
+
+for line in format_execution_plan(
+    execution_plan_test
+):
+    print(line)
+
+
+print("\nAUG 15 DAILY BOUNTY PLAN")
+
+for line in format_execution_summary(
+    aug15_execution_plan_test
+):
+    print(line)
+
+print("\nActions:")
+
+for line in format_execution_plan(
+    aug15_execution_plan_test
+):
+    print(line)
+
+
+plan_validation_test = validate_execution_plan(
+    aug15_execution_plan_test
+)
+
+print("\nEXECUTION PLAN VALIDATION TEST")
+print(plan_validation_test)
+
+
+v1_readiness_test = evaluate_v1_readiness(
+    aug15_execution_plan_test
+)
+
+print("\nBOUNTY OPTIMIZER V1 READINESS TEST")
+print(v1_readiness_test)
+
+run_v1_demo()
