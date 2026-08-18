@@ -1,5 +1,17 @@
 from database import connect_database
-
+from bounty_daily_input import (
+    DAILY_DATE,
+    DAILY_OBSERVED_TOTAL_BP,
+    DAILY_BOARD_ENTRIES,
+    DAILY_INVENTORY,
+    DAILY_REROLL_NUMBERS,
+    DAILY_SLIP_BALANCE,
+    DAILY_STRATEGY,
+    DAILY_ASSET,
+    DAILY_REROLL_HISTORY,
+    DAILY_OTHER_SLIP_SPEND,
+    DAILY_OBSERVED_ENDING_SLIPS,
+)
 
 
 REROLL_TIERS = {
@@ -236,6 +248,85 @@ BOUNTY_TASK_CATALOG = {
         "target_filters": {},
     },
 
+    "app_axie_open_1_premium_pouch": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 150,
+        "action": "open",
+        "target": "premium_pouch",
+        "quantity": 1,
+        "resource": "premium_pouch",
+        "target_filters": {},
+    },
+
+    "app_axie_feed_1_regular_choco": {
+        "game": "app.axie",
+        "difficulty": "basic",
+        "reward_bp": 25,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 1,
+        "resource": "regular_choco",
+        "keep_override": True,
+        "target_filters": {},
+    },
+
+    "app_axie_release_beast_axie": {
+        "game": "app.axie",
+        "difficulty": "advanced",
+        "reward_bp": 650,
+        "action": "release",
+        "target": "axie",
+        "quantity": 1,
+        "target_filters": {
+            "class": "beast",
+        },
+    },
+
+    "app_axie_buy_3_regular_choco": {
+        "game": "app.axie",
+        "difficulty": "basic",
+        "reward_bp": 40,
+        "action": "buy",
+        "target": "regular_choco",
+        "quantity": 3,
+        "resource": "regular_choco",
+        "target_filters": {},
+    },
+
+    "origins_craft_any_rune": {
+        "game": "axie origins",
+        "difficulty": "basic",
+        "reward_bp": 12,
+        "action": "craft",
+        "target": "rune",
+        "quantity": 1,
+        "target_filters": {},
+    },
+
+    "app_axie_feed_5_regular_choco_evolved": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 200,
+        "action": "feed",
+        "target": "axie",
+        "quantity": 5,
+        "resource": "regular_choco",
+        "target_filters": {
+            "evolved": True,
+        },
+    },
+
+    "app_axie_open_3_regular_pouches": {
+        "game": "app.axie",
+        "difficulty": "intermediate",
+        "reward_bp": 150,
+        "action": "open",
+        "target": "regular_pouch",
+        "quantity": 3,
+        "resource": "regular_pouch",
+        "target_filters": {},
+    },
 
 
 
@@ -944,6 +1035,9 @@ def build_reroll_recommendation(
 
 
 def should_reroll_task(task):
+    if task.get("keep_override", False):
+        return False, None
+    
     if task["game"] in AVOIDED_GAMES:
         return True, "game is on avoid list"
 
@@ -1534,6 +1628,11 @@ def build_strategy_context(
         strategy_mode
     )
 
+    if minimum_reserve < 0:
+        raise ValueError(
+            "minimum_reserve cannot be negative"
+        )
+
     if strategy_mode == "rank_push":
         if current_rank is None:
             raise ValueError(
@@ -1666,10 +1765,6 @@ def evaluate_board_rerolls_with_strategy(
     results = []
     current_balance = slip_balance
 
-    minimum_reserve = strategy_context[
-        "minimum_reserve"
-    ]
-
     for recommendation in analysis[
         "recommendations"
     ]:
@@ -1678,9 +1773,32 @@ def evaluate_board_rerolls_with_strategy(
 
         task_id = recommendation["task"]
 
-        reroll_number = reroll_numbers[
+        reroll_number = reroll_numbers.get(
             task_id
-        ]
+        )
+
+        if reroll_number is None:
+            results.append(
+                {
+                    "task": task_id,
+                    "task_decision": "REROLL",
+                    "task_reason": recommendation[
+                        "reason"
+                    ],
+                    "reroll_number": None,
+                    "slip_cost": None,
+                    "master_chance": None,
+                    "reroll_status": "INPUT_REQUIRED",
+                    "remaining_after_reroll": (
+                        current_balance
+                    ),
+                    "strategy_mode": strategy_context[
+                        "strategy_mode"
+                    ],
+                }
+            )
+
+            continue
 
         result = evaluate_task_reroll_with_strategy(
             task_id=task_id,
@@ -1705,7 +1823,6 @@ def evaluate_board_rerolls_with_strategy(
         "ending_slips": current_balance,
         "reroll_results": results,
     }
-
 
 def check_combo_resource_availability(
     recommendation,
@@ -1842,6 +1959,61 @@ def add_inventory_to_recommendations(
     return updated_recommendations
 
 
+def add_keep_inventory_status(
+    recommendations,
+    task_map,
+    inventory,
+):
+    updated_recommendations = []
+
+    for recommendation in recommendations:
+        updated = dict(recommendation)
+
+        if recommendation["decision"] == "KEEP":
+            task_id = recommendation["task"]
+            task = task_map[task_id]
+
+            resource = task.get("resource")
+
+            if (
+                resource is not None
+                and resource in inventory
+            ):
+                quantity_needed = task["quantity"]
+
+                quantity_available = inventory.get(
+                    resource,
+                    0,
+                )
+
+                updated["resource"] = resource
+                updated["quantity_needed"] = (
+                    quantity_needed
+                )
+                updated["quantity_available"] = (
+                    quantity_available
+                )
+
+                updated["inventory_status"] = (
+                    "READY"
+                    if quantity_available
+                    >= quantity_needed
+                    else "SHORTFALL"
+                )
+
+                updated["shortfall"] = max(
+                    0,
+                    quantity_needed
+                    - quantity_available,
+                )
+
+        updated_recommendations.append(
+            updated
+        )
+
+    return updated_recommendations
+
+
 def build_execution_plan(
     analysis,
     task_map,
@@ -1855,6 +2027,12 @@ def build_execution_plan(
             analysis,
             inventory,
         )
+    )
+
+    recommendations = add_keep_inventory_status(
+        recommendations,
+        task_map,
+        inventory,
     )
 
     reroll_plan = (
@@ -1943,10 +2121,28 @@ def format_execution_plan(
             lines.append(line)
 
         elif decision == "KEEP":
-            lines.append(
+            line = (
                 f"KEEP: {recommendation['task']} -> "
                 f"{recommendation['reward_bp']} BP"
             )
+
+            if "inventory_status" in recommendation:
+                line += (
+                    f" | {recommendation['quantity_needed']} "
+                    f"{recommendation['resource']} | "
+                    f"{recommendation['inventory_status']}"
+                )
+
+                if recommendation.get(
+                    "shortfall",
+                    0,
+                ) > 0:
+                    line += (
+                        f" | shortfall "
+                        f"{recommendation['shortfall']}"
+                    )
+
+            lines.append(line)
 
         elif decision == "REROLL":
             task_id = recommendation["task"]
@@ -1961,12 +2157,25 @@ def format_execution_plan(
                 lines.append(
                     f"REROLL: {task_id}"
                 )
+
+            elif (
+                reroll_result["reroll_status"]
+                == "INPUT_REQUIRED"
+            ):
+                lines.append(
+                    f"REROLL: {task_id} -> "
+                    f"INPUT REQUIRED | "
+                    f"{reroll_result['task_reason']}"
+                )
+
             else:
                 lines.append(
                     f"REROLL: {task_id} -> "
-                    f"reroll {reroll_result['reroll_number']} | "
+                    f"reroll "
+                    f"{reroll_result['reroll_number']} | "
                     f"{reroll_result['slip_cost']} slips | "
-                    f"Master {reroll_result['master_chance'] * 100:.0f}% | "
+                    f"Master "
+                    f"{reroll_result['master_chance'] * 100:.0f}% | "
                     f"{reroll_result['reroll_status']} | "
                     f"{reroll_result['task_reason']}"
                 )
@@ -1999,7 +2208,7 @@ def format_execution_summary(
             f"{execution_plan['actions_saved']}"
         ),
         (
-            f"Slips: "
+            f"Pending-plan slips: "
             f"{execution_plan['starting_slips']} "
             f"-> "
             f"{execution_plan['ending_slips']}"
@@ -2057,80 +2266,291 @@ def evaluate_v1_readiness(
         execution_plan
     )
 
-    ready = (
+    input_required = any(
+        result["reroll_status"] == "INPUT_REQUIRED"
+        for result in execution_plan[
+            "reroll_results"
+        ]
+    )
+
+    structurally_ready = (
         validation["all_tasks_accounted_for"]
         and validation["no_duplicate_tasks"]
     )
 
+    if not structurally_ready:
+        status = "NOT_READY"
+
+    elif input_required:
+        status = "INPUT_REQUIRED"
+
+    else:
+        status = "READY"
+
     return {
         **validation,
-        "v1_status": (
-            "READY"
-            if ready
-            else "NOT_READY"
+        "input_required": input_required,
+        "v1_status": status,
+    }
+
+
+def build_daily_board(
+    board_entries,
+):
+    board = {}
+
+    for entry in board_entries:
+        task_id = entry["task_id"]
+        catalog_id = entry["catalog_id"]
+
+        task = BOUNTY_TASK_CATALOG[
+            catalog_id
+        ]
+
+        random_class = entry.get(
+            "random_class"
+        )
+
+        if random_class is not None:
+            task = instantiate_task(
+                task,
+                random_class=random_class,
+            )
+
+        board[task_id] = task
+
+    return board
+
+
+def build_daily_input(
+    board_entries,
+    inventory,
+    slip_balance,
+    reroll_numbers,
+    strategy_mode,
+    minimum_reserve,
+    current_rank=None,
+    current_weekly_bp=None,
+    days_remaining=None,
+):
+    return {
+        "board_entries": board_entries,
+        "inventory": inventory,
+        "slip_balance": slip_balance,
+        "reroll_numbers": reroll_numbers,
+        "strategy_context": build_strategy_context(
+            strategy_mode=strategy_mode,
+            minimum_reserve=minimum_reserve,
+            current_rank=current_rank,
+            current_weekly_bp=current_weekly_bp,
+            days_remaining=days_remaining,
         ),
     }
 
 
+def validate_daily_input(
+    daily_input,
+):
+    board_entries = daily_input[
+        "board_entries"
+    ]
+
+    task_ids = set()
+
+    for entry in board_entries:
+        task_id = entry["task_id"]
+        catalog_id = entry["catalog_id"]
+
+        if task_id in task_ids:
+            raise ValueError(
+                f"Duplicate task_id: {task_id}"
+            )
+
+        task_ids.add(task_id)
+
+        if catalog_id not in BOUNTY_TASK_CATALOG:
+            raise ValueError(
+                f"Unknown catalog_id: {catalog_id}"
+            )
+
+    if daily_input["slip_balance"] < 0:
+        raise ValueError(
+            "slip_balance cannot be negative"
+        )
+
+
+    inventory = daily_input[
+        "inventory"
+    ]
+
+    for resource, quantity in inventory.items():
+        if quantity < 0:
+            raise ValueError(
+                f"Inventory cannot be negative: {resource}"
+            )
+
+    reroll_numbers = daily_input[
+        "reroll_numbers"
+    ]
+
+    for task_id, reroll_number in (
+        reroll_numbers.items()
+    ):
+        if task_id not in task_ids:
+            raise ValueError(
+                f"Unknown reroll task_id: {task_id}"
+            )
+
+        if reroll_number not in REROLL_TIERS:
+            raise ValueError(
+                f"Invalid reroll number: {reroll_number}"
+            )
+
+    return True
+
+
+
+
+
+def optimize_daily_input(
+    daily_input,
+    asset,
+):
+    
+    validate_daily_input(
+        daily_input
+    )
+
+    board = build_daily_board(
+        daily_input["board_entries"]
+    )
+
+    analysis = analyze_task_board(
+        board,
+        asset,
+    )
+
+    return build_execution_plan(
+        analysis=analysis,
+        task_map=board,
+        inventory=daily_input["inventory"],
+        reroll_numbers=daily_input[
+            "reroll_numbers"
+        ],
+        slip_balance=daily_input[
+            "slip_balance"
+        ],
+        strategy_context=daily_input[
+            "strategy_context"
+        ],
+    )
+
+
+
+
 def build_v1_demo_plan():
-    demo_mech_feed = instantiate_task(
-        BOUNTY_TASK_CATALOG[
-            "app_axie_feed_10_choco_random_class"
-        ],
-        random_class="mech",
-    )
-
-    demo_buy_mech = instantiate_task(
-        BOUNTY_TASK_CATALOG[
-            "app_axie_buy_random_class_axie"
-        ],
-        random_class="mech",
-    )
-
+    
     demo_asset = {
         "class": "mech",
         "collectible": True,
         "evolved": True,
     }
 
-    demo_board = {
-        "feed_10_choco_mech": demo_mech_feed,
-        "buy_mech_axie": demo_buy_mech,
-        "feed_10_choco_any": BOUNTY_TASK_CATALOG[
-            "app_axie_feed_10_choco_any_axie"
-        ],
-        "feed_premium_collectible": BOUNTY_TASK_CATALOG[
-            "app_axie_feed_premium_collectible"
-        ],
-        "feed_premium_evolved": BOUNTY_TASK_CATALOG[
-            "app_axie_feed_premium_evolved"
-        ],
-        "origins_battle": BOUNTY_TASK_CATALOG[
-            "origins_win_vs_3_beast_bird_mech"
-        ],
-    }
+    demo_board_entries = [
+        {
+            "task_id": "feed_10_choco_mech",
+            "catalog_id": (
+                "app_axie_feed_10_choco_random_class"
+            ),
+            "random_class": "mech",
+        },
+        {
+            "task_id": "buy_mech_axie",
+            "catalog_id": (
+                "app_axie_buy_random_class_axie"
+            ),
+            "random_class": "mech",
+        },
+        {
+            "task_id": "feed_10_choco_any",
+            "catalog_id": (
+                "app_axie_feed_10_choco_any_axie"
+            ),
+        },
+        {
+            "task_id": "feed_premium_collectible",
+            "catalog_id": (
+                "app_axie_feed_premium_collectible"
+            ),
+        },
+        {
+            "task_id": "feed_premium_evolved",
+            "catalog_id": (
+                "app_axie_feed_premium_evolved"
+            ),
+        },
+        {
+            "task_id": "origins_battle",
+            "catalog_id": (
+                "origins_win_vs_3_beast_bird_mech"
+            ),
+        },
+    ]
 
-    analysis = analyze_task_board(
-        demo_board,
-        demo_asset,
-    )
 
-    strategy_context = build_strategy_context(
-        strategy_mode="conserve",
-        minimum_reserve=20,
-    )
-
-    return build_execution_plan(
-        analysis=analysis,
-        task_map=demo_board,
+    demo_input = build_daily_input(
+        board_entries=demo_board_entries,
         inventory={
             "regular_choco": 10,
             "premium_choco": 1,
         },
-        reroll_numbers={},
         slip_balance=100,
-        strategy_context=strategy_context,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
     )
+
+    
+    return optimize_daily_input(
+        daily_input=demo_input,
+        asset=demo_asset,
+    )
+
+
+def run_daily_optimizer(
+    daily_input,
+    asset,
+    title="AXIEOS DAILY BOUNTY PLAN",
+):
+    execution_plan = optimize_daily_input(
+        daily_input=daily_input,
+        asset=asset,
+    )
+
+    print(f"\n{title}")
+
+    for line in format_execution_summary(
+        execution_plan
+    ):
+        print(line)
+
+    print("\nActions:")
+
+    for line in format_execution_plan(
+        execution_plan
+    ):
+        print(line)
+
+    readiness = evaluate_v1_readiness(
+        execution_plan
+    )
+
+    print(
+        "\nPlan Status:",
+        readiness["v1_status"],
+    )
+
+    return execution_plan
 
 
 
@@ -2160,10 +2580,613 @@ def run_v1_demo():
         readiness["v1_status"],
     )
 
+def run_daily_input_validation_test():
+    bad_input = build_daily_input(
+        board_entries=[
+            {
+                "task_id": "duplicate_task",
+                "catalog_id": "app_axie_buy_any_axie",
+            },
+            {
+                "task_id": "duplicate_task",
+                "catalog_id": "app_axie_feed_10_choco_any_axie",
+            },
+        ],
+        inventory={},
+        slip_balance=100,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    print("\nDAILY INPUT VALIDATION TEST")
+
+    try:
+        validate_daily_input(
+            bad_input
+        )
+    except ValueError as error:
+        print(error)
+
+    unknown_catalog_input = build_daily_input(
+        board_entries=[
+            {
+                "task_id": "unknown_task",
+                "catalog_id": "not_a_real_catalog_id",
+            },
+        ],
+        inventory={},
+        slip_balance=100,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    print("\nUNKNOWN CATALOG VALIDATION TEST")
+
+    try:
+        validate_daily_input(
+            unknown_catalog_input
+        )
+    except ValueError as error:
+        print(error)
+
+
+    negative_slip_input = build_daily_input(
+        board_entries=[
+            {
+                "task_id": "buy_any_axie",
+                "catalog_id": "app_axie_buy_any_axie",
+            },
+        ],
+        inventory={},
+        slip_balance=-10,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    print("\nNEGATIVE SLIP VALIDATION TEST")
+
+    try:
+        validate_daily_input(
+            negative_slip_input
+        )
+    except ValueError as error:
+        print(error)
+
+
+    bad_reroll_input = build_daily_input(
+        board_entries=[
+            {
+                "task_id": "buy_any_axie",
+                "catalog_id": "app_axie_buy_any_axie",
+            },
+        ],
+        inventory={},
+        slip_balance=100,
+        reroll_numbers={
+            "buy_any_axie": 11,
+        },
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    print("\nREROLL NUMBER VALIDATION TEST")
+
+    try:
+        validate_daily_input(
+            bad_reroll_input
+        )
+    except ValueError as error:
+        print(error)
+
+
+    negative_inventory_input = build_daily_input(
+        board_entries=[
+            {
+                "task_id": "buy_any_axie",
+                "catalog_id": "app_axie_buy_any_axie",
+            },
+        ],
+        inventory={
+            "regular_choco": -1,
+        },
+        slip_balance=100,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    print("\nNEGATIVE INVENTORY VALIDATION TEST")
+
+    try:
+        validate_daily_input(
+            negative_inventory_input
+        )
+    except ValueError as error:
+        print(error)
+
+
+    print("\nNEGATIVE RESERVE VALIDATION TEST")
+
+    try:
+        build_daily_input(
+            board_entries=[
+                {
+                    "task_id": "buy_any_axie",
+                    "catalog_id": "app_axie_buy_any_axie",
+                },
+            ],
+            inventory={},
+            slip_balance=100,
+            reroll_numbers={},
+            strategy_mode="conserve",
+            minimum_reserve=-10,
+        )
+    except ValueError as error:
+        print(error)
+
+
+def run_live_runner_test():
+    live_board_entries = [
+        {
+            "task_id": "feed_10_choco_mech",
+            "catalog_id": (
+                "app_axie_feed_10_choco_random_class"
+            ),
+            "random_class": "mech",
+        },
+        {
+            "task_id": "buy_mech_axie",
+            "catalog_id": (
+                "app_axie_buy_random_class_axie"
+            ),
+            "random_class": "mech",
+        },
+        {
+            "task_id": "feed_10_choco_any",
+            "catalog_id": (
+                "app_axie_feed_10_choco_any_axie"
+            ),
+        },
+        {
+            "task_id": "feed_premium_collectible",
+            "catalog_id": (
+                "app_axie_feed_premium_collectible"
+            ),
+        },
+        {
+            "task_id": "feed_premium_evolved",
+            "catalog_id": (
+                "app_axie_feed_premium_evolved"
+            ),
+        },
+        {
+            "task_id": "origins_battle",
+            "catalog_id": (
+                "origins_win_vs_3_beast_bird_mech"
+            ),
+        },
+    ]
+
+    live_input = build_daily_input(
+        board_entries=live_board_entries,
+        inventory={
+            "regular_choco": 10,
+            "premium_choco": 1,
+        },
+        slip_balance=100,
+        reroll_numbers={},
+        strategy_mode="conserve",
+        minimum_reserve=20,
+    )
+
+    live_asset = {
+        "class": "mech",
+        "collectible": True,
+        "evolved": True,
+    }
+
+    run_daily_optimizer(
+        daily_input=live_input,
+        asset=live_asset,
+        title="LIVE RUNNER TEST",
+    )
+
+
+def reconcile_daily_bp(
+    execution_plan,
+    observed_total_bp,
+):
+    task_bp = execution_plan[
+        "total_bp"
+    ]
+
+    additional_bp = (
+        observed_total_bp - task_bp
+    )
+
+    return {
+        "task_bp": task_bp,
+        "observed_total_bp": observed_total_bp,
+        "additional_bp": additional_bp,
+        "matches_task_bp_only": (
+            task_bp == observed_total_bp
+        ),
+    }
+
+
+def summarize_reroll_history(
+    reroll_history,
+):
+    total_slips_spent = 0
+    slot_results = {}
+
+    for slot_id, history in reroll_history.items():
+        slot_slips = 0
+
+        for reroll_number in history[
+            "rerolls_used"
+        ]:
+            slot_slips += REROLL_TIERS[
+                reroll_number
+            ]["cost"]
+
+        total_slips_spent += slot_slips
+
+        slot_results[slot_id] = {
+            "rerolls_used": history[
+                "rerolls_used"
+            ],
+            "slips_spent": slot_slips,
+            "starting_task": history[
+                "starting_task"
+            ],
+            "final_task": history[
+                "final_task"
+            ],
+        }
+
+    return {
+        "slots": slot_results,
+        "total_slips_spent": total_slips_spent,
+    }
+
+
+def summarize_other_slip_spend(
+    slip_spend,
+):
+    total_slips_spent = 0
+
+    for item in slip_spend.values():
+        total_slips_spent += item[
+            "slips_spent"
+        ]
+
+    return {
+        "items": slip_spend,
+        "total_slips_spent": total_slips_spent,
+    }
+
+
+def build_daily_data_quality_summary(
+    bp_reconciliation,
+    slip_matches,
+):
+    issues = []
+
+    if not bp_reconciliation[
+        "matches_task_bp_only"
+    ]:
+        issues.append(
+            "BP includes additional or unattributed BP"
+        )
+
+    if not slip_matches:
+        issues.append(
+            "Fortune Slip accounting does not reconcile"
+        )
+
+    return {
+        "issue_count": len(issues),
+        "issues": issues,
+        "status": (
+            "CLEAN"
+            if not issues
+            else "REVIEW"
+        ),
+    }
+
+
+def format_daily_operational_summary(
+    execution_plan,
+    bp_reconciliation,
+    reroll_history_summary,
+    other_slip_summary,
+    starting_slips,
+    ending_slips,
+    data_quality,
+):
+    total_reroll_slips = reroll_history_summary[
+        "total_slips_spent"
+    ]
+
+    total_other_slips = other_slip_summary[
+        "total_slips_spent"
+    ]
+
+    total_slip_spend = (
+        total_reroll_slips
+        + total_other_slips
+    )
+
+    return [
+        f"Task BP: {bp_reconciliation['task_bp']}",
+        (
+            f"Observed total BP: "
+            f"{bp_reconciliation['observed_total_bp']}"
+        ),
+        (
+            f"Additional BP: "
+            f"{bp_reconciliation['additional_bp']}"
+        ),
+        f"Reroll slips: {total_reroll_slips}",
+        f"Other slip spend: {total_other_slips}",
+        f"Total slip spend: {total_slip_spend}",
+        f"Slips: {starting_slips} -> {ending_slips}",
+        (
+            f"Data quality: "
+            f"{data_quality['status']}"
+        ),
+    ]
+
+
+def run_current_daily_plan():
+    daily_input = build_daily_input(
+        board_entries=DAILY_BOARD_ENTRIES,
+        inventory=DAILY_INVENTORY,
+        slip_balance=DAILY_SLIP_BALANCE,
+        reroll_numbers=DAILY_REROLL_NUMBERS,
+        strategy_mode=DAILY_STRATEGY[
+            "strategy_mode"
+        ],
+        minimum_reserve=DAILY_STRATEGY[
+            "minimum_reserve"
+        ],
+        current_rank=DAILY_STRATEGY.get(
+            "current_rank"
+        ),
+        current_weekly_bp=DAILY_STRATEGY.get(
+            "current_weekly_bp"
+        ),
+        days_remaining=DAILY_STRATEGY.get(
+            "days_remaining"
+        ),
+    )
+
+    execution_plan = run_daily_optimizer(
+        daily_input=daily_input,
+        asset=DAILY_ASSET,
+        title=f"AXIEOS DAILY BOUNTY PLAN — {DAILY_DATE}",
+    )
+
+    reconciliation = reconcile_daily_bp(
+        execution_plan,
+        DAILY_OBSERVED_TOTAL_BP,
+    )
+
+    reconciliation = reconcile_daily_bp(
+        execution_plan,
+        DAILY_OBSERVED_TOTAL_BP,
+    )
+
+    print("\nBP RECONCILIATION")
+
+    print(
+        "Task BP:",
+        reconciliation["task_bp"],
+    )
+
+    print(
+        "Observed total BP:",
+        reconciliation[
+            "observed_total_bp"
+        ],
+    )
+
+    print(
+        "Additional BP:",
+        reconciliation[
+            "additional_bp"
+        ],
+    )
+
+    print(
+        "Task BP alone matches:",
+        reconciliation[
+            "matches_task_bp_only"
+        ],
+    )
+
+
+    reroll_history_summary = (
+        summarize_reroll_history(
+            DAILY_REROLL_HISTORY
+        )
+    )
+
+    print("\nREROLL HISTORY")
+
+    for slot_id, result in (
+        reroll_history_summary["slots"].items()
+    ):
+        print(
+            f"{slot_id}: "
+            f"{result['rerolls_used']} | "
+            f"{result['slips_spent']} slips"
+        )
+
+    print(
+        "Total reroll slips spent:",
+        reroll_history_summary[
+            "total_slips_spent"
+        ],
+    )
+
+
+    other_slip_summary = (
+        summarize_other_slip_spend(
+            DAILY_OTHER_SLIP_SPEND
+        )
+    )
+
+
+    total_recorded_slip_spend = (
+        reroll_history_summary[
+            "total_slips_spent"
+        ]
+        + other_slip_summary[
+            "total_slips_spent"
+        ]
+    )
+
+    calculated_ending_slips = (
+        DAILY_SLIP_BALANCE
+        - total_recorded_slip_spend
+    )
+
+    print("\nSLIP ACCOUNTING")
+
+    print(
+        "Starting slips:",
+        DAILY_SLIP_BALANCE,
+    )
+
+    print(
+        "Recorded spend:",
+        total_recorded_slip_spend,
+    )
+
+    print(
+        "Calculated ending slips:",
+        calculated_ending_slips,
+    )
+
+
+    slip_difference = (
+        DAILY_OBSERVED_ENDING_SLIPS
+        - calculated_ending_slips
+    )
+
+    print("\nSLIP RECONCILIATION")
+
+    print(
+        "Calculated ending slips:",
+        calculated_ending_slips,
+    )
+
+    print(
+        "Observed ending slips:",
+        DAILY_OBSERVED_ENDING_SLIPS,
+    )
+
+    print(
+        "Difference:",
+        slip_difference,
+    )
+
+    print(
+        "Matches:",
+        calculated_ending_slips
+        == DAILY_OBSERVED_ENDING_SLIPS,
+    )
+
+
+    data_quality = build_daily_data_quality_summary(
+        bp_reconciliation=reconciliation,
+        slip_matches=(
+            calculated_ending_slips
+            == DAILY_OBSERVED_ENDING_SLIPS
+        ),
+    )
+
+    print("\nDATA QUALITY")
+
+    print(
+        "Status:",
+        data_quality["status"],
+    )
+
+    print(
+        "Issues:",
+        data_quality["issue_count"],
+    )
+
+    for issue in data_quality["issues"]:
+        print(
+            "-",
+            issue,
+        )
+
+
+
+    print("\nOTHER SLIP SPEND")
+
+    for item_id, result in (
+        other_slip_summary["items"].items()
+    ):
+        print(
+            f"{item_id}: "
+            f"{result['quantity']} | "
+            f"{result['slips_spent']} slips"
+        )
+
+    print(
+        "Total other slips spent:",
+        other_slip_summary[
+            "total_slips_spent"
+        ],
+    )
+
+    print(
+        "Total recorded slips spent:",
+        reroll_history_summary[
+            "total_slips_spent"
+        ]
+        + other_slip_summary[
+            "total_slips_spent"
+        ],
+    )
+
+
+    print("\nAUG 18 OPERATIONAL SUMMARY")
+
+    operational_summary = (
+        format_daily_operational_summary(
+            execution_plan=execution_plan,
+            bp_reconciliation=reconciliation,
+            reroll_history_summary=(
+                reroll_history_summary
+            ),
+            other_slip_summary=(
+                other_slip_summary
+            ),
+            starting_slips=DAILY_SLIP_BALANCE,
+            ending_slips=calculated_ending_slips,
+            data_quality=data_quality,
+        )
+    )
+
+    for line in operational_summary:
+        print(line)
+
+
+    return execution_plan
 
 
 
 
 if __name__ == "__main__":
-    run_v1_demo()
+    run_current_daily_plan()
 
