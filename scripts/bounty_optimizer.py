@@ -124,6 +124,8 @@ STRATEGY_MODE_ALIASES = {
     "Master Chase": "master_chase",
 }
 
+RANK_PUSH_RESERVE_FACTOR = 0.5
+
 
 RANK_BONUS_TIERS = [
     (1, 1, 160),
@@ -1723,6 +1725,46 @@ def build_strategy_context(
     return context
 
 
+def get_strategy_minimum_reserve(
+    strategy_context,
+):
+    minimum_reserve = strategy_context[
+        "minimum_reserve"
+    ]
+
+    strategy_mode = strategy_context[
+        "strategy_mode"
+    ]
+
+    rank_bonus_target = strategy_context.get(
+        "rank_bonus_target"
+    )
+
+    if (
+        strategy_mode == "rank_push"
+        and rank_bonus_target is not None
+        and rank_bonus_target[
+            "target_rank"
+        ] is not None
+        and rank_bonus_target[
+            "bonus_increase_baxs"
+        ] > 0
+    ):
+        return int(
+            minimum_reserve
+            * RANK_PUSH_RESERVE_FACTOR
+        )
+
+    return minimum_reserve
+
+
+
+
+
+
+
+
+
 def evaluate_task_reroll_with_strategy(
     task_id,
     task,
@@ -1730,9 +1772,11 @@ def evaluate_task_reroll_with_strategy(
     slip_balance,
     strategy_context,
 ):
-    minimum_reserve = strategy_context[
-        "minimum_reserve"
-    ]
+    minimum_reserve = (
+        get_strategy_minimum_reserve(
+            strategy_context
+        )
+    )
 
     result = evaluate_task_reroll(
         task_id=task_id,
@@ -1742,11 +1786,42 @@ def evaluate_task_reroll_with_strategy(
         minimum_reserve=minimum_reserve,
     )
 
+    strategy_mode = strategy_context[
+    "strategy_mode"
+    ]
+
+    normal_reserve = strategy_context[
+        "minimum_reserve"
+    ]
+
+    rank_bonus_target = strategy_context.get(
+        "rank_bonus_target"
+    )
+
+    strategy_reason = (
+        "standard reserve policy"
+    )
+
+    if (
+        strategy_mode == "rank_push"
+        and minimum_reserve < normal_reserve
+        and rank_bonus_target is not None
+    ):
+        strategy_reason = (
+            f"rank push toward rank "
+            f"{rank_bonus_target['target_rank']} "
+            f"for +"
+            f"{rank_bonus_target['bonus_increase_baxs']} "
+            f"bAXS"
+        )
+
     return {
         **result,
-        "strategy_mode": strategy_context[
-            "strategy_mode"
-        ],
+        "strategy_mode": strategy_mode,
+        "effective_minimum_reserve": (
+            minimum_reserve
+        ),
+        "strategy_reason": strategy_reason,
     }
 
 
@@ -3087,6 +3162,118 @@ def format_daily_operational_summary(
     ]
 
 
+
+
+def run_rank_push_strategy_test():
+    task_id = "harvest_5"
+
+    task = BOUNTY_TASK_CATALOG[
+        "axie_quest_harvest_5"
+    ]
+
+    conserve_context = build_strategy_context(
+        strategy_mode="Conserve",
+        minimum_reserve=20,
+    )
+
+    rank_push_context = build_strategy_context(
+        strategy_mode="Rank Push",
+        minimum_reserve=20,
+        current_rank=412,
+        current_weekly_bp=1000,
+        days_remaining=3,
+    )
+
+    rank_one_context = build_strategy_context(
+        strategy_mode="Rank Push",
+        minimum_reserve=20,
+        current_rank=1,
+        current_weekly_bp=1000,
+        days_remaining=3,
+    )
+
+    conserve_result = (
+        evaluate_task_reroll_with_strategy(
+            task_id=task_id,
+            task=task,
+            reroll_number=1,
+            slip_balance=25,
+            strategy_context=conserve_context,
+        )
+    )
+
+    rank_push_result = (
+        evaluate_task_reroll_with_strategy(
+            task_id=task_id,
+            task=task,
+            reroll_number=1,
+            slip_balance=25,
+            strategy_context=rank_push_context,
+        )
+    )
+
+    rank_one_result = (
+        evaluate_task_reroll_with_strategy(
+            task_id=task_id,
+            task=task,
+            reroll_number=1,
+            slip_balance=25,
+            strategy_context=rank_one_context,
+        )
+    )
+
+    print("\nSTRATEGY TEST")
+
+    print(
+        "Rank 1 target:",
+        rank_one_context["rank_bonus_target"],
+    )
+
+    print(
+        "Conserve:",
+        conserve_result["reroll_status"],
+        "| reserve:",
+        conserve_result[
+            "effective_minimum_reserve"
+        ],
+    )
+
+    print(
+        "Rank Push — Rank 412:",
+        rank_push_result["reroll_status"],
+        "| reserve:",
+        rank_push_result[
+            "effective_minimum_reserve"
+        ],
+    )
+
+    print(
+        "Rank Push reason:",
+        rank_push_result[
+            "strategy_reason"
+        ],
+    )
+
+
+    print(
+        "Rank Push — Rank 1:",
+        rank_one_result["reroll_status"],
+        "| reserve:",
+        rank_one_result[
+            "effective_minimum_reserve"
+        ],
+    )
+
+
+
+
+
+
+
+
+
+
+
 def run_current_daily_plan():
     daily_input = build_daily_input(
         board_entries=DAILY_BOARD_ENTRIES,
@@ -3317,4 +3504,3 @@ def run_current_daily_plan():
 
 if __name__ == "__main__":
     run_current_daily_plan()
-
