@@ -4,37 +4,18 @@ DAILY_OBSERVED_TOTAL_BP = 2050
 
 
 DAILY_BOARD_ENTRIES = [
-    {
-        "task_id": "buy_any_axie",
-        "catalog_id": "app_axie_buy_any_axie",
-    },
-    {
-        "task_id": "open_1_premium_pouch",
-        "catalog_id": "app_axie_open_1_premium_pouch",
-    },
-    {
-        "task_id": "feed_1_regular_choco",
-        "catalog_id": "app_axie_feed_1_regular_choco",
-    },
-    {
-        "task_id": "release_beast_axie",
-        "catalog_id": "app_axie_release_beast_axie",
-    },
-    {
-        "task_id": "feed_5_regular_choco_evolved",
-        "catalog_id": "app_axie_feed_5_regular_choco_evolved",
-    },
-    {
-        "task_id": "open_3_regular_pouches",
-        "catalog_id": "app_axie_open_3_regular_pouches",
-    },
+    "Buy any Axie",
+    "Open 1 Premium Pouch",
+    "Feed 1 Regular Choco",
+    "Release any Beast Axie",
+    "Feed 5 Regular Choco to evolved Axie",
+    "Open 3 Regular Pouches",
 ]
 
 DAILY_INVENTORY = {
-    "regular_choco": 10,
-    "premium_choco": 1,
+    "Regular Choco": 10,
+    "Premium Choco": 1,
 }
-
 
 DAILY_REROLL_NUMBERS = {}
 
@@ -71,14 +52,6 @@ DAILY_SLIP_BALANCE = 1712
 DAILY_OBSERVED_ENDING_SLIPS = 1402
 
 
-DAILY_STRATEGY = {
-    "strategy_mode": "conserve",
-    "minimum_reserve": 20,
-}
+DAILY_STRATEGY_MODE = "Conserve"
+DAILY_MINIMUM_RESERVE = 20
 
-
-DAILY_ASSET = {
-    "class": "mech",
-    "collectible": True,
-    "evolved": True,
-}

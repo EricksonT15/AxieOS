@@ -5,9 +5,9 @@ from bounty_daily_input import (
     DAILY_BOARD_ENTRIES,
     DAILY_INVENTORY,
     DAILY_REROLL_NUMBERS,
+    DAILY_STRATEGY_MODE,
+    DAILY_MINIMUM_RESERVE,
     DAILY_SLIP_BALANCE,
-    DAILY_STRATEGY,
-    DAILY_ASSET,
     DAILY_REROLL_HISTORY,
     DAILY_OTHER_SLIP_SPEND,
     DAILY_OBSERVED_ENDING_SLIPS,
@@ -115,6 +115,13 @@ STRATEGY_MODES = {
     "conserve",
     "rank_push",
     "master_chase",
+}
+
+
+STRATEGY_MODE_ALIASES = {
+    "Conserve": "conserve",
+    "Rank Push": "rank_push",
+    "Master Chase": "master_chase",
 }
 
 
@@ -331,6 +338,37 @@ BOUNTY_TASK_CATALOG = {
 
 
 }
+
+
+
+TASK_NAME_ALIASES = {
+    "Buy any Axie": "app_axie_buy_any_axie",
+    "Open 1 Premium Pouch": "app_axie_open_1_premium_pouch",
+    "Feed 1 Regular Choco": "app_axie_feed_1_regular_choco",
+    "Release any Beast Axie": "app_axie_release_beast_axie",
+    "Buy 3 Regular Choco": "app_axie_buy_3_regular_choco",
+    "Craft any Rune": "origins_craft_any_rune",
+    "Feed 5 Regular Choco to evolved Axie": (
+        "app_axie_feed_5_regular_choco_evolved"
+    ),
+    "Open 3 Regular Pouches": (
+        "app_axie_open_3_regular_pouches"
+    ),
+}
+
+
+RESOURCE_NAME_ALIASES = {
+    "Regular Choco": "regular_choco",
+    "Premium Choco": "premium_choco",
+}
+
+
+
+
+
+
+
+
 
 
 def can_task_cover_task(candidate_task, other_task):
@@ -1617,6 +1655,18 @@ def validate_strategy_mode(
     return strategy_mode
 
 
+def normalize_strategy_mode(
+    strategy_mode,
+):
+    return STRATEGY_MODE_ALIASES.get(
+        strategy_mode,
+        strategy_mode,
+    )
+
+
+
+
+
 def build_strategy_context(
     strategy_mode,
     minimum_reserve,
@@ -1624,6 +1674,10 @@ def build_strategy_context(
     current_weekly_bp=None,
     days_remaining=None,
 ):
+    strategy_mode = normalize_strategy_mode(
+        strategy_mode
+    )
+
     strategy_mode = validate_strategy_mode(
         strategy_mode
     )
@@ -2294,21 +2348,87 @@ def evaluate_v1_readiness(
     }
 
 
+def resolve_catalog_id(
+    entry,
+):
+    if isinstance(entry, str):
+        task_name = entry
+
+    else:
+        if "catalog_id" in entry:
+            return entry["catalog_id"]
+
+        task_name = entry.get(
+            "task_name"
+        )
+
+    if task_name in TASK_NAME_ALIASES:
+        return TASK_NAME_ALIASES[
+            task_name
+        ]
+
+    raise ValueError(
+        f"Unknown task_name: {task_name}"
+    )
+
+
+def build_task_id(
+    catalog_id,
+):
+    prefixes = (
+        "app_axie_",
+        "origins_",
+        "axie_quest_",
+    )
+
+    for prefix in prefixes:
+        if catalog_id.startswith(prefix):
+            return catalog_id[
+                len(prefix):
+            ]
+
+    return catalog_id
+
+
+def resolve_task_id(
+    entry,
+    catalog_id,
+):
+    if isinstance(entry, dict):
+        if "task_id" in entry:
+            return entry["task_id"]
+
+    return build_task_id(
+        catalog_id
+    )
+
+
+
+
+
 def build_daily_board(
     board_entries,
 ):
     board = {}
 
     for entry in board_entries:
-        task_id = entry["task_id"]
-        catalog_id = entry["catalog_id"]
+        catalog_id = resolve_catalog_id(
+            entry
+        )
+
+        task_id = resolve_task_id(
+            entry,
+            catalog_id,
+        )
 
         task = BOUNTY_TASK_CATALOG[
             catalog_id
         ]
 
-        random_class = entry.get(
-            "random_class"
+        random_class = (
+            entry.get("random_class")
+            if isinstance(entry, dict)
+            else None
         )
 
         if random_class is not None:
@@ -2320,6 +2440,23 @@ def build_daily_board(
         board[task_id] = task
 
     return board
+
+
+def normalize_inventory(
+    inventory,
+):
+    normalized = {}
+
+    for resource_name, quantity in inventory.items():
+        resource = RESOURCE_NAME_ALIASES.get(
+            resource_name,
+            resource_name,
+        )
+
+        normalized[resource] = quantity
+
+    return normalized
+
 
 
 def build_daily_input(
@@ -2335,7 +2472,9 @@ def build_daily_input(
 ):
     return {
         "board_entries": board_entries,
-        "inventory": inventory,
+        "inventory": normalize_inventory(
+            inventory
+        ),
         "slip_balance": slip_balance,
         "reroll_numbers": reroll_numbers,
         "strategy_context": build_strategy_context(
@@ -2358,8 +2497,14 @@ def validate_daily_input(
     task_ids = set()
 
     for entry in board_entries:
-        task_id = entry["task_id"]
-        catalog_id = entry["catalog_id"]
+        catalog_id = resolve_catalog_id(
+            entry
+        )
+
+        task_id = resolve_task_id(
+            entry,
+            catalog_id,
+        )
 
         if task_id in task_ids:
             raise ValueError(
@@ -2948,33 +3093,16 @@ def run_current_daily_plan():
         inventory=DAILY_INVENTORY,
         slip_balance=DAILY_SLIP_BALANCE,
         reroll_numbers=DAILY_REROLL_NUMBERS,
-        strategy_mode=DAILY_STRATEGY[
-            "strategy_mode"
-        ],
-        minimum_reserve=DAILY_STRATEGY[
-            "minimum_reserve"
-        ],
-        current_rank=DAILY_STRATEGY.get(
-            "current_rank"
-        ),
-        current_weekly_bp=DAILY_STRATEGY.get(
-            "current_weekly_bp"
-        ),
-        days_remaining=DAILY_STRATEGY.get(
-            "days_remaining"
-        ),
+       strategy_mode=DAILY_STRATEGY_MODE,
+        minimum_reserve=DAILY_MINIMUM_RESERVE,
     )
 
     execution_plan = run_daily_optimizer(
         daily_input=daily_input,
-        asset=DAILY_ASSET,
+        asset=None,
         title=f"AXIEOS DAILY BOUNTY PLAN — {DAILY_DATE}",
     )
 
-    reconciliation = reconcile_daily_bp(
-        execution_plan,
-        DAILY_OBSERVED_TOTAL_BP,
-    )
 
     reconciliation = reconcile_daily_bp(
         execution_plan,
