@@ -4,7 +4,9 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import sqlite3
 import shutil
-
+from decimal import Decimal
+import hashlib
+from datetime import datetime
 
 
 
@@ -13,6 +15,9 @@ SAMPLE_PATH = Path(
     "ronin_transactions_sample.json"
 )
 
+RONIN_WALLET_ADDRESS = (
+    "0x1eD8B3F3BD6a624De47f81Beea101f0d15CDfbC8"
+)
 
 RONIN_TRANSACTIONS_URL = (
     "https://explorer.roninchain.com/api/v2/"
@@ -855,7 +860,110 @@ def backup_axieos_database(
     return backup_path
 
 
+def normalize_address(
+    address,
+):
+    if address is None:
+        return None
 
+    return address.lower()
+
+
+def classify_transfer_direction(
+    transfer,
+):
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    from_address = normalize_address(
+        transfer["from_address"]
+    )
+
+    to_address = normalize_address(
+        transfer["to_address"]
+    )
+
+    if (
+        from_address == wallet
+        and to_address == wallet
+    ):
+        return "SELF"
+
+    if to_address == wallet:
+        return "IN"
+
+    if from_address == wallet:
+        return "OUT"
+
+    return "OTHER"
+
+
+def get_human_amount(
+    transfer,
+):
+    amount_raw = transfer.get(
+        "amount_raw"
+    )
+
+    decimals = transfer.get(
+        "decimals"
+    )
+
+    if amount_raw is None:
+        return None
+
+    if decimals is None:
+        return str(amount_raw)
+
+    amount = (
+        Decimal(str(amount_raw))
+        / (
+            Decimal(10)
+            ** int(decimals)
+        )
+    )
+
+    return format(
+        amount,
+        "f",
+    )
+
+
+def build_accounting_transfer_preview(
+    transfer,
+):
+    direction = classify_transfer_direction(
+        transfer
+    )
+
+    return {
+        "tx_hash": transfer[
+            "tx_hash"
+        ],
+        "log_index": transfer[
+            "log_index"
+        ],
+        "direction": direction,
+        "token_type": transfer[
+            "token_type"
+        ],
+        "token_symbol": transfer[
+            "token_symbol"
+        ],
+        "token_id": transfer[
+            "token_id"
+        ],
+        "amount": get_human_amount(
+            transfer
+        ),
+        "from_address": transfer[
+            "from_address"
+        ],
+        "to_address": transfer[
+            "to_address"
+        ],
+    }
 
 
 
@@ -1343,6 +1451,490 @@ def fetch_token_transfer_pages(
         pages.append(response)
 
     return pages
+
+
+def inspect_existing_ledger_format(
+    db_path,
+):
+    database_uri = (
+        f"file:{db_path.as_posix()}?mode=ro"
+    )
+
+    connection = sqlite3.connect(
+        database_uri,
+        uri=True,
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            txhash,
+            method,
+            token_collectibles,
+            value_in,
+            value_out,
+            txn_fee_ron
+        FROM blockchain_transactions
+        ORDER BY id DESC
+        LIMIT 15
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return rows
+
+
+def run_ledger_convention_test():
+    database_uri = (
+        f"file:{AXIEOS_DB_PATH.as_posix()}?mode=ro"
+    )
+
+    connection = sqlite3.connect(
+        database_uri,
+        uri=True,
+    )
+
+    asset_names = connection.execute(
+        """
+        SELECT DISTINCT token_collectibles
+        FROM blockchain_transactions
+        WHERE token_collectibles IS NOT NULL
+        ORDER BY token_collectibles
+        """
+    ).fetchall()
+
+    fee_rows = connection.execute(
+        """
+        SELECT
+            id,
+            txhash,
+            token_collectibles,
+            txn_fee_ron
+        FROM blockchain_transactions
+        WHERE CAST(txn_fee_ron AS REAL) != 0
+        ORDER BY id
+        """
+    ).fetchall()
+
+    connection.close()
+
+    print(
+        "\nLEDGER CONVENTIONS"
+    )
+
+    print("\nASSETS")
+
+    for row in asset_names:
+        print(row[0])
+
+    print(
+        "\nNONZERO FEE ROWS:",
+        len(fee_rows),
+    )
+
+    for row in fee_rows:
+        print(row)
+
+
+def convert_api_timestamp(
+    timestamp,
+):
+    if timestamp is None:
+        return None, None
+
+    parsed = datetime.fromisoformat(
+        timestamp.replace(
+            "Z",
+            "+00:00",
+        )
+    )
+
+    unix_timestamp = int(
+        parsed.timestamp()
+    )
+
+    ledger_datetime = (
+        parsed.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+    )
+
+    return (
+        unix_timestamp,
+        ledger_datetime,
+    )
+
+
+def build_api_source_row_hash(
+    transfer,
+):
+    source_text = (
+        "ronin_api_transfer|"
+        f"{transfer['transfer_key']}"
+    )
+
+    return hashlib.sha256(
+        source_text.encode("utf-8")
+    ).hexdigest()
+
+
+def build_ledger_row_from_transfer(
+    transfer,
+    method=None,
+):
+    direction = classify_transfer_direction(
+        transfer
+    )
+
+    amount = get_human_amount(
+        transfer
+    )
+
+    unix_timestamp, ledger_datetime = (
+        convert_api_timestamp(
+            transfer["timestamp"]
+        )
+    )
+
+    if direction == "IN":
+        value_in = amount
+        value_out = "0.0"
+
+    elif direction == "OUT":
+        value_in = "0.0"
+        value_out = amount
+
+    else:
+        value_in = "0.0"
+        value_out = "0.0"
+
+    return {
+        "txhash": transfer["tx_hash"],
+        "blockno": transfer[
+            "block_number"
+        ],
+        "unixtimestamp": unix_timestamp,
+        "datetime": ledger_datetime,
+        "from_address": transfer[
+            "from_address"
+        ],
+        "to_address": transfer[
+            "to_address"
+        ],
+        "method": method,
+        "token_collectibles": transfer[
+            "token_name"
+        ],
+        "value_in": value_in,
+        "value_out": value_out,
+        "txn_fee_ron": "0.0",
+        "status": "Success",
+        "source_row_hash": (
+            build_api_source_row_hash(
+                transfer
+            )
+        ),
+    }
+
+
+def run_ledger_date_overlap_test():
+    database_uri = (
+        f"file:{AXIEOS_DB_PATH.as_posix()}?mode=ro"
+    )
+
+    connection = sqlite3.connect(
+        database_uri,
+        uri=True,
+    )
+
+    ledger_range = connection.execute(
+        """
+        SELECT
+            MIN(datetime),
+            MAX(datetime),
+            COUNT(*)
+        FROM blockchain_transactions
+        """
+    ).fetchone()
+
+    staging_range = connection.execute(
+        """
+        SELECT
+            MIN(timestamp),
+            MAX(timestamp),
+            COUNT(*)
+        FROM ronin_token_transfers_raw
+        """
+    ).fetchone()
+
+    connection.close()
+
+    print(
+        "\nLEDGER DATE OVERLAP CHECK"
+    )
+
+    print(
+        "Existing ledger rows:",
+        ledger_range[2],
+    )
+
+    print(
+        "Existing ledger earliest:",
+        ledger_range[0],
+    )
+
+    print(
+        "Existing ledger latest:",
+        ledger_range[1],
+    )
+
+    print(
+        "Staged transfer rows:",
+        staging_range[2],
+    )
+
+    print(
+        "Staged transfer earliest:",
+        staging_range[0],
+    )
+
+    print(
+        "Staged transfer latest:",
+        staging_range[1],
+    )
+
+
+def load_staged_transfers(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            t.transfer_key,
+            t.tx_hash,
+            t.log_index,
+            t.timestamp,
+            t.block_number,
+            t.from_address,
+            t.to_address,
+            t.token_type,
+            t.token_symbol,
+            t.token_name,
+            t.token_address,
+            t.token_id,
+            t.amount_raw,
+            t.decimals,
+            x.method
+        FROM ronin_token_transfers_raw AS t
+        LEFT JOIN ronin_api_transactions_raw AS x
+            ON t.tx_hash = x.tx_hash
+        ORDER BY
+            t.block_number,
+            t.log_index
+        """
+    ).fetchall()
+
+    connection.close()
+
+    transfers = []
+
+    for row in rows:
+        transfers.append(
+            {
+                "transfer_key": row[0],
+                "tx_hash": row[1],
+                "log_index": row[2],
+                "timestamp": row[3],
+                "block_number": row[4],
+                "from_address": row[5],
+                "to_address": row[6],
+                "token_type": row[7],
+                "token_symbol": row[8],
+                "token_name": row[9],
+                "token_address": row[10],
+                "token_id": row[11],
+                "amount_raw": row[12],
+                "decimals": row[13],
+                "method": row[14],
+            }
+        )
+
+    return transfers
+
+
+def insert_ledger_rows(
+    db_path,
+    ledger_rows,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = [
+        (
+            row["txhash"],
+            row["blockno"],
+            row["unixtimestamp"],
+            row["datetime"],
+            row["from_address"],
+            row["to_address"],
+            row["method"],
+            row["token_collectibles"],
+            row["value_in"],
+            row["value_out"],
+            row["txn_fee_ron"],
+            row["status"],
+            row["source_row_hash"],
+        )
+        for row in ledger_rows
+    ]
+
+    connection.executemany(
+        """
+        INSERT OR IGNORE INTO blockchain_transactions (
+            txhash,
+            blockno,
+            unixtimestamp,
+            datetime,
+            from_address,
+            to_address,
+            method,
+            token_collectibles,
+            value_in,
+            value_out,
+            txn_fee_ron,
+            status,
+            source_row_hash
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+    inserted_count = (
+        connection.total_changes
+    )
+
+    connection.commit()
+    connection.close()
+
+    return inserted_count
+
+
+def run_production_ledger_insert_test():
+    staged_transfers = (
+        load_staged_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    ledger_rows = []
+    skipped = 0
+
+    for transfer in staged_transfers:
+        direction = (
+            classify_transfer_direction(
+                transfer
+            )
+        )
+
+        if direction not in {
+            "IN",
+            "OUT",
+        }:
+            skipped += 1
+            continue
+
+        ledger_rows.append(
+            build_ledger_row_from_transfer(
+                transfer,
+                method=transfer.get(
+                    "method"
+                ),
+            )
+        )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    before_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    first_insert = insert_ledger_rows(
+        AXIEOS_DB_PATH,
+        ledger_rows,
+    )
+
+    second_insert = insert_ledger_rows(
+        AXIEOS_DB_PATH,
+        ledger_rows,
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    after_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    print(
+        "\nRONIN PRODUCTION LEDGER INSERT"
+    )
+
+    print(
+        "Staged transfers:",
+        len(staged_transfers),
+    )
+
+    print(
+        "Ledger rows prepared:",
+        len(ledger_rows),
+    )
+
+    print(
+        "Transfers skipped:",
+        skipped,
+    )
+
+    print(
+        "Ledger rows before:",
+        before_count,
+    )
+
+    print(
+        "First insert:",
+        first_insert,
+    )
+
+    print(
+        "Second insert:",
+        second_insert,
+    )
+
+    print(
+        "Ledger rows after:",
+        after_count,
+    )
+
 
 
 
@@ -2427,6 +3019,511 @@ def run_production_staging_sync():
     )
 
 
+def run_accounting_preview_test():
+    transfers = (
+        fetch_normalized_token_transfers(
+            max_pages=1
+        )
+    )
+
+    print(
+        "\nRONIN ACCOUNTING PREVIEW"
+    )
+
+    for transfer in transfers[:10]:
+        preview = (
+            build_accounting_transfer_preview(
+                transfer
+            )
+        )
+
+        print(preview)
+
+
+def run_existing_ledger_format_test():
+    rows = inspect_existing_ledger_format(
+        AXIEOS_DB_PATH
+    )
+
+    print(
+        "\nEXISTING LEDGER FORMAT"
+    )
+
+    for row in rows:
+        print(row)
+
+
+def run_ledger_adapter_test():
+    transfers = (
+        fetch_normalized_token_transfers(
+            max_pages=1
+        )
+    )
+
+    transactions = (
+        fetch_normalized_transactions(
+            max_pages=1
+        )
+    )
+
+    methods_by_tx = {
+        transaction["tx_hash"]:
+        transaction["method"]
+        for transaction in transactions
+    }
+
+    print(
+        "\nRONIN LEDGER ADAPTER"
+    )
+
+    for transfer in transfers[:10]:
+        ledger_row = (
+            build_ledger_row_from_transfer(
+                transfer,
+                method=methods_by_tx.get(
+                    transfer["tx_hash"]
+                ),
+            )
+        )
+
+        print(ledger_row)
+
+
+def run_production_ledger_validation():
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total_rows = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        """
+    ).fetchone()[0]
+
+    unique_source_rows = connection.execute(
+        """
+        SELECT COUNT(
+            DISTINCT source_row_hash
+        )
+        FROM blockchain_transactions
+        """
+    ).fetchone()[0]
+
+    duplicate_source_rows = (
+        total_rows
+        - unique_source_rows
+    )
+
+    legacy_rows = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        WHERE datetime < '2026-01-01'
+        """
+    ).fetchone()[0]
+
+    api_rows = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        WHERE datetime >= '2026-01-01'
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    print(
+        "\nRONIN PRODUCTION LEDGER VALIDATION"
+    )
+
+    print(
+        "Total ledger rows:",
+        total_rows,
+    )
+
+    print(
+        "Unique source rows:",
+        unique_source_rows,
+    )
+
+    print(
+        "Duplicate source rows:",
+        duplicate_source_rows,
+    )
+
+    print(
+        "Legacy rows:",
+        legacy_rows,
+    )
+
+    print(
+        "API-era rows:",
+        api_rows,
+    )
+
+    print(
+        "Expected total:",
+        187,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if (
+                total_rows == 187
+                and unique_source_rows
+                == total_rows
+                and legacy_rows == 37
+                and api_rows == 150
+            )
+            else "REVIEW"
+        ),
+    )
+
+
+def run_ronin_sync(
+    max_pages=3,
+):
+    print("\nAXIEOS RONIN SYNC")
+
+    # Make sure production staging tables exist.
+    initialize_raw_api_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_raw_transfer_table(
+        AXIEOS_DB_PATH
+    )
+
+    # Fetch live Ronin data.
+    transactions = (
+        fetch_normalized_transactions(
+            max_pages=max_pages
+        )
+    )
+
+    transfers = (
+        fetch_normalized_token_transfers(
+            max_pages=max_pages
+        )
+    )
+
+    # Stage raw API records.
+    new_transactions = (
+        insert_raw_api_transactions(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    new_transfers = (
+        insert_raw_token_transfers(
+            AXIEOS_DB_PATH,
+            transfers,
+        )
+    )
+
+    # Build accounting rows from all staged transfers.
+    staged_transfers = (
+        load_staged_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    ledger_rows = []
+
+    for transfer in staged_transfers:
+        direction = (
+            classify_transfer_direction(
+                transfer
+            )
+        )
+
+        if direction not in {
+            "IN",
+            "OUT",
+        }:
+            continue
+
+        ledger_rows.append(
+            build_ledger_row_from_transfer(
+                transfer,
+                method=transfer.get(
+                    "method"
+                ),
+            )
+        )
+
+    new_ledger_rows = insert_ledger_rows(
+        AXIEOS_DB_PATH,
+        ledger_rows,
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    staged_transaction_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_api_transactions_raw
+            """
+        ).fetchone()[0]
+    )
+
+    staged_transfer_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_token_transfers_raw
+            """
+        ).fetchone()[0]
+    )
+
+    ledger_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transactions
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    print(
+        "Transactions fetched:",
+        len(transactions),
+    )
+
+    print(
+        "New transactions staged:",
+        new_transactions,
+    )
+
+    print(
+        "Transactions staged total:",
+        staged_transaction_count,
+    )
+
+    print(
+        "Transfers fetched:",
+        len(transfers),
+    )
+
+    print(
+        "New transfers staged:",
+        new_transfers,
+    )
+
+    print(
+        "Transfers staged total:",
+        staged_transfer_count,
+    )
+
+    print(
+        "Ledger rows prepared:",
+        len(ledger_rows),
+    )
+
+    print(
+        "New ledger rows:",
+        new_ledger_rows,
+    )
+
+    print(
+        "Ledger rows total:",
+        ledger_count,
+    )
+
+    return {
+        "transactions_fetched": len(
+            transactions
+        ),
+        "new_transactions": new_transactions,
+        "transfers_fetched": len(
+            transfers
+        ),
+        "new_transfers": new_transfers,
+        "new_ledger_rows": new_ledger_rows,
+        "ledger_rows_total": ledger_count,
+    }
+
+
+def run_ronin_sync(
+    max_pages=3,
+):
+    print("\nAXIEOS RONIN SYNC")
+
+    initialize_raw_api_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_raw_transfer_table(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        fetch_normalized_transactions(
+            max_pages=max_pages
+        )
+    )
+
+    transfers = (
+        fetch_normalized_token_transfers(
+            max_pages=max_pages
+        )
+    )
+
+    new_transactions = (
+        insert_raw_api_transactions(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    new_transfers = (
+        insert_raw_token_transfers(
+            AXIEOS_DB_PATH,
+            transfers,
+        )
+    )
+
+    staged_transfers = (
+        load_staged_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    ledger_rows = []
+
+    for transfer in staged_transfers:
+        direction = (
+            classify_transfer_direction(
+                transfer
+            )
+        )
+
+        if direction not in {
+            "IN",
+            "OUT",
+        }:
+            continue
+
+        ledger_rows.append(
+            build_ledger_row_from_transfer(
+                transfer,
+                method=transfer.get(
+                    "method"
+                ),
+            )
+        )
+
+    new_ledger_rows = insert_ledger_rows(
+        AXIEOS_DB_PATH,
+        ledger_rows,
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    staged_transaction_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_api_transactions_raw
+            """
+        ).fetchone()[0]
+    )
+
+    staged_transfer_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_token_transfers_raw
+            """
+        ).fetchone()[0]
+    )
+
+    ledger_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transactions
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    print(
+        "Transactions fetched:",
+        len(transactions),
+    )
+
+    print(
+        "New transactions staged:",
+        new_transactions,
+    )
+
+    print(
+        "Transactions staged total:",
+        staged_transaction_count,
+    )
+
+    print(
+        "Transfers fetched:",
+        len(transfers),
+    )
+
+    print(
+        "New transfers staged:",
+        new_transfers,
+    )
+
+    print(
+        "Transfers staged total:",
+        staged_transfer_count,
+    )
+
+    print(
+        "Ledger rows prepared:",
+        len(ledger_rows),
+    )
+
+    print(
+        "New ledger rows:",
+        new_ledger_rows,
+    )
+
+    print(
+        "Ledger rows total:",
+        ledger_count,
+    )
+
+    return {
+        "transactions_fetched": len(
+            transactions
+        ),
+        "new_transactions": new_transactions,
+        "transfers_fetched": len(
+            transfers
+        ),
+        "new_transfers": new_transfers,
+        "new_ledger_rows": new_ledger_rows,
+        "ledger_rows_total": ledger_count,
+    }
+
+
+
+
+
 
 if __name__ == "__main__":
-    run_production_staging_sync()
+    run_ronin_sync(
+        max_pages=3
+    )
