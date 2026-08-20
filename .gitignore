@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Ronin API local data
+data/blockchain/api_samples/ronin_transactions_sample.json
+data/blockchain/database/ronin_sync_test.db
+data/blockchain/database/ronin_idempotency_test.db
+data/blockchain/database/backups/
+
+
+# AxieOS local production database
+data/blockchain/database/axieos.db
