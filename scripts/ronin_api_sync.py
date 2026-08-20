@@ -35,6 +35,57 @@ RONIN_TOKEN_TRANSFERS_URL = (
 )
 
 
+TRANSACTION_CLASSIFICATIONS = {
+    "MARKETPLACE_BUY",
+    "MARKETPLACE_SALE",
+    "TOKEN_SWAP",
+    "TRANSFER_IN",
+    "TRANSFER_OUT",
+    "CONSUMABLE_BURN",
+    "NFT_BURN",
+    "MINT_OR_CLAIM",
+    "STAKING_OR_REWARD",
+    "UNKNOWN",
+}
+
+
+CLASSIFICATION_DESCRIPTIONS = {
+    "MARKETPLACE_BUY": (
+        "Asset received and payment sent"
+    ),
+    "MARKETPLACE_SALE": (
+        "Asset sent and payment received"
+    ),
+    "TOKEN_SWAP": (
+        "One fungible token sent and "
+        "another fungible token received"
+    ),
+    "TRANSFER_IN": (
+        "Asset received without a detected "
+        "matching payment"
+    ),
+    "TRANSFER_OUT": (
+        "Asset sent without a detected "
+        "matching receipt"
+    ),
+    "CONSUMABLE_BURN": (
+        "Consumable sent to the zero address"
+    ),
+    "NFT_BURN": (
+        "NFT sent to the zero address"
+    ),
+    "MINT_OR_CLAIM": (
+        "Asset received from the zero address"
+    ),
+    "STAKING_OR_REWARD": (
+        "Staking or reward-related activity"
+    ),
+    "UNKNOWN": (
+        "Transaction needs review"
+    ),
+}
+
+
 TEST_DB_PATH = Path(
     "data/blockchain/database/"
     "ronin_sync_test.db"
@@ -57,6 +108,14 @@ AXIEOS_BACKUP_PATH = Path(
     "data/blockchain/database/backups/"
     "axieos_pre_ronin_sync_2026-08-20.db"
 )
+
+
+ZERO_ADDRESS = (
+    "0x0000000000000000000000000000000000000000"
+)
+
+
+CLASSIFIER_VERSION = "0.2"
 
 
 
@@ -308,6 +367,97 @@ def inspect_axieos_database(
     connection.close()
 
     return tables
+
+
+def initialize_classification_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        blockchain_transaction_classifications (
+            txhash TEXT PRIMARY KEY,
+            classification TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            method TEXT,
+            classifier_version TEXT NOT NULL,
+            classified_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def store_transaction_classifications(
+    db_path,
+    transactions,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    stored = 0
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        connection.execute(
+            """
+            INSERT INTO
+                blockchain_transaction_classifications (
+                    txhash,
+                    classification,
+                    confidence,
+                    reason,
+                    method,
+                    classifier_version
+                )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(txhash)
+            DO UPDATE SET
+                classification =
+                    excluded.classification,
+                confidence =
+                    excluded.confidence,
+                reason =
+                    excluded.reason,
+                method =
+                    excluded.method,
+                classifier_version =
+                    excluded.classifier_version,
+                classified_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                transaction["txhash"],
+                result["classification"],
+                result["confidence"],
+                result["reason"],
+                transaction.get("method"),
+                CLASSIFIER_VERSION,
+            ),
+        )
+
+        stored += 1
+
+    connection.commit()
+    connection.close()
+
+    return stored
+
+
 
 
 def inspect_blockchain_transactions(
@@ -964,6 +1114,137 @@ def build_accounting_transfer_preview(
             "to_address"
         ],
     }
+
+
+def validate_classification_taxonomy():
+    description_keys = set(
+        CLASSIFICATION_DESCRIPTIONS
+    )
+
+    return (
+        TRANSACTION_CLASSIFICATIONS
+        == description_keys
+    )
+
+
+def group_ledger_rows_by_txhash(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            blockno,
+            datetime,
+            from_address,
+            to_address,
+            method,
+            token_collectibles,
+            value_in,
+            value_out,
+            status
+        FROM blockchain_transactions
+        ORDER BY
+            blockno,
+            id
+        """
+    ).fetchall()
+
+    connection.close()
+
+    grouped = {}
+
+    for row in rows:
+        txhash = row[0]
+
+        if txhash not in grouped:
+            grouped[txhash] = {
+                "txhash": txhash,
+                "blockno": row[1],
+                "datetime": row[2],
+                "method": row[5],
+                "status": row[9],
+                "movements": [],
+            }
+
+        grouped[txhash][
+            "movements"
+        ].append(
+            {
+                "from_address": row[3],
+                "to_address": row[4],
+                "asset": row[6],
+                "value_in": row[7],
+                "value_out": row[8],
+            }
+        )
+
+    return list(
+        grouped.values()
+    )
+
+
+def run_transaction_grouping_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    multi_movement = [
+        transaction
+        for transaction in transactions
+        if len(
+            transaction["movements"]
+        ) > 1
+    ]
+
+    print(
+        "\nRONIN TRANSACTION GROUPING"
+    )
+
+    print(
+        "Ledger rows:",
+        187,
+    )
+
+    print(
+        "Grouped transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Multi-movement transactions:",
+        len(multi_movement),
+    )
+
+    print(
+        "\nEXAMPLE GROUPS"
+    )
+
+    for transaction in multi_movement[:5]:
+        print(
+            "\nTX:",
+            transaction["txhash"],
+        )
+
+        print(
+            "Method:",
+            transaction["method"],
+        )
+
+        for movement in transaction[
+            "movements"
+        ]:
+            print(
+                movement
+            )
+
+
 
 
 
@@ -1934,6 +2215,378 @@ def run_production_ledger_insert_test():
         "Ledger rows after:",
         after_count,
     )
+
+
+def get_movement_direction(
+    movement,
+):
+    value_in = Decimal(
+        str(
+            movement.get(
+                "value_in",
+                "0",
+            )
+        )
+    )
+
+    value_out = Decimal(
+        str(
+            movement.get(
+                "value_out",
+                "0",
+            )
+        )
+    )
+
+    if value_in > 0:
+        return "IN"
+
+    if value_out > 0:
+        return "OUT"
+
+    return "NONE"
+
+
+def is_zero_address(
+    address,
+):
+    return (
+        normalize_address(address)
+        == ZERO_ADDRESS
+    )
+
+
+def classify_single_movement(
+    movement,
+    method=None,
+):
+    direction = get_movement_direction(
+        movement
+    )
+
+    asset = movement.get(
+        "asset"
+    )
+
+    from_address = movement.get(
+        "from_address"
+    )
+
+    to_address = movement.get(
+        "to_address"
+    )
+
+    if (
+        direction == "OUT"
+        and is_zero_address(to_address)
+    ):
+        if asset == "Axie Consumable Item":
+            return {
+                "classification": (
+                    "CONSUMABLE_BURN"
+                ),
+                "confidence": "HIGH",
+                "reason": (
+                    "consumable sent to "
+                    "zero address"
+                ),
+            }
+
+        if asset == "Axie":
+            return {
+                "classification": "NFT_BURN",
+                "confidence": "HIGH",
+                "reason": (
+                    "Axie sent to zero address"
+                ),
+            }
+
+    if (
+        direction == "IN"
+        and is_zero_address(from_address)
+    ):
+        return {
+            "classification": (
+                "MINT_OR_CLAIM"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "asset received from "
+                "zero address"
+            ),
+        }
+
+    # Legacy CSV checkpoint rows are not
+    # ordinary blockchain transfers.
+    if method == "checkpoint":
+        return None
+
+    if direction == "IN":
+        return {
+            "classification": "TRANSFER_IN",
+            "confidence": "MEDIUM",
+            "reason": (
+                "single incoming movement "
+                "without detected payment"
+            ),
+        }
+
+    if direction == "OUT":
+        return {
+            "classification": "TRANSFER_OUT",
+            "confidence": "MEDIUM",
+            "reason": (
+                "single outgoing movement "
+                "without detected receipt"
+            ),
+        }
+
+    return None
+
+
+def all_movements_are_zero_address_mints(
+    movements,
+):
+    if not movements:
+        return False
+
+    for movement in movements:
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        if direction != "IN":
+            return False
+
+        if not is_zero_address(
+            movement.get(
+                "from_address"
+            )
+        ):
+            return False
+
+    return True
+
+
+
+
+
+
+def classify_grouped_transaction(
+    transaction,
+):
+    method = transaction.get(
+        "method"
+    )
+
+    movements = transaction.get(
+        "movements",
+        [],
+    )
+
+    if method == "swapExactTokensForTokens":
+        return {
+            "classification": "TOKEN_SWAP",
+            "confidence": "HIGH",
+            "reason": (
+                "swap method detected"
+            ),
+        }
+
+    if method in {
+        "restakeRewards",
+        "claimRewards",
+        "claimReward",
+    }:
+        return {
+            "classification": (
+                "STAKING_OR_REWARD"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "staking or reward "
+                "method detected"
+            ),
+        }
+
+    if (
+        len(movements) > 1
+        and all_movements_are_zero_address_mints(
+            movements
+        )
+    ):
+        return {
+            "classification": (
+                "MINT_OR_CLAIM"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "all movements received "
+                "from zero address"
+            ),
+        }
+
+    weth_in = False
+    weth_out = False
+
+    non_weth_in = False
+    non_weth_out = False
+
+    for movement in movements:
+        asset = movement.get(
+            "asset"
+        )
+
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        is_weth = (
+            asset
+            == "Ronin Wrapped Ether"
+        )
+
+        if is_weth:
+            if direction == "IN":
+                weth_in = True
+
+            elif direction == "OUT":
+                weth_out = True
+
+        else:
+            if direction == "IN":
+                non_weth_in = True
+
+            elif direction == "OUT":
+                non_weth_out = True
+
+    if (
+        weth_out
+        and non_weth_in
+    ):
+        return {
+            "classification": (
+                "MARKETPLACE_BUY"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "WETH sent and "
+                "non-WETH asset received"
+            ),
+        }
+
+    if (
+        weth_in
+        and non_weth_out
+    ):
+        return {
+            "classification": (
+                "MARKETPLACE_SALE"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "WETH received and "
+                "non-WETH asset sent"
+            ),
+        }
+
+    if len(movements) == 1:
+        simple_result = (
+            classify_single_movement(
+                movements[0],
+                method=method,
+            )
+        )
+
+        if simple_result is not None:
+            return simple_result
+
+    return {
+        "classification": "UNKNOWN",
+        "confidence": "LOW",
+        "reason": (
+            "no strong classification "
+            "pattern detected"
+        ),
+    }
+
+
+def validate_classification_storage(
+    db_path,
+):
+    transactions = (
+        group_ledger_rows_by_txhash(
+            db_path
+        )
+    )
+
+    expected_total = len(
+        transactions
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            classification
+        FROM blockchain_transaction_classifications
+        """
+    ).fetchall()
+
+    connection.close()
+
+    stored_total = len(rows)
+
+    stored_txhashes = {
+        row[0]
+        for row in rows
+    }
+
+    invalid_classifications = [
+        classification
+        for _, classification in rows
+        if classification
+        not in TRANSACTION_CLASSIFICATIONS
+    ]
+
+    unknown_total = sum(
+        1
+        for _, classification in rows
+        if classification == "UNKNOWN"
+    )
+
+    return {
+        "expected_total": expected_total,
+        "stored_total": stored_total,
+        "unique_txhashes": len(
+            stored_txhashes
+        ),
+        "unknown_total": unknown_total,
+        "invalid_total": len(
+            invalid_classifications
+        ),
+        "taxonomy_valid": (
+            validate_classification_taxonomy()
+        ),
+        "passed": (
+            stored_total
+            == expected_total
+            == len(stored_txhashes)
+            and len(
+                invalid_classifications
+            )
+            == 0
+            and validate_classification_taxonomy()
+        ),
+    }
 
 
 
@@ -3519,11 +4172,441 @@ def run_ronin_sync(
     }
 
 
+def run_ronin_sync_v02(
+    max_pages=3,
+):
+    run_ronin_sync(
+        max_pages=max_pages
+    )
+
+    initialize_classification_table(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    processed = (
+        store_transaction_classifications(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    validation = (
+        validate_classification_storage(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    print(
+        "\nRONIN TRANSACTION CLASSIFICATION"
+    )
+
+    print(
+        "Transactions classified:",
+        processed,
+    )
+
+    print(
+        "Classifications stored:",
+        validation["stored_total"],
+    )
+
+    print(
+        "Unique classified transactions:",
+        validation["unique_txhashes"],
+    )
+
+    print(
+        "Unknown classifications:",
+        validation["unknown_total"],
+    )
+
+    print(
+        "Invalid classifications:",
+        validation["invalid_total"],
+    )
+
+    print(
+        "Classifier version:",
+        CLASSIFIER_VERSION,
+    )
+
+    print(
+        "Taxonomy valid:",
+        validation["taxonomy_valid"],
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation["passed"]
+            else "FAIL"
+        ),
+    )
+
+
+
+
+
+
+
+def run_classification_taxonomy_test():
+    print(
+        "\nRONIN CLASSIFICATION TAXONOMY"
+    )
+
+    print(
+        "Categories:",
+        len(
+            TRANSACTION_CLASSIFICATIONS
+        ),
+    )
+
+    print(
+        "Taxonomy valid:",
+        validate_classification_taxonomy(),
+    )
+
+    for classification in sorted(
+        TRANSACTION_CLASSIFICATIONS
+    ):
+        print(
+            f"{classification}: "
+            f"{CLASSIFICATION_DESCRIPTIONS[classification]}"
+        )
+
+
+def run_marketplace_classification_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    classified = []
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        if result["classification"] in {
+            "TOKEN_SWAP",
+            "MARKETPLACE_BUY",
+            "MARKETPLACE_SALE",
+        }:
+            classified.append(
+                (
+                    transaction,
+                    result,
+                )
+            )
+
+    print(
+        "\nRONIN MARKETPLACE CLASSIFICATION"
+    )
+
+    print(
+        "Transactions checked:",
+        len(transactions),
+    )
+
+    print(
+        "Strong classifications:",
+        len(classified),
+    )
+
+    for transaction, result in (
+        classified[:10]
+    ):
+        print(
+            "\nTX:",
+            transaction["txhash"],
+        )
+
+        print(
+            "Classification:",
+            result["classification"],
+        )
+
+        print(
+            "Confidence:",
+            result["confidence"],
+        )
+
+        print(
+            "Reason:",
+            result["reason"],
+        )
+
+        for movement in transaction[
+            "movements"
+        ]:
+            print(movement)
+
+
+def run_basic_classification_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counts = {}
+
+    examples = {}
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        classification = result[
+            "classification"
+        ]
+
+        counts[classification] = (
+            counts.get(
+                classification,
+                0,
+            )
+            + 1
+        )
+
+        examples.setdefault(
+            classification,
+            (
+                transaction,
+                result,
+            ),
+        )
+
+    print(
+        "\nRONIN BASIC CLASSIFICATION"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print("\nCOUNTS")
+
+    for classification in sorted(
+        counts
+    ):
+        print(
+            f"{classification}: "
+            f"{counts[classification]}"
+        )
+
+    target_examples = [
+        "CONSUMABLE_BURN",
+        "NFT_BURN",
+        "MINT_OR_CLAIM",
+        "TRANSFER_IN",
+        "TRANSFER_OUT",
+    ]
+
+    print("\nEXAMPLES")
+
+    for classification in target_examples:
+        if classification not in examples:
+            continue
+
+        transaction, result = (
+            examples[classification]
+        )
+
+        print(
+            f"\n{classification}"
+        )
+
+        print(
+            "TX:",
+            transaction["txhash"],
+        )
+
+        print(
+            "Reason:",
+            result["reason"],
+        )
+
+        for movement in transaction[
+            "movements"
+        ]:
+            print(movement)
+
+
+def run_unknown_classification_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    unknown_transactions = []
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        if (
+            result["classification"]
+            == "UNKNOWN"
+        ):
+            unknown_transactions.append(
+                (
+                    transaction,
+                    result,
+                )
+            )
+
+    print(
+        "\nRONIN UNKNOWN CLASSIFICATIONS"
+    )
+
+    print(
+        "Unknown transactions:",
+        len(unknown_transactions),
+    )
+
+    for transaction, result in (
+        unknown_transactions
+    ):
+        print(
+            "\nTX:",
+            transaction["txhash"],
+        )
+
+        print(
+            "Datetime:",
+            transaction["datetime"],
+        )
+
+        print(
+            "Method:",
+            transaction["method"],
+        )
+
+        print(
+            "Reason:",
+            result["reason"],
+        )
+
+        print(
+            "Movements:",
+            len(
+                transaction["movements"]
+            ),
+        )
+
+        for movement in transaction[
+            "movements"
+        ]:
+            print(movement)
+
+
+def run_classification_storage_test():
+    initialize_classification_table(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    processed = (
+        store_transaction_classifications(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_classifications
+        """
+    ).fetchone()[0]
+
+    unknown = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_classifications
+        WHERE classification = 'UNKNOWN'
+        """
+    ).fetchone()[0]
+
+    counts = connection.execute(
+        """
+        SELECT
+            classification,
+            COUNT(*)
+        FROM blockchain_transaction_classifications
+        GROUP BY classification
+        ORDER BY classification
+        """
+    ).fetchall()
+
+    connection.close()
+
+    print(
+        "\nRONIN CLASSIFICATION STORAGE"
+    )
+
+    print(
+        "Transactions processed:",
+        processed,
+    )
+
+    print(
+        "Classifications stored:",
+        total,
+    )
+
+    print(
+        "Unknown classifications:",
+        unknown,
+    )
+
+    print(
+        "Classifier version:",
+        CLASSIFIER_VERSION,
+    )
+
+    print("\nCOUNTS")
+
+    for classification, count in counts:
+        print(
+            f"{classification}: {count}"
+        )
+
+
 
 
 
 
 if __name__ == "__main__":
-    run_ronin_sync(
+    run_ronin_sync_v02(
         max_pages=3
     )
