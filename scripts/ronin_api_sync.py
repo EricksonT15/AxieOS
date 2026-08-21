@@ -161,6 +161,8 @@ INTELLIGENCE_VERSION = "0.5"
 
 RONIN_INTELLIGENCE_VERSION = "0.5"
 
+ACCOUNTING_VERSION = "0.6"
+
 WALLET_OWNERSHIP_TYPES = {
     "USER_OWNED",
     "EXTERNAL",
@@ -201,6 +203,62 @@ ASSET_CATEGORIES = {
     "UNKNOWN",
 }
 
+ACCOUNTING_STATUSES = {
+    "READY",
+    "REVIEW",
+    "NON_TAXABLE_INTERNAL",
+    "INFORMATIONAL",
+}
+
+ACCOUNTING_EVENT_TYPES = {
+    "ASSET_PURCHASE",
+    "ASSET_SALE",
+    "TOKEN_SWAP",
+    "TRANSFER_IN",
+    "TRANSFER_OUT",
+    "INTERNAL_TRANSFER",
+    "ASSET_BURN",
+    "MINT_OR_CLAIM",
+    "STAKING_OR_REWARD",
+    "UNKNOWN",
+}
+
+ACCOUNTING_RECORD_FIELDS = {
+    "accounting_key",
+    "txhash",
+    "datetime",
+    "event_type",
+    "classification",
+    "asset_name",
+    "asset_token_id",
+    "asset_category",
+    "quantity",
+    "direction",
+    "payment_asset",
+    "gross_amount",
+    "marketplace_fee",
+    "net_amount",
+    "cost_basis",
+    "realized_pl",
+    "counterparty_role",
+    "is_internal_transfer",
+    "accounting_status",
+    "accounting_version",
+}
+
+CLASSIFICATION_TO_ACCOUNTING_EVENT = {
+    "MARKETPLACE_BUY": "ASSET_PURCHASE",
+    "MARKETPLACE_SALE": "ASSET_SALE",
+    "TOKEN_SWAP": "TOKEN_SWAP",
+    "TRANSFER_IN": "TRANSFER_IN",
+    "TRANSFER_OUT": "TRANSFER_OUT",
+    "INTERNAL_TRANSFER": "INTERNAL_TRANSFER",
+    "CONSUMABLE_BURN": "ASSET_BURN",
+    "NFT_BURN": "ASSET_BURN",
+    "MINT_OR_CLAIM": "MINT_OR_CLAIM",
+    "STAKING_OR_REWARD": "STAKING_OR_REWARD",
+    "UNKNOWN": "UNKNOWN",
+}
 
 
 
@@ -367,6 +425,58 @@ def initialize_transaction_database(
 
     connection.commit()
     connection.close()
+
+
+def initialize_accounting_records_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        blockchain_accounting_records (
+            accounting_key TEXT PRIMARY KEY,
+            txhash TEXT NOT NULL,
+            datetime TEXT,
+            event_type TEXT NOT NULL,
+            classification TEXT NOT NULL,
+            asset_name TEXT,
+            asset_token_id TEXT,
+            asset_category TEXT,
+            quantity TEXT,
+            direction TEXT,
+            payment_asset TEXT,
+            gross_amount TEXT,
+            marketplace_fee TEXT,
+            net_amount TEXT,
+            cost_basis TEXT,
+            realized_pl TEXT,
+            counterparty_role TEXT,
+            is_internal_transfer INTEGER NOT NULL,
+            accounting_status TEXT NOT NULL,
+            accounting_version TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_blockchain_accounting_records_txhash
+        ON blockchain_accounting_records (
+            txhash
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
 
 
 def initialize_transaction_intelligence_table(
@@ -3930,6 +4040,1216 @@ def store_economic_events(
     connection.close()
 
     return processed
+
+
+def build_empty_accounting_record(
+    txhash,
+    datetime_value,
+    classification,
+):
+    return {
+        "accounting_key": txhash,
+        "txhash": txhash,
+        "datetime": datetime_value,
+        "event_type": "UNKNOWN",
+        "classification": classification,
+        "asset_name": None,
+        "asset_token_id": None,
+        "asset_category": None,
+        "quantity": None,
+        "direction": None,
+        "payment_asset": None,
+        "gross_amount": None,
+        "marketplace_fee": None,
+        "net_amount": None,
+        "cost_basis": None,
+        "realized_pl": None,
+        "counterparty_role": None,
+        "is_internal_transfer": False,
+        "accounting_status": "REVIEW",
+        "accounting_version": ACCOUNTING_VERSION,
+    }
+
+
+def validate_accounting_record(
+    record,
+):
+    fields_valid = (
+        set(record.keys())
+        == ACCOUNTING_RECORD_FIELDS
+    )
+
+    status_valid = (
+        record["accounting_status"]
+        in ACCOUNTING_STATUSES
+    )
+
+    event_type_valid = (
+        record["event_type"]
+        in ACCOUNTING_EVENT_TYPES
+    )
+
+    version_valid = (
+        record["accounting_version"]
+        == ACCOUNTING_VERSION
+    )
+
+    return (
+        fields_valid
+        and status_valid
+        and event_type_valid
+        and version_valid
+    )
+
+
+def select_primary_accounting_movement(
+    transaction,
+    classification,
+):
+    movements = transaction.get(
+        "movements",
+        [],
+    )
+
+    if not movements:
+        return None
+
+    if classification == "MARKETPLACE_BUY":
+        for movement in movements:
+            if (
+                movement.get("asset")
+                != "Ronin Wrapped Ether"
+                and get_movement_direction(
+                    movement
+                )
+                == "IN"
+            ):
+                return movement
+
+    if classification == "MARKETPLACE_SALE":
+        for movement in movements:
+            if (
+                movement.get("asset")
+                != "Ronin Wrapped Ether"
+                and get_movement_direction(
+                    movement
+                )
+                == "OUT"
+            ):
+                return movement
+
+    if classification == "TOKEN_SWAP":
+        for movement in movements:
+            if (
+                get_movement_direction(
+                    movement
+                )
+                == "OUT"
+            ):
+                return movement
+
+    if classification in {
+        "MINT_OR_CLAIM",
+        "STAKING_OR_REWARD",
+        "TRANSFER_IN",
+    }:
+        for movement in movements:
+            if (
+                get_movement_direction(
+                    movement
+                )
+                == "IN"
+            ):
+                return movement
+
+    if classification in {
+        "TRANSFER_OUT",
+        "CONSUMABLE_BURN",
+        "NFT_BURN",
+    }:
+        for movement in movements:
+            if (
+                get_movement_direction(
+                    movement
+                )
+                == "OUT"
+            ):
+                return movement
+
+    for movement in movements:
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        if direction in {
+            "IN",
+            "OUT",
+        }:
+            return movement
+
+    return None
+
+def find_accounting_asset_category(
+    db_path,
+    txhash,
+    asset_name,
+    direction,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            token_address,
+            token_id,
+            token_name,
+            from_address,
+            to_address
+        FROM ronin_token_transfers_raw
+        WHERE tx_hash = ?
+        """,
+        (
+            txhash,
+        ),
+    ).fetchall()
+
+    connection.close()
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    asset_registry = (
+        load_asset_registry_map(
+            db_path
+        )
+    )
+
+    for row in rows:
+        (
+            token_address,
+            token_id,
+            token_name,
+            from_address,
+            to_address,
+        ) = row
+
+        if token_name != asset_name:
+            continue
+
+        from_normalized = (
+            normalize_address(
+                from_address
+            )
+        )
+
+        to_normalized = (
+            normalize_address(
+                to_address
+            )
+        )
+
+        if (
+            direction == "IN"
+            and to_normalized != wallet
+        ):
+            continue
+
+        if (
+            direction == "OUT"
+            and from_normalized != wallet
+        ):
+            continue
+
+        asset_key = build_asset_registry_key(
+            token_address,
+            token_id,
+        )
+
+        return asset_registry.get(
+            asset_key
+        )
+
+    return None
+
+
+def find_accounting_asset_token_id(
+    db_path,
+    txhash,
+    asset_name,
+    direction,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            token_id,
+            token_name,
+            from_address,
+            to_address
+        FROM ronin_token_transfers_raw
+        WHERE tx_hash = ?
+        ORDER BY log_index
+        """,
+        (
+            txhash,
+        ),
+    ).fetchall()
+
+    connection.close()
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    token_ids = []
+
+    for (
+        token_id,
+        token_name,
+        from_address,
+        to_address,
+    ) in rows:
+        if token_name != asset_name:
+            continue
+
+        from_normalized = (
+            normalize_address(
+                from_address
+            )
+        )
+
+        to_normalized = (
+            normalize_address(
+                to_address
+            )
+        )
+
+        if (
+            direction == "IN"
+            and to_normalized != wallet
+        ):
+            continue
+
+        if (
+            direction == "OUT"
+            and from_normalized != wallet
+        ):
+            continue
+
+        if token_id is not None:
+            token_ids.append(
+                str(token_id)
+            )
+
+    token_ids = list(
+        dict.fromkeys(
+            token_ids
+        )
+    )
+
+    if len(token_ids) == 1:
+        return token_ids[0]
+
+    if len(token_ids) > 1:
+        return ",".join(
+            token_ids
+        )
+
+    return None
+
+
+
+def build_basic_accounting_record(
+    db_path,
+    transaction,
+):
+    classification_result = (
+        classify_transaction_with_intelligence(
+            db_path,
+            transaction,
+        )
+    )
+
+    classification = (
+        classification_result[
+            "classification"
+        ]
+    )
+
+    event_type = (
+        CLASSIFICATION_TO_ACCOUNTING_EVENT.get(
+            classification,
+            "UNKNOWN",
+        )
+    )
+
+    record = build_empty_accounting_record(
+        txhash=transaction["txhash"],
+        datetime_value=transaction.get(
+            "datetime"
+        ),
+        classification=classification,
+    )
+
+    record[
+        "event_type"
+    ] = event_type
+
+    primary_movement = (
+        select_primary_accounting_movement(
+            transaction,
+            classification,
+        )
+    )
+
+    if primary_movement is not None:
+        direction = (
+            get_movement_direction(
+                primary_movement
+            )
+        )
+
+        record[
+            "asset_name"
+        ] = primary_movement.get(
+            "asset"
+        )
+
+        record[
+            "direction"
+        ] = direction
+
+        if direction == "IN":
+            record[
+                "quantity"
+            ] = str(
+                primary_movement.get(
+                    "value_in",
+                    "0",
+                )
+            )
+
+        elif direction == "OUT":
+            record[
+                "quantity"
+            ] = str(
+                primary_movement.get(
+                    "value_out",
+                    "0",
+                )
+            )
+
+        record[
+            "asset_category"
+        ] = find_accounting_asset_category(
+            db_path,
+            transaction["txhash"],
+            record["asset_name"],
+            direction,
+        )
+
+    intelligence = (
+        build_transaction_intelligence(
+            db_path,
+            transaction,
+            load_asset_registry_map(
+                db_path
+            ),
+        )
+    )
+
+    record[
+        "is_internal_transfer"
+    ] = intelligence[
+        "is_internal_transfer"
+    ]
+
+    roles = {
+        counterparty["role"]
+        for counterparty
+        in intelligence[
+            "counterparties"
+        ]
+    }
+
+    if len(roles) == 1:
+        record[
+            "counterparty_role"
+        ] = next(
+            iter(roles)
+        )
+
+    if classification == "UNKNOWN":
+        record[
+            "accounting_status"
+        ] = "REVIEW"
+
+    elif classification == "INTERNAL_TRANSFER":
+        record[
+            "accounting_status"
+        ] = "NON_TAXABLE_INTERNAL"
+
+    else:
+        record[
+            "accounting_status"
+        ] = "INFORMATIONAL"
+
+    return record
+
+
+def build_current_marketplace_economics_map(
+    transactions,
+):
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    events = (
+        match_axie_acquisition_costs(
+            events
+        )
+    )
+
+    events = (
+        calculate_realized_pl(
+            events
+        )
+    )
+
+    return {
+        event["txhash"]: event
+        for event in events
+    }
+
+
+def enrich_non_marketplace_accounting_record(
+    db_path,
+    record,
+    transaction,
+):
+    classification = record[
+        "classification"
+    ]
+
+    if classification in {
+        "MARKETPLACE_BUY",
+        "MARKETPLACE_SALE",
+    }:
+        return record
+
+    if (
+        record["asset_name"] is not None
+        and record["direction"] is not None
+    ):
+        record[
+            "asset_token_id"
+        ] = find_accounting_asset_token_id(
+            db_path,
+            transaction["txhash"],
+            record["asset_name"],
+            record["direction"],
+        )
+
+    if classification == "TOKEN_SWAP":
+        incoming_movements = [
+            movement
+            for movement
+            in transaction.get(
+                "movements",
+                [],
+            )
+            if (
+                get_movement_direction(
+                    movement
+                )
+                == "IN"
+            )
+        ]
+
+        if incoming_movements:
+            incoming = (
+                incoming_movements[0]
+            )
+
+            record[
+                "payment_asset"
+            ] = incoming.get(
+                "asset"
+            )
+
+            record[
+                "gross_amount"
+            ] = str(
+                incoming.get(
+                    "value_in",
+                    "0",
+                )
+            )
+
+            record[
+                "net_amount"
+            ] = record[
+                "gross_amount"
+            ]
+
+        # Swap cost basis / realized P&L
+        # is not yet implemented.
+        record[
+            "accounting_status"
+        ] = "REVIEW"
+
+    elif classification in {
+        "MINT_OR_CLAIM",
+        "STAKING_OR_REWARD",
+        "CONSUMABLE_BURN",
+        "NFT_BURN",
+    }:
+        if (
+            record["asset_name"]
+            is not None
+            and record["quantity"]
+            is not None
+        ):
+            record[
+                "accounting_status"
+            ] = "READY"
+        else:
+            record[
+                "accounting_status"
+            ] = "REVIEW"
+
+    elif classification in {
+        "TRANSFER_IN",
+        "TRANSFER_OUT",
+    }:
+        # Ownership of the opposite wallet
+        # is not yet proven.
+        record[
+            "accounting_status"
+        ] = "REVIEW"
+
+    elif classification == "UNKNOWN":
+        record[
+            "accounting_status"
+        ] = "REVIEW"
+
+    return record
+
+
+def apply_internal_transfer_accounting_treatment(
+    record,
+):
+    if not record[
+        "is_internal_transfer"
+    ]:
+        return record
+
+    record[
+        "classification"
+    ] = "INTERNAL_TRANSFER"
+
+    record[
+        "event_type"
+    ] = "INTERNAL_TRANSFER"
+
+    record[
+        "accounting_status"
+    ] = "NON_TAXABLE_INTERNAL"
+
+    # Internal wallet movements do not
+    # create proceeds or realized P/L.
+    record[
+        "payment_asset"
+    ] = None
+
+    record[
+        "gross_amount"
+    ] = None
+
+    record[
+        "marketplace_fee"
+    ] = None
+
+    record[
+        "net_amount"
+    ] = None
+
+    record[
+        "cost_basis"
+    ] = None
+
+    record[
+        "realized_pl"
+    ] = None
+
+    return record
+
+
+def build_complete_accounting_record(
+    db_path,
+    transaction,
+    economics_map,
+):
+    record = (
+        build_basic_accounting_record(
+            db_path,
+            transaction,
+        )
+    )
+
+    if record["classification"] in {
+        "MARKETPLACE_BUY",
+        "MARKETPLACE_SALE",
+    }:
+        record = (
+            enrich_accounting_record_with_marketplace_economics(
+                record,
+                economics_map,
+            )
+        )
+
+    else:
+        record = (
+            enrich_non_marketplace_accounting_record(
+                db_path,
+                record,
+                transaction,
+            )
+        )
+
+    record = (
+        apply_internal_transfer_accounting_treatment(
+            record
+        )
+    )
+
+    return record
+
+
+def store_accounting_records(
+    db_path,
+    records,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+
+    for record in records:
+        connection.execute(
+            """
+            INSERT INTO
+                blockchain_accounting_records (
+                    accounting_key,
+                    txhash,
+                    datetime,
+                    event_type,
+                    classification,
+                    asset_name,
+                    asset_token_id,
+                    asset_category,
+                    quantity,
+                    direction,
+                    payment_asset,
+                    gross_amount,
+                    marketplace_fee,
+                    net_amount,
+                    cost_basis,
+                    realized_pl,
+                    counterparty_role,
+                    is_internal_transfer,
+                    accounting_status,
+                    accounting_version
+                )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+            ON CONFLICT(accounting_key)
+            DO UPDATE SET
+                txhash =
+                    excluded.txhash,
+                datetime =
+                    excluded.datetime,
+                event_type =
+                    excluded.event_type,
+                classification =
+                    excluded.classification,
+                asset_name =
+                    excluded.asset_name,
+                asset_token_id =
+                    excluded.asset_token_id,
+                asset_category =
+                    excluded.asset_category,
+                quantity =
+                    excluded.quantity,
+                direction =
+                    excluded.direction,
+                payment_asset =
+                    excluded.payment_asset,
+                gross_amount =
+                    excluded.gross_amount,
+                marketplace_fee =
+                    excluded.marketplace_fee,
+                net_amount =
+                    excluded.net_amount,
+                cost_basis =
+                    excluded.cost_basis,
+                realized_pl =
+                    excluded.realized_pl,
+                counterparty_role =
+                    excluded.counterparty_role,
+                is_internal_transfer =
+                    excluded.is_internal_transfer,
+                accounting_status =
+                    excluded.accounting_status,
+                accounting_version =
+                    excluded.accounting_version,
+                updated_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                record[
+                    "accounting_key"
+                ],
+                record["txhash"],
+                record["datetime"],
+                record["event_type"],
+                record[
+                    "classification"
+                ],
+                record["asset_name"],
+                record[
+                    "asset_token_id"
+                ],
+                record[
+                    "asset_category"
+                ],
+                record["quantity"],
+                record["direction"],
+                record[
+                    "payment_asset"
+                ],
+                record[
+                    "gross_amount"
+                ],
+                record[
+                    "marketplace_fee"
+                ],
+                record["net_amount"],
+                record["cost_basis"],
+                record["realized_pl"],
+                record[
+                    "counterparty_role"
+                ],
+                (
+                    1
+                    if record[
+                        "is_internal_transfer"
+                    ]
+                    else 0
+                ),
+                record[
+                    "accounting_status"
+                ],
+                record[
+                    "accounting_version"
+                ],
+            ),
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return processed
+
+
+def validate_accounting_reconciliation(
+    db_path,
+):
+    transactions = (
+        group_ledger_rows_by_txhash(
+            db_path
+        )
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    accounting_rows = connection.execute(
+        """
+        SELECT
+            accounting_key,
+            txhash,
+            event_type,
+            classification,
+            accounting_status,
+            realized_pl
+        FROM blockchain_accounting_records
+        """
+    ).fetchall()
+
+    classification_rows = (
+        connection.execute(
+            """
+            SELECT
+                txhash,
+                classification
+            FROM
+                blockchain_transaction_classifications
+            """
+        ).fetchall()
+    )
+
+    connection.close()
+
+    classification_map = {
+        txhash: classification
+        for txhash, classification
+        in classification_rows
+    }
+
+    duplicate_keys = (
+        len(accounting_rows)
+        - len(
+            {
+                row[0]
+                for row in accounting_rows
+            }
+        )
+    )
+
+    missing_classifications = 0
+    classification_mismatches = 0
+    event_type_mismatches = 0
+
+    status_counts = {}
+    event_counts = {}
+
+    accounting_marketplace = 0
+
+    accounting_realized_sales = 0
+    accounting_realized_pl = (
+        Decimal("0")
+    )
+
+    for row in accounting_rows:
+        (
+            accounting_key,
+            txhash,
+            event_type,
+            classification,
+            accounting_status,
+            realized_pl,
+        ) = row
+
+        stored_classification = (
+            classification_map.get(
+                txhash
+            )
+        )
+
+        if stored_classification is None:
+            missing_classifications += 1
+
+        elif (
+            stored_classification
+            != classification
+        ):
+            classification_mismatches += 1
+
+        expected_event_type = (
+            CLASSIFICATION_TO_ACCOUNTING_EVENT.get(
+                classification,
+                "UNKNOWN",
+            )
+        )
+
+        if (
+            event_type
+            != expected_event_type
+        ):
+            event_type_mismatches += 1
+
+        status_counts[
+            accounting_status
+        ] = (
+            status_counts.get(
+                accounting_status,
+                0,
+            )
+            + 1
+        )
+
+        event_counts[
+            event_type
+        ] = (
+            event_counts.get(
+                event_type,
+                0,
+            )
+            + 1
+        )
+
+        if event_type in {
+            "ASSET_PURCHASE",
+            "ASSET_SALE",
+        }:
+            accounting_marketplace += 1
+
+        if (
+            event_type == "ASSET_SALE"
+            and realized_pl is not None
+        ):
+            accounting_realized_sales += 1
+
+            accounting_realized_pl += (
+                Decimal(
+                    str(realized_pl)
+                )
+            )
+
+    economics_realized_sales = 0
+    economics_realized_pl = (
+        Decimal("0")
+    )
+
+    for event in economics_map.values():
+        realized_pl = event.get(
+            "realized_pl"
+        )
+
+        if realized_pl is not None:
+            economics_realized_sales += 1
+
+            economics_realized_pl += (
+                Decimal(
+                    str(realized_pl)
+                )
+            )
+
+    status_total = sum(
+        status_counts.values()
+    )
+
+    event_total = sum(
+        event_counts.values()
+    )
+
+    transaction_count_valid = (
+        len(accounting_rows)
+        == len(transactions)
+    )
+
+    status_total_valid = (
+        status_total
+        == len(accounting_rows)
+    )
+
+    event_total_valid = (
+        event_total
+        == len(accounting_rows)
+    )
+
+    marketplace_valid = (
+        accounting_marketplace
+        == len(economics_map)
+    )
+
+    realized_sales_valid = (
+        accounting_realized_sales
+        == economics_realized_sales
+    )
+
+    realized_pl_valid = (
+        accounting_realized_pl
+        == economics_realized_pl
+    )
+
+    classification_valid = (
+        missing_classifications == 0
+        and classification_mismatches == 0
+    )
+
+    event_mapping_valid = (
+        event_type_mismatches == 0
+    )
+
+    validation = (
+        transaction_count_valid
+        and duplicate_keys == 0
+        and status_total_valid
+        and event_total_valid
+        and marketplace_valid
+        and realized_sales_valid
+        and realized_pl_valid
+        and classification_valid
+        and event_mapping_valid
+    )
+
+    return {
+        "transactions": len(
+            transactions
+        ),
+        "accounting_records": len(
+            accounting_rows
+        ),
+        "duplicate_keys": duplicate_keys,
+        "missing_classifications": (
+            missing_classifications
+        ),
+        "classification_mismatches": (
+            classification_mismatches
+        ),
+        "event_type_mismatches": (
+            event_type_mismatches
+        ),
+        "marketplace_records": (
+            accounting_marketplace
+        ),
+        "economic_events": len(
+            economics_map
+        ),
+        "realized_sales": (
+            accounting_realized_sales
+        ),
+        "economics_realized_sales": (
+            economics_realized_sales
+        ),
+        "realized_pl": str(
+            accounting_realized_pl
+        ),
+        "economics_realized_pl": str(
+            economics_realized_pl
+        ),
+        "status_counts": status_counts,
+        "event_counts": event_counts,
+        "validation": validation,
+    }
+
+
+
+
+
+def enrich_accounting_record_with_marketplace_economics(
+    record,
+    economics_map,
+):
+    if record["classification"] not in {
+        "MARKETPLACE_BUY",
+        "MARKETPLACE_SALE",
+    }:
+        return record
+
+    event = economics_map.get(
+        record["txhash"]
+    )
+
+    if event is None:
+        record[
+            "accounting_status"
+        ] = "REVIEW"
+
+        return record
+
+    record[
+        "asset_name"
+    ] = event["asset_name"]
+
+    record[
+        "asset_token_id"
+    ] = event["asset_token_id"]
+
+    record[
+        "quantity"
+    ] = event["quantity"]
+
+    record[
+        "payment_asset"
+    ] = event["payment_asset"]
+
+    record[
+        "gross_amount"
+    ] = event["gross_amount"]
+
+    record[
+        "marketplace_fee"
+    ] = event["marketplace_fee"]
+
+    record[
+        "net_amount"
+    ] = event["net_amount"]
+
+    record[
+        "cost_basis"
+    ] = event["cost_basis"]
+
+    record[
+        "realized_pl"
+    ] = event["realized_pl"]
+
+    if (
+        record["classification"]
+        == "MARKETPLACE_BUY"
+    ):
+        if (
+            record["gross_amount"]
+            is not None
+            and record[
+                "asset_token_id"
+            ]
+            is not None
+        ):
+            record[
+                "accounting_status"
+            ] = "READY"
+        else:
+            record[
+                "accounting_status"
+            ] = "REVIEW"
+
+    elif (
+        record["classification"]
+        == "MARKETPLACE_SALE"
+    ):
+        if (
+            record["net_amount"]
+            is not None
+            and record[
+                "realized_pl"
+            ]
+            is not None
+        ):
+            record[
+                "accounting_status"
+            ] = "READY"
+        else:
+            record[
+                "accounting_status"
+            ] = "REVIEW"
+
+    return record
+
 
 
 def match_axie_acquisition_costs(
@@ -11971,9 +13291,1968 @@ def run_ronin_sync_v05(
     )
 
 
+def run_accounting_schema_test():
+    sample = build_empty_accounting_record(
+        txhash="0xtestaccounting",
+        datetime_value=(
+            "2026-08-21 00:00:00"
+        ),
+        classification=(
+            "MARKETPLACE_BUY"
+        ),
+    )
+
+    validation = (
+        validate_accounting_record(
+            sample
+        )
+    )
+
+    print(
+        "\nRONIN ACCOUNTING RECORD SCHEMA"
+    )
+
+    print(
+        "Fields:",
+        len(
+            ACCOUNTING_RECORD_FIELDS
+        ),
+    )
+
+    print(
+        "Statuses:",
+        len(
+            ACCOUNTING_STATUSES
+        ),
+    )
+
+    print(
+        "Event types:",
+        len(
+            ACCOUNTING_EVENT_TYPES
+        ),
+    )
+
+    print(
+        "Accounting version:",
+        ACCOUNTING_VERSION,
+    )
+
+    print(
+        "Schema validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nSAMPLE RECORD"
+    )
+
+    for key, value in sample.items():
+        print(
+            f"{key}: {value}"
+        )
+
+
+def run_basic_accounting_records_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    records = []
+
+    invalid_records = []
+
+    for transaction in transactions:
+        record = (
+            build_basic_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+            )
+        )
+
+        records.append(record)
+
+        if not validate_accounting_record(
+            record
+        ):
+            invalid_records.append(
+                record
+            )
+
+    event_counts = {}
+
+    status_counts = {}
+
+    for record in records:
+        event_type = record[
+            "event_type"
+        ]
+
+        status = record[
+            "accounting_status"
+        ]
+
+        event_counts[event_type] = (
+            event_counts.get(
+                event_type,
+                0,
+            )
+            + 1
+        )
+
+        status_counts[status] = (
+            status_counts.get(
+                status,
+                0,
+            )
+            + 1
+        )
+
+    print(
+        "\nRONIN BASIC ACCOUNTING RECORDS"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Accounting records:",
+        len(records),
+    )
+
+    print(
+        "Invalid records:",
+        len(invalid_records),
+    )
+
+    print("\nEVENT TYPES")
+
+    for event_type in sorted(
+        event_counts
+    ):
+        print(
+            f"{event_type}: "
+            f"{event_counts[event_type]}"
+        )
+
+    print("\nSTATUSES")
+
+    for status in sorted(
+        status_counts
+    ):
+        print(
+            f"{status}: "
+            f"{status_counts[status]}"
+        )
+
+    print("\nEXAMPLES")
+
+    for record in records[:10]:
+        print(
+            "\nTX:",
+            record["txhash"],
+        )
+
+        print(
+            "Event:",
+            record["event_type"],
+        )
+
+        print(
+            "Classification:",
+            record["classification"],
+        )
+
+        print(
+            "Asset:",
+            record["asset_name"],
+        )
+
+        print(
+            "Category:",
+            record["asset_category"],
+        )
+
+        print(
+            "Quantity:",
+            record["quantity"],
+        )
+
+        print(
+            "Direction:",
+            record["direction"],
+        )
+
+        print(
+            "Counterparty:",
+            record[
+                "counterparty_role"
+            ],
+        )
+
+        print(
+            "Status:",
+            record[
+                "accounting_status"
+            ],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if (
+                len(records)
+                == len(transactions)
+                and len(
+                    invalid_records
+                )
+                == 0
+            )
+            else "FAIL"
+        ),
+    )
+
+
+def run_marketplace_accounting_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    records = []
+
+    for transaction in transactions:
+        record = (
+            build_basic_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+            )
+        )
+
+        record = (
+            enrich_accounting_record_with_marketplace_economics(
+                record,
+                economics_map,
+            )
+        )
+
+        if record["event_type"] in {
+            "ASSET_PURCHASE",
+            "ASSET_SALE",
+        }:
+            records.append(record)
+
+    purchases = [
+        record
+        for record in records
+        if record["event_type"]
+        == "ASSET_PURCHASE"
+    ]
+
+    sales = [
+        record
+        for record in records
+        if record["event_type"]
+        == "ASSET_SALE"
+    ]
+
+    ready_purchases = [
+        record
+        for record in purchases
+        if record[
+            "accounting_status"
+        ] == "READY"
+    ]
+
+    ready_sales = [
+        record
+        for record in sales
+        if record[
+            "accounting_status"
+        ] == "READY"
+    ]
+
+    review_sales = [
+        record
+        for record in sales
+        if record[
+            "accounting_status"
+        ] == "REVIEW"
+    ]
+
+    missing_economics = [
+        record
+        for record in records
+        if record["txhash"]
+        not in economics_map
+    ]
+
+    invalid_records = [
+        record
+        for record in records
+        if not validate_accounting_record(
+            record
+        )
+    ]
+
+    regression = next(
+        (
+            record
+            for record in sales
+            if record[
+                "asset_token_id"
+            ]
+            == "1429698"
+        ),
+        None,
+    )
+
+    regression_valid = (
+        regression is not None
+        and regression[
+            "gross_amount"
+        ] == "0.00034"
+        and regression[
+            "marketplace_fee"
+        ] == "0.00001445"
+        and regression[
+            "net_amount"
+        ] == "0.00032555"
+        and regression[
+            "cost_basis"
+        ] == "0.00032"
+        and regression[
+            "realized_pl"
+        ] == "0.00000555"
+        and regression[
+            "accounting_status"
+        ] == "READY"
+    )
+
+    validation = (
+        len(records)
+        == len(economics_map)
+        and len(
+            missing_economics
+        )
+        == 0
+        and len(
+            invalid_records
+        )
+        == 0
+        and regression_valid
+    )
+
+    print(
+        "\nRONIN MARKETPLACE ACCOUNTING"
+    )
+
+    print(
+        "Marketplace records:",
+        len(records),
+    )
+
+    print(
+        "Purchases:",
+        len(purchases),
+    )
+
+    print(
+        "Sales:",
+        len(sales),
+    )
+
+    print(
+        "Ready purchases:",
+        len(ready_purchases),
+    )
+
+    print(
+        "Ready sales:",
+        len(ready_sales),
+    )
+
+    print(
+        "Sales needing review:",
+        len(review_sales),
+    )
+
+    print(
+        "Missing economics:",
+        len(missing_economics),
+    )
+
+    print(
+        "Invalid records:",
+        len(invalid_records),
+    )
+
+    print(
+        "Axie #1429698 regression:",
+        (
+            "PASS"
+            if regression_valid
+            else "FAIL"
+        ),
+    )
+
+    print("\nREADY SALE EXAMPLES")
+
+    for record in ready_sales[:10]:
+        print(
+            "\nTX:",
+            record["txhash"],
+        )
+
+        print(
+            "Asset:",
+            record["asset_name"],
+        )
+
+        print(
+            "Token ID:",
+            record[
+                "asset_token_id"
+            ],
+        )
+
+        print(
+            "Gross:",
+            record["gross_amount"],
+        )
+
+        print(
+            "Fee:",
+            record[
+                "marketplace_fee"
+            ],
+        )
+
+        print(
+            "Net:",
+            record["net_amount"],
+        )
+
+        print(
+            "Cost basis:",
+            record["cost_basis"],
+        )
+
+        print(
+            "Realized P/L:",
+            record["realized_pl"],
+        )
+
+        print(
+            "Status:",
+            record[
+                "accounting_status"
+            ],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_non_marketplace_accounting_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    records = []
+
+    for transaction in transactions:
+        record = (
+            build_basic_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+            )
+        )
+
+        if record["classification"] in {
+            "MARKETPLACE_BUY",
+            "MARKETPLACE_SALE",
+        }:
+            continue
+
+        record = (
+            enrich_non_marketplace_accounting_record(
+                AXIEOS_DB_PATH,
+                record,
+                transaction,
+            )
+        )
+
+        records.append(record)
+
+    event_counts = {}
+    status_counts = {}
+
+    invalid_records = []
+
+    for record in records:
+        event_counts[
+            record["event_type"]
+        ] = (
+            event_counts.get(
+                record["event_type"],
+                0,
+            )
+            + 1
+        )
+
+        status_counts[
+            record["accounting_status"]
+        ] = (
+            status_counts.get(
+                record[
+                    "accounting_status"
+                ],
+                0,
+            )
+            + 1
+        )
+
+        if not validate_accounting_record(
+            record
+        ):
+            invalid_records.append(
+                record
+            )
+
+    swaps = [
+        record
+        for record in records
+        if record["event_type"]
+        == "TOKEN_SWAP"
+    ]
+
+    swap_structure_valid = all(
+        record["asset_name"]
+        is not None
+        and record["quantity"]
+        is not None
+        and record["payment_asset"]
+        is not None
+        and record["gross_amount"]
+        is not None
+        and record[
+            "accounting_status"
+        ]
+        == "REVIEW"
+        for record in swaps
+    )
+
+    ready_operational = [
+        record
+        for record in records
+        if record["event_type"] in {
+            "MINT_OR_CLAIM",
+            "STAKING_OR_REWARD",
+            "ASSET_BURN",
+        }
+        and record[
+            "accounting_status"
+        ]
+        == "READY"
+    ]
+
+    transfer_records = [
+        record
+        for record in records
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    ]
+
+    transfer_review_valid = all(
+        record["accounting_status"]
+        == "REVIEW"
+        for record in transfer_records
+    )
+
+    validation = (
+        len(invalid_records) == 0
+        and swap_structure_valid
+        and transfer_review_valid
+    )
+
+    print(
+        "\nRONIN NON-MARKETPLACE ACCOUNTING"
+    )
+
+    print(
+        "Records:",
+        len(records),
+    )
+
+    print(
+        "Invalid records:",
+        len(invalid_records),
+    )
+
+    print(
+        "Operational events READY:",
+        len(ready_operational),
+    )
+
+    print(
+        "Transfers under review:",
+        len(transfer_records),
+    )
+
+    print(
+        "Swap structure:",
+        (
+            "PASS"
+            if swap_structure_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Transfer review policy:",
+        (
+            "PASS"
+            if transfer_review_valid
+            else "FAIL"
+        ),
+    )
+
+    print("\nEVENT TYPES")
+
+    for event_type in sorted(
+        event_counts
+    ):
+        print(
+            f"{event_type}: "
+            f"{event_counts[event_type]}"
+        )
+
+    print("\nSTATUSES")
+
+    for status in sorted(
+        status_counts
+    ):
+        print(
+            f"{status}: "
+            f"{status_counts[status]}"
+        )
+
+    print("\nSWAP EXAMPLES")
+
+    for record in swaps[:5]:
+        print(
+            "\nTX:",
+            record["txhash"],
+        )
+
+        print(
+            "Asset OUT:",
+            record["asset_name"],
+        )
+
+        print(
+            "Quantity OUT:",
+            record["quantity"],
+        )
+
+        print(
+            "Asset IN:",
+            record["payment_asset"],
+        )
+
+        print(
+            "Quantity IN:",
+            record["gross_amount"],
+        )
+
+        print(
+            "Status:",
+            record[
+                "accounting_status"
+            ],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_internal_transfer_accounting_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    test_secondary = (
+        "0x2222222222222222222222222222222222222222"
+    )
+
+    upsert_wallet_registry_entry(
+        db_path=AXIEOS_DB_PATH,
+        address=test_secondary,
+        wallet_label=(
+            "Task 81 Test Wallet"
+        ),
+        ownership_type="USER_OWNED",
+        wallet_role="SECONDARY",
+        source="TEST",
+    )
+
+    synthetic_transaction = {
+        "txhash": (
+            "0xtask81internal"
+        ),
+        "datetime": (
+            "2026-08-21 00:00:00"
+        ),
+        "movements": [
+            {
+                "from_address": (
+                    RONIN_WALLET_ADDRESS
+                ),
+                "to_address": (
+                    test_secondary
+                ),
+                "asset": (
+                    "Ronin Wrapped Ether"
+                ),
+                "value_in": "0",
+                "value_out": "1",
+            }
+        ],
+    }
+
+    record = (
+        build_basic_accounting_record(
+            AXIEOS_DB_PATH,
+            synthetic_transaction,
+        )
+    )
+
+    record = (
+        enrich_non_marketplace_accounting_record(
+            AXIEOS_DB_PATH,
+            record,
+            synthetic_transaction,
+        )
+    )
+
+    record = (
+        apply_internal_transfer_accounting_treatment(
+            record
+        )
+    )
+
+    current_transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    historical_internal = 0
+    false_positive_internal = 0
+
+    for transaction in current_transactions:
+        historical_record = (
+            build_basic_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+            )
+        )
+
+        historical_record = (
+            apply_internal_transfer_accounting_treatment(
+                historical_record
+            )
+        )
+
+        if historical_record[
+            "is_internal_transfer"
+        ]:
+            historical_internal += 1
+
+            if (
+                historical_record[
+                    "accounting_status"
+                ]
+                != "NON_TAXABLE_INTERNAL"
+            ):
+                false_positive_internal += 1
+
+    synthetic_valid = (
+        record["classification"]
+        == "INTERNAL_TRANSFER"
+        and record["event_type"]
+        == "INTERNAL_TRANSFER"
+        and record[
+            "is_internal_transfer"
+        ]
+        is True
+        and record[
+            "accounting_status"
+        ]
+        == "NON_TAXABLE_INTERNAL"
+        and record[
+            "gross_amount"
+        ]
+        is None
+        and record[
+            "net_amount"
+        ]
+        is None
+        and record[
+            "realized_pl"
+        ]
+        is None
+        and validate_accounting_record(
+            record
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    connection.execute(
+        """
+        DELETE FROM ronin_wallet_registry
+        WHERE address = ?
+        """,
+        (
+            normalize_address(
+                test_secondary
+            ),
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+    cleanup_entry = (
+        get_wallet_registry_entry(
+            AXIEOS_DB_PATH,
+            test_secondary,
+        )
+    )
+
+    cleanup_valid = (
+        cleanup_entry[
+            "ownership_type"
+        ]
+        == "UNKNOWN"
+    )
+
+    validation = (
+        synthetic_valid
+        and false_positive_internal
+        == 0
+        and cleanup_valid
+    )
+
+    print(
+        "\nRONIN INTERNAL-TRANSFER ACCOUNTING"
+    )
+
+    print(
+        "Historical transactions:",
+        len(current_transactions),
+    )
+
+    print(
+        "Historical internal transfers:",
+        historical_internal,
+    )
+
+    print(
+        "Internal treatment errors:",
+        false_positive_internal,
+    )
+
+    print(
+        "Synthetic internal transfer:",
+        (
+            "PASS"
+            if synthetic_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Test wallet cleanup:",
+        (
+            "PASS"
+            if cleanup_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nSYNTHETIC RECORD"
+    )
+
+    print(
+        "Classification:",
+        record["classification"],
+    )
+
+    print(
+        "Event:",
+        record["event_type"],
+    )
+
+    print(
+        "Asset:",
+        record["asset_name"],
+    )
+
+    print(
+        "Quantity:",
+        record["quantity"],
+    )
+
+    print(
+        "Direction:",
+        record["direction"],
+    )
+
+    print(
+        "Internal:",
+        record[
+            "is_internal_transfer"
+        ],
+    )
+
+    print(
+        "Counterparty:",
+        record[
+            "counterparty_role"
+        ],
+    )
+
+    print(
+        "Gross:",
+        record["gross_amount"],
+    )
+
+    print(
+        "Net:",
+        record["net_amount"],
+    )
+
+    print(
+        "Realized P/L:",
+        record["realized_pl"],
+    )
+
+    print(
+        "Status:",
+        record[
+            "accounting_status"
+        ],
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+
+def run_accounting_persistence_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    records = []
+
+    invalid_records = []
+
+    for transaction in transactions:
+        record = (
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+        records.append(record)
+
+        if not validate_accounting_record(
+            record
+        ):
+            invalid_records.append(
+                record
+            )
+
+    # -----------------------------
+    # First write
+    # -----------------------------
+
+    first_processed = (
+        store_accounting_records(
+            AXIEOS_DB_PATH,
+            records,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    first_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    # -----------------------------
+    # Second write
+    # -----------------------------
+
+    second_processed = (
+        store_accounting_records(
+            AXIEOS_DB_PATH,
+            records,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    second_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        """
+    ).fetchone()[0]
+
+    unique_keys = connection.execute(
+        """
+        SELECT COUNT(
+            DISTINCT accounting_key
+        )
+        FROM blockchain_accounting_records
+        """
+    ).fetchone()[0]
+
+    invalid_versions = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_version != ?
+            """,
+            (
+                ACCOUNTING_VERSION,
+            ),
+        ).fetchone()[0]
+    )
+
+    ready_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        WHERE accounting_status = 'READY'
+        """
+    ).fetchone()[0]
+
+    review_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        WHERE accounting_status = 'REVIEW'
+        """
+    ).fetchone()[0]
+
+    internal_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        WHERE accounting_status =
+            'NON_TAXABLE_INTERNAL'
+        """
+    ).fetchone()[0]
+
+    informational_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'INFORMATIONAL'
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    idempotency_valid = (
+        first_count
+        == second_count
+        == unique_keys
+        == len(records)
+    )
+
+    validation = (
+        len(invalid_records) == 0
+        and first_processed
+        == len(records)
+        and second_processed
+        == len(records)
+        and idempotency_valid
+        and invalid_versions == 0
+    )
+
+    print(
+        "\nRONIN ACCOUNTING PERSISTENCE"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Accounting records built:",
+        len(records),
+    )
+
+    print(
+        "Invalid records:",
+        len(invalid_records),
+    )
+
+    print(
+        "First write processed:",
+        first_processed,
+    )
+
+    print(
+        "Rows after first write:",
+        first_count,
+    )
+
+    print(
+        "Second write processed:",
+        second_processed,
+    )
+
+    print(
+        "Rows after second write:",
+        second_count,
+    )
+
+    print(
+        "Unique accounting keys:",
+        unique_keys,
+    )
+
+    print(
+        "Invalid versions:",
+        invalid_versions,
+    )
+
+    print(
+        "\nACCOUNTING STATUS"
+    )
+
+    print(
+        "READY:",
+        ready_count,
+    )
+
+    print(
+        "REVIEW:",
+        review_count,
+    )
+
+    print(
+        "NON_TAXABLE_INTERNAL:",
+        internal_count,
+    )
+
+    print(
+        "INFORMATIONAL:",
+        informational_count,
+    )
+
+    print(
+        "\nIdempotency:",
+        (
+            "PASS"
+            if idempotency_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_accounting_reconciliation_test():
+    result = (
+        validate_accounting_reconciliation(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    print(
+        "\nRONIN ACCOUNTING RECONCILIATION"
+    )
+
+    print(
+        "Blockchain transactions:",
+        result["transactions"],
+    )
+
+    print(
+        "Accounting records:",
+        result[
+            "accounting_records"
+        ],
+    )
+
+    print(
+        "Duplicate accounting keys:",
+        result["duplicate_keys"],
+    )
+
+    print(
+        "Missing classifications:",
+        result[
+            "missing_classifications"
+        ],
+    )
+
+    print(
+        "Classification mismatches:",
+        result[
+            "classification_mismatches"
+        ],
+    )
+
+    print(
+        "Event type mismatches:",
+        result[
+            "event_type_mismatches"
+        ],
+    )
+
+    print(
+        "\nMARKETPLACE RECONCILIATION"
+    )
+
+    print(
+        "Marketplace accounting records:",
+        result[
+            "marketplace_records"
+        ],
+    )
+
+    print(
+        "Economic events:",
+        result[
+            "economic_events"
+        ],
+    )
+
+    print(
+        "Accounting realized sales:",
+        result[
+            "realized_sales"
+        ],
+    )
+
+    print(
+        "Economics realized sales:",
+        result[
+            "economics_realized_sales"
+        ],
+    )
+
+    print(
+        "Accounting realized P/L:",
+        result[
+            "realized_pl"
+        ],
+        "WETH",
+    )
+
+    print(
+        "Economics realized P/L:",
+        result[
+            "economics_realized_pl"
+        ],
+        "WETH",
+    )
+
+    print(
+        "\nACCOUNTING STATUS"
+    )
+
+    for status in sorted(
+        result["status_counts"]
+    ):
+        print(
+            f"{status}: "
+            f"{result['status_counts'][status]}"
+        )
+
+    print(
+        "\nACCOUNTING EVENT TYPES"
+    )
+
+    for event_type in sorted(
+        result["event_counts"]
+    ):
+        print(
+            f"{event_type}: "
+            f"{result['event_counts'][event_type]}"
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if result["validation"]
+            else "FAIL"
+        ),
+    )
+
+
+def run_ronin_sync_v06(
+    incremental_max_pages=20,
+    backfill_pages=1,
+):
+    # ---------------------------------
+    # Run the complete V0.5 pipeline
+    # ---------------------------------
+
+    run_ronin_sync_v05(
+        incremental_max_pages=(
+            incremental_max_pages
+        ),
+        backfill_pages=backfill_pages,
+    )
+
+    print(
+        "\nAXIEOS AUTOMATED "
+        "ACCOUNTING PIPELINE V0.6"
+    )
+
+    # ---------------------------------
+    # Accounting table
+    # ---------------------------------
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    # ---------------------------------
+    # Current blockchain transactions
+    # ---------------------------------
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Marketplace economics
+    # ---------------------------------
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    # ---------------------------------
+    # Build accounting records
+    # ---------------------------------
+
+    records = []
+    invalid_records = []
+
+    for transaction in transactions:
+        record = (
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+        records.append(record)
+
+        if not validate_accounting_record(
+            record
+        ):
+            invalid_records.append(
+                record
+            )
+
+    # ---------------------------------
+    # Persist accounting records
+    # ---------------------------------
+
+    records_processed = (
+        store_accounting_records(
+            AXIEOS_DB_PATH,
+            records,
+        )
+    )
+
+    # ---------------------------------
+    # Reconciliation
+    # ---------------------------------
+
+    reconciliation = (
+        validate_accounting_reconciliation(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Database validation
+    # ---------------------------------
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    accounting_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            """
+        ).fetchone()[0]
+    )
+
+    unique_accounting_keys = (
+        connection.execute(
+            """
+            SELECT COUNT(
+                DISTINCT accounting_key
+            )
+            FROM blockchain_accounting_records
+            """
+        ).fetchone()[0]
+    )
+
+    invalid_versions = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_version != ?
+            """,
+            (
+                ACCOUNTING_VERSION,
+            ),
+        ).fetchone()[0]
+    )
+
+    ready_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'READY'
+            """
+        ).fetchone()[0]
+    )
+
+    review_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'REVIEW'
+            """
+        ).fetchone()[0]
+    )
+
+    internal_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'NON_TAXABLE_INTERNAL'
+            """
+        ).fetchone()[0]
+    )
+
+    informational_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'INFORMATIONAL'
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    # ---------------------------------
+    # Validation rules
+    # ---------------------------------
+
+    record_count_valid = (
+        accounting_count
+        == unique_accounting_keys
+        == len(transactions)
+        == len(records)
+    )
+
+    processing_valid = (
+        records_processed
+        == len(records)
+    )
+
+    schema_valid = (
+        len(invalid_records)
+        == 0
+    )
+
+    version_valid = (
+        invalid_versions == 0
+    )
+
+    status_total_valid = (
+        (
+            ready_count
+            + review_count
+            + internal_count
+            + informational_count
+        )
+        == accounting_count
+    )
+
+    reconciliation_valid = (
+        reconciliation[
+            "validation"
+        ]
+    )
+
+    final_passed = (
+        record_count_valid
+        and processing_valid
+        and schema_valid
+        and version_valid
+        and status_total_valid
+        and reconciliation_valid
+    )
+
+    # ---------------------------------
+    # Output
+    # ---------------------------------
+
+    print(
+        "\nACCOUNTING RECORDS"
+    )
+
+    print(
+        "Blockchain transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Records built:",
+        len(records),
+    )
+
+    print(
+        "Records processed:",
+        records_processed,
+    )
+
+    print(
+        "Records stored:",
+        accounting_count,
+    )
+
+    print(
+        "Unique accounting keys:",
+        unique_accounting_keys,
+    )
+
+    print(
+        "Invalid records:",
+        len(invalid_records),
+    )
+
+    print(
+        "Invalid versions:",
+        invalid_versions,
+    )
+
+    print(
+        "\nACCOUNTING STATUS"
+    )
+
+    print(
+        "READY:",
+        ready_count,
+    )
+
+    print(
+        "REVIEW:",
+        review_count,
+    )
+
+    print(
+        "NON_TAXABLE_INTERNAL:",
+        internal_count,
+    )
+
+    print(
+        "INFORMATIONAL:",
+        informational_count,
+    )
+
+    print(
+        "\nACCOUNTING RECONCILIATION"
+    )
+
+    print(
+        "Marketplace records:",
+        reconciliation[
+            "marketplace_records"
+        ],
+    )
+
+    print(
+        "Economic events:",
+        reconciliation[
+            "economic_events"
+        ],
+    )
+
+    print(
+        "Realized sales:",
+        reconciliation[
+            "realized_sales"
+        ],
+    )
+
+    print(
+        "Realized P/L:",
+        reconciliation[
+            "realized_pl"
+        ],
+        "WETH",
+    )
+
+    print(
+        "Duplicate keys:",
+        reconciliation[
+            "duplicate_keys"
+        ],
+    )
+
+    print(
+        "Missing classifications:",
+        reconciliation[
+            "missing_classifications"
+        ],
+    )
+
+    print(
+        "Classification mismatches:",
+        reconciliation[
+            "classification_mismatches"
+        ],
+    )
+
+    print(
+        "Event type mismatches:",
+        reconciliation[
+            "event_type_mismatches"
+        ],
+    )
+
+    print(
+        "\nRONIN V0.6 VALIDATION"
+    )
+
+    print(
+        "Accounting schema:",
+        (
+            "PASS"
+            if schema_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Accounting persistence:",
+        (
+            "PASS"
+            if (
+                record_count_valid
+                and processing_valid
+            )
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Accounting version:",
+        (
+            "PASS"
+            if version_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Status reconciliation:",
+        (
+            "PASS"
+            if status_total_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Economic reconciliation:",
+        (
+            "PASS"
+            if reconciliation_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Pipeline version:",
+        ACCOUNTING_VERSION,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if final_passed
+            else "FAIL"
+        ),
+    )
+
+
+
+
 
 if __name__ == "__main__":
-    run_ronin_sync_v05(
+    run_ronin_sync_v06(
         incremental_max_pages=20,
         backfill_pages=1,
     )
