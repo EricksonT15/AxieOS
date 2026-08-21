@@ -86,6 +86,33 @@ CLASSIFICATION_DESCRIPTIONS = {
 }
 
 
+ECONOMICS_VERSION = "0.3"
+
+
+MARKETPLACE_SELLER_FEE_RATE = Decimal(
+    "0.0425"
+)
+
+ECONOMIC_EVENT_FIELDS = {
+    "event_key",
+    "txhash",
+    "classification",
+    "asset_name",
+    "asset_token_id",
+    "quantity",
+    "payment_asset",
+    "gross_amount",
+    "marketplace_fee",
+    "net_amount",
+    "cost_basis",
+    "realized_pl",
+    "economics_status",
+    "economics_version",
+}
+
+
+
+
 TEST_DB_PATH = Path(
     "data/blockchain/database/"
     "ronin_sync_test.db"
@@ -285,6 +312,52 @@ def initialize_transaction_database(
     connection.close()
 
 
+def initialize_economic_events_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        blockchain_economic_events (
+            event_key TEXT PRIMARY KEY,
+            txhash TEXT NOT NULL,
+            classification TEXT NOT NULL,
+            asset_name TEXT,
+            asset_token_id TEXT,
+            quantity TEXT,
+            payment_asset TEXT,
+            gross_amount TEXT,
+            marketplace_fee TEXT,
+            net_amount TEXT,
+            cost_basis TEXT,
+            realized_pl TEXT,
+            economics_status TEXT NOT NULL,
+            economics_version TEXT NOT NULL,
+            calculated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+            idx_economic_events_txhash
+        ON blockchain_economic_events (
+            txhash
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+
 def insert_transactions(
     db_path,
     transactions,
@@ -367,6 +440,156 @@ def inspect_axieos_database(
     connection.close()
 
     return tables
+
+
+def validate_economic_events_storage(
+    db_path,
+    expected_events,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            event_key,
+            txhash,
+            classification,
+            asset_name,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            marketplace_fee,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            economics_status,
+            economics_version
+        FROM blockchain_economic_events
+        """
+    ).fetchall()
+
+    connection.close()
+
+    stored_total = len(rows)
+
+    unique_event_keys = len(
+        {
+            row[0]
+            for row in rows
+        }
+    )
+
+    missing_identifiers = sum(
+        1
+        for row in rows
+        if row[4] is None
+    )
+
+    invalid_classifications = sum(
+        1
+        for row in rows
+        if row[2] not in {
+            "MARKETPLACE_BUY",
+            "MARKETPLACE_SALE",
+        }
+    )
+
+    realized_rows = [
+        row
+        for row in rows
+        if row[10] is not None
+    ]
+
+    realized_formula_errors = 0
+
+    for row in realized_rows:
+        net_amount = Decimal(
+            row[8]
+        )
+
+        cost_basis = Decimal(
+            row[9]
+        )
+
+        realized_pl = Decimal(
+            row[10]
+        )
+
+        if (
+            net_amount
+            - cost_basis
+            != realized_pl
+        ):
+            realized_formula_errors += 1
+
+    axie_1429698 = next(
+        (
+            event
+            for event in expected_events
+            if (
+                event[
+                    "asset_token_id"
+                ]
+                == "1429698"
+                and event[
+                    "classification"
+                ]
+                == "MARKETPLACE_SALE"
+            )
+        ),
+        None,
+    )
+
+    regression_passed = (
+        axie_1429698 is not None
+        and axie_1429698[
+            "realized_pl"
+        ] is not None
+        and Decimal(
+            axie_1429698[
+                "realized_pl"
+            ]
+        )
+        == Decimal(
+            "0.00000555"
+        )
+    )
+
+    passed = (
+        stored_total
+        == len(expected_events)
+        == unique_event_keys
+        and missing_identifiers == 0
+        and invalid_classifications == 0
+        and realized_formula_errors == 0
+        and regression_passed
+    )
+
+    return {
+        "expected_total": len(
+            expected_events
+        ),
+        "stored_total": stored_total,
+        "unique_event_keys": (
+            unique_event_keys
+        ),
+        "missing_identifiers": (
+            missing_identifiers
+        ),
+        "realized_total": len(
+            realized_rows
+        ),
+        "realized_formula_errors": (
+            realized_formula_errors
+        ),
+        "regression_passed": (
+            regression_passed
+        ),
+        "passed": passed,
+    }
+
 
 
 def initialize_classification_table(
@@ -993,6 +1216,8 @@ def insert_raw_token_transfers(
     return inserted_count
 
 
+
+
 def backup_axieos_database(
     source_path,
     backup_path,
@@ -1188,62 +1413,930 @@ def group_ledger_rows_by_txhash(
     )
 
 
-def run_transaction_grouping_test():
+
+
+
+
+
+
+
+
+def build_empty_economic_event(
+    txhash,
+    classification,
+):
+    return {
+        "event_key": txhash,
+        "txhash": txhash,
+        "classification": classification,
+        "asset_name": None,
+        "asset_token_id": None,
+        "quantity": None,
+        "payment_asset": None,
+        "gross_amount": None,
+        "marketplace_fee": None,
+        "net_amount": None,
+        "cost_basis": None,
+        "realized_pl": None,
+        "economics_status": "UNPROCESSED",
+        "economics_version": ECONOMICS_VERSION,
+    }
+
+
+def extract_marketplace_buy_economics(
+    transaction,
+):
+    classification_result = (
+        classify_grouped_transaction(
+            transaction
+        )
+    )
+
+    if (
+        classification_result[
+            "classification"
+        ]
+        != "MARKETPLACE_BUY"
+    ):
+        return None
+
+    weth_paid = Decimal("0")
+    purchased_movements = []
+
+    for movement in transaction[
+        "movements"
+    ]:
+        asset = movement.get(
+            "asset"
+        )
+
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        if (
+            asset == "Ronin Wrapped Ether"
+            and direction == "OUT"
+        ):
+            weth_paid += Decimal(
+                str(
+                    movement.get(
+                        "value_out",
+                        "0",
+                    )
+                )
+            )
+
+        elif (
+            asset != "Ronin Wrapped Ether"
+            and direction == "IN"
+        ):
+            purchased_movements.append(
+                movement
+            )
+
+    event = build_empty_economic_event(
+        txhash=transaction["txhash"],
+        classification=(
+            "MARKETPLACE_BUY"
+        ),
+    )
+
+    if (
+        weth_paid <= 0
+        or not purchased_movements
+    ):
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    asset_names = {
+        movement.get("asset")
+        for movement
+        in purchased_movements
+    }
+
+    if len(asset_names) != 1:
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    asset_name = next(
+        iter(asset_names)
+    )
+
+    quantity = sum(
+        Decimal(
+            str(
+                movement.get(
+                    "value_in",
+                    "0",
+                )
+            )
+        )
+        for movement
+        in purchased_movements
+    )
+
+    event["asset_name"] = asset_name
+    event["quantity"] = str(
+        quantity
+    )
+    event[
+        "payment_asset"
+    ] = "Ronin Wrapped Ether"
+    event[
+        "gross_amount"
+    ] = str(
+        weth_paid
+    )
+    event[
+        "economics_status"
+    ] = "BUY_EXTRACTED"
+
+    return event
+
+
+
+def extract_marketplace_sale_economics(
+    transaction,
+):
+    classification_result = (
+        classify_grouped_transaction(
+            transaction
+        )
+    )
+
+    if (
+        classification_result[
+            "classification"
+        ]
+        != "MARKETPLACE_SALE"
+    ):
+        return None
+
+    weth_received = Decimal("0")
+    sold_movements = []
+
+    for movement in transaction[
+        "movements"
+    ]:
+        asset = movement.get(
+            "asset"
+        )
+
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        if (
+            asset == "Ronin Wrapped Ether"
+            and direction == "IN"
+        ):
+            weth_received += Decimal(
+                str(
+                    movement.get(
+                        "value_in",
+                        "0",
+                    )
+                )
+            )
+
+        elif (
+            asset != "Ronin Wrapped Ether"
+            and direction == "OUT"
+        ):
+            sold_movements.append(
+                movement
+            )
+
+    event = build_empty_economic_event(
+        txhash=transaction["txhash"],
+        classification=(
+            "MARKETPLACE_SALE"
+        ),
+    )
+
+    if (
+        weth_received <= 0
+        or not sold_movements
+    ):
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    asset_names = {
+        movement.get("asset")
+        for movement
+        in sold_movements
+    }
+
+    if len(asset_names) != 1:
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    asset_name = next(
+        iter(asset_names)
+    )
+
+    quantity = sum(
+        Decimal(
+            str(
+                movement.get(
+                    "value_out",
+                    "0",
+                )
+            )
+        )
+        for movement
+        in sold_movements
+    )
+
+    event[
+        "asset_name"
+    ] = asset_name
+
+    event[
+        "quantity"
+    ] = str(
+        quantity
+    )
+
+    event[
+        "payment_asset"
+    ] = "Ronin Wrapped Ether"
+
+    event[
+        "net_amount"
+    ] = str(
+        weth_received
+    )
+
+    event[
+        "economics_status"
+    ] = "SALE_NET_EXTRACTED"
+
+    return event
+
+
+def build_marketplace_economic_events(
+    transactions,
+):
+    events = []
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        classification = result[
+            "classification"
+        ]
+
+        if classification == "MARKETPLACE_BUY":
+            event = (
+                extract_marketplace_buy_economics(
+                    transaction
+                )
+            )
+
+        elif classification == "MARKETPLACE_SALE":
+            event = (
+                extract_marketplace_sale_economics(
+                    transaction
+                )
+            )
+
+            event = (
+                apply_marketplace_sale_fee(
+                    event
+                )
+            )
+
+        else:
+            continue
+
+        if event is not None:
+            event = (
+                enrich_economic_event_identifier(
+                    AXIEOS_DB_PATH,
+                    event,
+                )
+            )
+
+            events.append(event)
+    return events
+
+
+def store_economic_events(
+    db_path,
+    events,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+
+    for event in events:
+        connection.execute(
+            """
+            INSERT INTO blockchain_economic_events (
+                event_key,
+                txhash,
+                classification,
+                asset_name,
+                asset_token_id,
+                quantity,
+                payment_asset,
+                gross_amount,
+                marketplace_fee,
+                net_amount,
+                cost_basis,
+                realized_pl,
+                economics_status,
+                economics_version
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?
+            )
+            ON CONFLICT(event_key)
+            DO UPDATE SET
+                txhash =
+                    excluded.txhash,
+                classification =
+                    excluded.classification,
+                asset_name =
+                    excluded.asset_name,
+                asset_token_id =
+                    excluded.asset_token_id,
+                quantity =
+                    excluded.quantity,
+                payment_asset =
+                    excluded.payment_asset,
+                gross_amount =
+                    excluded.gross_amount,
+                marketplace_fee =
+                    excluded.marketplace_fee,
+                net_amount =
+                    excluded.net_amount,
+                cost_basis =
+                    excluded.cost_basis,
+                realized_pl =
+                    excluded.realized_pl,
+                economics_status =
+                    excluded.economics_status,
+                economics_version =
+                    excluded.economics_version,
+                calculated_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                event["event_key"],
+                event["txhash"],
+                event["classification"],
+                event["asset_name"],
+                event["asset_token_id"],
+                event["quantity"],
+                event["payment_asset"],
+                event["gross_amount"],
+                event["marketplace_fee"],
+                event["net_amount"],
+                event["cost_basis"],
+                event["realized_pl"],
+                event["economics_status"],
+                event["economics_version"],
+            ),
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return processed
+
+
+def match_axie_acquisition_costs(
+    events,
+):
+    owned_axies = {}
+
+    for event in events:
+        if (
+            event["asset_name"] != "Axie"
+            or event["asset_token_id"] is None
+        ):
+            if (
+                event["classification"]
+                == "MARKETPLACE_SALE"
+                and event["asset_name"]
+                != "Axie"
+            ):
+                event[
+                    "economics_status"
+                ] = (
+                    "COST_BASIS_DEFERRED_INVENTORY"
+                )
+
+            continue
+
+        token_id = event[
+            "asset_token_id"
+        ]
+
+        if (
+            event["classification"]
+            == "MARKETPLACE_BUY"
+        ):
+            if event["gross_amount"] is not None:
+                owned_axies[
+                    token_id
+                ] = event[
+                    "gross_amount"
+                ]
+
+        elif (
+            event["classification"]
+            == "MARKETPLACE_SALE"
+        ):
+            acquisition_cost = (
+                owned_axies.get(
+                    token_id
+                )
+            )
+
+            if acquisition_cost is None:
+                event[
+                    "economics_status"
+                ] = (
+                    "UNKNOWN_COST_BASIS"
+                )
+
+                continue
+
+            event[
+                "cost_basis"
+            ] = acquisition_cost
+
+            event[
+                "economics_status"
+            ] = (
+                "COST_BASIS_MATCHED"
+            )
+
+            del owned_axies[
+                token_id
+            ]
+
+    return events
+
+
+def calculate_realized_pl(
+    events,
+):
+    for event in events:
+        if (
+            event["classification"]
+            != "MARKETPLACE_SALE"
+        ):
+            continue
+
+        if (
+            event["asset_name"] != "Axie"
+        ):
+            continue
+
+        if (
+            event["cost_basis"] is None
+            or event["net_amount"] is None
+        ):
+            continue
+
+        cost_basis = Decimal(
+            event["cost_basis"]
+        )
+
+        net_proceeds = Decimal(
+            event["net_amount"]
+        )
+
+        realized_pl = (
+            net_proceeds
+            - cost_basis
+        )
+
+        event[
+            "realized_pl"
+        ] = decimal_to_plain_string(
+            realized_pl
+        )
+
+        event[
+            "economics_status"
+        ] = "REALIZED_PL_COMPLETE"
+
+    return events
+
+
+
+
+
+def find_event_asset_token_ids(
+    db_path,
+    event,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            from_address,
+            to_address,
+            token_name,
+            token_id
+        FROM ronin_token_transfers_raw
+        WHERE tx_hash = ?
+        ORDER BY log_index
+        """,
+        (
+            event["txhash"],
+        ),
+    ).fetchall()
+
+    connection.close()
+
+    token_ids = []
+
+    for (
+        from_address,
+        to_address,
+        token_name,
+        token_id,
+    ) in rows:
+        if token_id is None:
+            continue
+
+        if (
+            token_name
+            == "Ronin Wrapped Ether"
+        ):
+            continue
+
+        from_normalized = (
+            normalize_address(
+                from_address
+            )
+        )
+
+        to_normalized = (
+            normalize_address(
+                to_address
+            )
+        )
+
+        wallet_normalized = (
+            normalize_address(
+                RONIN_WALLET_ADDRESS
+            )
+        )
+
+        if (
+            event["classification"]
+            == "MARKETPLACE_BUY"
+            and to_normalized
+            == wallet_normalized
+        ):
+            token_ids.append(
+                str(token_id)
+            )
+
+        elif (
+            event["classification"]
+            == "MARKETPLACE_SALE"
+            and from_normalized
+            == wallet_normalized
+        ):
+            token_ids.append(
+                str(token_id)
+            )
+
+    return list(
+        dict.fromkeys(
+            token_ids
+        )
+    )
+
+
+def enrich_economic_event_identifier(
+    db_path,
+    event,
+):
+    token_ids = (
+        find_event_asset_token_ids(
+            db_path,
+            event,
+        )
+    )
+
+    if len(token_ids) == 1:
+        event[
+            "asset_token_id"
+        ] = token_ids[0]
+
+        return event
+
+    if len(token_ids) > 1:
+        event[
+            "asset_token_id"
+        ] = ",".join(
+            token_ids
+        )
+
+        event[
+            "economics_status"
+        ] = (
+            "REVIEW_MULTIPLE_TOKEN_IDS"
+        )
+
+    return event
+
+
+
+
+def apply_marketplace_sale_fee(
+    event,
+):
+    if event is None:
+        return None
+
+    if (
+        event["classification"]
+        != "MARKETPLACE_SALE"
+    ):
+        return event
+
+    if event["net_amount"] is None:
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    net_amount = Decimal(
+        event["net_amount"]
+    )
+
+    net_rate = (
+        Decimal("1")
+        - MARKETPLACE_SELLER_FEE_RATE
+    )
+
+    if net_amount <= 0:
+        event[
+            "economics_status"
+        ] = "REVIEW"
+
+        return event
+
+    gross_amount = (
+        net_amount
+        / net_rate
+    )
+
+    marketplace_fee = (
+        gross_amount
+        - net_amount
+    )
+
+    event[
+        "gross_amount"
+    ] = decimal_to_plain_string(
+        gross_amount
+    )
+
+    event[
+        "marketplace_fee"
+    ] = decimal_to_plain_string(
+        marketplace_fee
+    )
+
+    event[
+        "economics_status"
+    ] = "SALE_ECONOMICS_COMPLETE"
+
+    return event
+
+
+
+
+
+
+
+def validate_economic_event(
+    event,
+):
+    return (
+        set(event.keys())
+        == ECONOMIC_EVENT_FIELDS
+    )
+
+
+
+
+
+
+def run_ronin_sync_v03(
+    max_pages=3,
+):
+    run_ronin_sync_v02(
+        max_pages=max_pages
+    )
+
+    initialize_economic_events_table(
+        AXIEOS_DB_PATH
+    )
+
     transactions = (
         group_ledger_rows_by_txhash(
             AXIEOS_DB_PATH
         )
     )
 
-    multi_movement = [
-        transaction
-        for transaction in transactions
-        if len(
-            transaction["movements"]
-        ) > 1
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    events = (
+        match_axie_acquisition_costs(
+            events
+        )
+    )
+
+    events = (
+        calculate_realized_pl(
+            events
+        )
+    )
+
+    processed = store_economic_events(
+        AXIEOS_DB_PATH,
+        events,
+    )
+
+    validation = (
+        validate_economic_events_storage(
+            AXIEOS_DB_PATH,
+            events,
+        )
+    )
+
+    matched_pl = [
+        event
+        for event in events
+        if event[
+            "realized_pl"
+        ] is not None
     ]
 
-    print(
-        "\nRONIN TRANSACTION GROUPING"
-    )
+    unknown_cost_basis = [
+        event
+        for event in events
+        if event[
+            "economics_status"
+        ]
+        == "UNKNOWN_COST_BASIS"
+    ]
 
-    print(
-        "Ledger rows:",
-        187,
-    )
-
-    print(
-        "Grouped transactions:",
-        len(transactions),
-    )
-
-    print(
-        "Multi-movement transactions:",
-        len(multi_movement),
-    )
-
-    print(
-        "\nEXAMPLE GROUPS"
-    )
-
-    for transaction in multi_movement[:5]:
-        print(
-            "\nTX:",
-            transaction["txhash"],
+    deferred_inventory = [
+        event
+        for event in events
+        if event[
+            "economics_status"
+        ]
+        == (
+            "COST_BASIS_DEFERRED_INVENTORY"
         )
+    ]
 
-        print(
-            "Method:",
-            transaction["method"],
-        )
-
-        for movement in transaction[
-            "movements"
-        ]:
-            print(
-                movement
+    total_realized_pl = sum(
+        (
+            Decimal(
+                event[
+                    "realized_pl"
+                ]
             )
+            for event in matched_pl
+        ),
+        Decimal("0"),
+    )
 
+    print(
+        "\nRONIN TRANSACTION ECONOMICS"
+    )
+
+    print(
+        "Economic events processed:",
+        processed,
+    )
+
+    print(
+        "Economic events stored:",
+        validation["stored_total"],
+    )
+
+    print(
+        "Unique event keys:",
+        validation[
+            "unique_event_keys"
+        ],
+    )
+
+    print(
+        "Missing asset identifiers:",
+        validation[
+            "missing_identifiers"
+        ],
+    )
+
+    print(
+        "Realized Axie trades:",
+        validation["realized_total"],
+    )
+
+    print(
+        "Unknown Axie cost basis:",
+        len(
+            unknown_cost_basis
+        ),
+    )
+
+    print(
+        "Inventory cost basis deferred:",
+        len(
+            deferred_inventory
+        ),
+    )
+
+    print(
+        "Realized formula errors:",
+        validation[
+            "realized_formula_errors"
+        ],
+    )
+
+    print(
+        "Total realized P/L:",
+        decimal_to_plain_string(
+            total_realized_pl
+        ),
+        "WETH",
+    )
+
+    print(
+        "Axie #1429698 regression:",
+        (
+            "PASS"
+            if validation[
+                "regression_passed"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Economics version:",
+        ECONOMICS_VERSION,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation["passed"]
+            else "FAIL"
+        ),
+    )
 
 
 
@@ -1920,6 +3013,18 @@ def build_ledger_row_from_transfer(
     }
 
 
+def validate_economic_event(
+    event,
+):
+    return (
+        set(event.keys())
+        == ECONOMIC_EVENT_FIELDS
+    )
+
+
+
+
+
 def run_ledger_date_overlap_test():
     database_uri = (
         f"file:{AXIEOS_DB_PATH.as_posix()}?mode=ro"
@@ -2587,6 +3692,15 @@ def validate_classification_storage(
             and validate_classification_taxonomy()
         ),
     }
+
+
+def decimal_to_plain_string(
+    value,
+):
+    return format(
+        value,
+        "f",
+    )
 
 
 
@@ -4603,10 +5717,829 @@ def run_classification_storage_test():
 
 
 
+def run_economic_schema_test():
+    sample = build_empty_economic_event(
+        txhash="0xtest",
+        classification="MARKETPLACE_BUY",
+    )
+
+    print(
+        "\nRONIN ECONOMIC EVENT SCHEMA"
+    )
+
+    print(
+        "Fields:",
+        len(
+            ECONOMIC_EVENT_FIELDS
+        ),
+    )
+
+    print(
+        "Schema valid:",
+        validate_economic_event(
+            sample
+        ),
+    )
+
+    print(
+        "Economics version:",
+        ECONOMICS_VERSION,
+    )
+
+    print("\nSAMPLE EVENT")
+
+    for key, value in sample.items():
+        print(
+            f"{key}: {value}"
+        )
+
+
+def run_marketplace_buy_economics_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = []
+
+    for transaction in transactions:
+        event = (
+            extract_marketplace_buy_economics(
+                transaction
+            )
+        )
+
+        if event is not None:
+            events.append(event)
+
+    ready = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "BUY_EXTRACTED"
+        )
+    ]
+
+    review = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "REVIEW"
+        )
+    ]
+
+    print(
+        "\nRONIN MARKETPLACE BUY ECONOMICS"
+    )
+
+    print(
+        "Marketplace buys:",
+        len(events),
+    )
+
+    print(
+        "Successfully extracted:",
+        len(ready),
+    )
+
+    print(
+        "Needs review:",
+        len(review),
+    )
+
+    print("\nEXAMPLES")
+
+    for event in ready[:5]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Asset:",
+            event["asset_name"],
+        )
+
+        print(
+            "Quantity:",
+            event["quantity"],
+        )
+
+        print(
+            "Payment asset:",
+            event["payment_asset"],
+        )
+
+        print(
+            "WETH paid:",
+            event["gross_amount"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+def run_marketplace_sale_economics_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = []
+
+    for transaction in transactions:
+        event = (
+            extract_marketplace_sale_economics(
+                transaction
+            )
+        )
+
+        if event is not None:
+            events.append(event)
+
+    ready = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "SALE_NET_EXTRACTED"
+        )
+    ]
+
+    review = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "REVIEW"
+        )
+    ]
+
+    print(
+        "\nRONIN MARKETPLACE SALE ECONOMICS"
+    )
+
+    print(
+        "Marketplace sales:",
+        len(events),
+    )
+
+    print(
+        "Successfully extracted:",
+        len(ready),
+    )
+
+    print(
+        "Needs review:",
+        len(review),
+    )
+
+    print("\nEXAMPLES")
+
+    for event in ready[:5]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Asset:",
+            event["asset_name"],
+        )
+
+        print(
+            "Quantity:",
+            event["quantity"],
+        )
+
+        print(
+            "Payment asset:",
+            event["payment_asset"],
+        )
+
+        print(
+            "WETH received:",
+            event["net_amount"],
+        )
+
+        print(
+            "Gross amount:",
+            event["gross_amount"],
+        )
+
+        print(
+            "Marketplace fee:",
+            event["marketplace_fee"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+def run_marketplace_fee_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = []
+
+    for transaction in transactions:
+        event = (
+            extract_marketplace_sale_economics(
+                transaction
+            )
+        )
+
+        if event is None:
+            continue
+
+        event = (
+            apply_marketplace_sale_fee(
+                event
+            )
+        )
+
+        events.append(event)
+
+    complete = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "SALE_ECONOMICS_COMPLETE"
+        )
+    ]
+
+    review = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "REVIEW"
+        )
+    ]
+
+    print(
+        "\nRONIN MARKETPLACE FEE ECONOMICS"
+    )
+
+    print(
+        "Marketplace sales:",
+        len(events),
+    )
+
+    print(
+        "Economics complete:",
+        len(complete),
+    )
+
+    print(
+        "Needs review:",
+        len(review),
+    )
+
+    print(
+        "Seller fee rate:",
+        MARKETPLACE_SELLER_FEE_RATE,
+    )
+
+    print("\nEXAMPLES")
+
+    for event in complete[:5]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Asset:",
+            event["asset_name"],
+        )
+
+        print(
+            "Quantity:",
+            event["quantity"],
+        )
+
+        print(
+            "Gross sale:",
+            event["gross_amount"],
+        )
+
+        print(
+            "Marketplace fee:",
+            event["marketplace_fee"],
+        )
+
+        print(
+            "Net proceeds:",
+            event["net_amount"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+def run_economic_storage_test():
+    initialize_economic_events_table(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    processed = store_economic_events(
+        AXIEOS_DB_PATH,
+        events,
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_economic_events
+        """
+    ).fetchone()[0]
+
+    counts = connection.execute(
+        """
+        SELECT
+            classification,
+            COUNT(*)
+        FROM blockchain_economic_events
+        GROUP BY classification
+        ORDER BY classification
+        """
+    ).fetchall()
+
+    review = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_economic_events
+        WHERE economics_status = 'REVIEW'
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    print(
+        "\nRONIN ECONOMIC EVENT STORAGE"
+    )
+
+    print(
+        "Events processed:",
+        processed,
+    )
+
+    print(
+        "Events stored:",
+        total,
+    )
+
+    print(
+        "Needs review:",
+        review,
+    )
+
+    print(
+        "Economics version:",
+        ECONOMICS_VERSION,
+    )
+
+    print("\nCOUNTS")
+
+    for classification, count in counts:
+        print(
+            f"{classification}: {count}"
+        )
+
+
+def run_asset_identifier_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    identified = [
+        event
+        for event in events
+        if event[
+            "asset_token_id"
+        ] is not None
+    ]
+
+    missing = [
+        event
+        for event in events
+        if event[
+            "asset_token_id"
+        ] is None
+    ]
+
+    multiple = [
+        event
+        for event in events
+        if event[
+            "economics_status"
+        ]
+        == "REVIEW_MULTIPLE_TOKEN_IDS"
+    ]
+
+    print(
+        "\nRONIN ASSET IDENTIFIERS"
+    )
+
+    print(
+        "Economic events:",
+        len(events),
+    )
+
+    print(
+        "Identifiers found:",
+        len(identified),
+    )
+
+    print(
+        "Identifiers missing:",
+        len(missing),
+    )
+
+    print(
+        "Multiple-ID review:",
+        len(multiple),
+    )
+
+    print("\nEXAMPLES")
+
+    for event in identified[:10]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Classification:",
+            event["classification"],
+        )
+
+        print(
+            "Asset:",
+            event["asset_name"],
+        )
+
+        print(
+            "Token ID:",
+            event["asset_token_id"],
+        )
+
+        print(
+            "Quantity:",
+            event["quantity"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+def run_axie_cost_basis_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    events = (
+        match_axie_acquisition_costs(
+            events
+        )
+    )
+
+    axie_sales = [
+        event
+        for event in events
+        if (
+            event["classification"]
+            == "MARKETPLACE_SALE"
+            and event["asset_name"]
+            == "Axie"
+        )
+    ]
+
+    matched = [
+        event
+        for event in axie_sales
+        if event[
+            "economics_status"
+        ] == "COST_BASIS_MATCHED"
+    ]
+
+    unknown = [
+        event
+        for event in axie_sales
+        if event[
+            "economics_status"
+        ] == "UNKNOWN_COST_BASIS"
+    ]
+
+    deferred = [
+        event
+        for event in events
+        if event[
+            "economics_status"
+        ]
+        == "COST_BASIS_DEFERRED_INVENTORY"
+    ]
+
+    print(
+        "\nRONIN AXIE COST BASIS"
+    )
+
+    print(
+        "Axie sales:",
+        len(axie_sales),
+    )
+
+    print(
+        "Cost basis matched:",
+        len(matched),
+    )
+
+    print(
+        "Unknown cost basis:",
+        len(unknown),
+    )
+
+    print(
+        "Inventory sales deferred:",
+        len(deferred),
+    )
+
+    print("\nMATCHED EXAMPLES")
+
+    for event in matched[:10]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Axie ID:",
+            event["asset_token_id"],
+        )
+
+        print(
+            "Gross sale:",
+            event["gross_amount"],
+        )
+
+        print(
+            "Net proceeds:",
+            event["net_amount"],
+        )
+
+        print(
+            "Cost basis:",
+            event["cost_basis"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+    print("\nUNKNOWN EXAMPLES")
+
+    for event in unknown[:5]:
+        print(
+            "\nTX:",
+            event["txhash"],
+        )
+
+        print(
+            "Axie ID:",
+            event["asset_token_id"],
+        )
+
+        print(
+            "Net proceeds:",
+            event["net_amount"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+def run_realized_pl_test():
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    events = (
+        match_axie_acquisition_costs(
+            events
+        )
+    )
+
+    events = (
+        calculate_realized_pl(
+            events
+        )
+    )
+
+    completed = [
+        event
+        for event in events
+        if (
+            event[
+                "economics_status"
+            ]
+            == "REALIZED_PL_COMPLETE"
+        )
+    ]
+
+    total_realized_pl = sum(
+        Decimal(
+            event["realized_pl"]
+        )
+        for event in completed
+    )
+
+    axie_1429698 = next(
+        (
+            event
+            for event in completed
+            if (
+                event[
+                    "asset_token_id"
+                ]
+                == "1429698"
+            )
+        ),
+        None,
+    )
+
+    known_trade_valid = (
+        axie_1429698 is not None
+        and Decimal(
+            axie_1429698[
+                "realized_pl"
+            ]
+        )
+        == Decimal(
+            "0.00000555"
+        )
+    )
+
+    print(
+        "\nRONIN REALIZED P/L"
+    )
+
+    print(
+        "Completed Axie trades:",
+        len(completed),
+    )
+
+    print(
+        "Total realized P/L:",
+        decimal_to_plain_string(
+            total_realized_pl
+        ),
+        "WETH",
+    )
+
+    print(
+        "Axie #1429698 regression:",
+        (
+            "PASS"
+            if known_trade_valid
+            else "FAIL"
+        ),
+    )
+
+    print("\nTRADES")
+
+    for event in completed:
+        print(
+            "\nAxie ID:",
+            event["asset_token_id"],
+        )
+
+        print(
+            "Gross sale:",
+            event["gross_amount"],
+        )
+
+        print(
+            "Marketplace fee:",
+            event[
+                "marketplace_fee"
+            ],
+        )
+
+        print(
+            "Net proceeds:",
+            event["net_amount"],
+        )
+
+        print(
+            "Cost basis:",
+            event["cost_basis"],
+        )
+
+        print(
+            "Realized P/L:",
+            event["realized_pl"],
+        )
+
+        print(
+            "Status:",
+            event[
+                "economics_status"
+            ],
+        )
+
+
+
+
+
+
 
 
 
 if __name__ == "__main__":
-    run_ronin_sync_v02(
+    run_ronin_sync_v03(
         max_pages=3
     )
