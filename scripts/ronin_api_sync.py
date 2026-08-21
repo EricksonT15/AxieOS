@@ -51,6 +51,7 @@ TRANSACTION_CLASSIFICATIONS = {
     "NFT_BURN",
     "MINT_OR_CLAIM",
     "STAKING_OR_REWARD",
+    "INTERNAL_TRANSFER",
     "UNKNOWN",
 }
 
@@ -85,6 +86,10 @@ CLASSIFICATION_DESCRIPTIONS = {
     ),
     "STAKING_OR_REWARD": (
         "Staking or reward-related activity"
+    ),
+    "INTERNAL_TRANSFER": (
+        "Asset movement between "
+        "user-owned wallets"
     ),
     "UNKNOWN": (
         "Transaction needs review"
@@ -151,6 +156,52 @@ ZERO_ADDRESS = (
 CLASSIFIER_VERSION = "0.2"
 
 RONIN_SYNC_VERSION = "0.4"
+
+INTELLIGENCE_VERSION = "0.5"
+
+RONIN_INTELLIGENCE_VERSION = "0.5"
+
+WALLET_OWNERSHIP_TYPES = {
+    "USER_OWNED",
+    "EXTERNAL",
+    "CONTRACT",
+    "SYSTEM",
+    "UNKNOWN",
+}
+
+WALLET_ROLES = {
+    "PRIMARY",
+    "SECONDARY",
+    "MARKETPLACE",
+    "STAKING",
+    "DEX",
+    "BURN",
+    "SYSTEM",
+    "UNKNOWN",
+}
+
+WALLET_RELATIONSHIP_TYPES = {
+    "INTERNAL_USER_TRANSFER",
+    "USER_TO_SYSTEM",
+    "SYSTEM_TO_USER",
+    "USER_TO_UNKNOWN",
+    "UNKNOWN_TO_USER",
+    "SYSTEM_TO_UNKNOWN",
+    "UNKNOWN_TO_SYSTEM",
+    "UNKNOWN_TO_UNKNOWN",
+}
+
+ASSET_CATEGORIES = {
+    "AXIE_NFT",
+    "CONSUMABLE",
+    "MATERIAL",
+    "FUNGIBLE_TOKEN",
+    "NFT",
+    "MULTI_TOKEN",
+    "UNKNOWN",
+}
+
+
 
 
 def load_transaction_response(
@@ -318,6 +369,570 @@ def initialize_transaction_database(
     connection.close()
 
 
+def initialize_transaction_intelligence_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        blockchain_transaction_intelligence (
+            txhash TEXT PRIMARY KEY,
+            wallet_relationships_json TEXT NOT NULL,
+            counterparties_json TEXT NOT NULL,
+            asset_categories_json TEXT NOT NULL,
+            asset_keys_json TEXT NOT NULL,
+            is_internal_transfer INTEGER NOT NULL,
+            intelligence_version TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+
+def initialize_asset_registry_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        ronin_asset_registry (
+            asset_key TEXT PRIMARY KEY,
+            token_address TEXT,
+            token_id TEXT,
+            token_name TEXT,
+            token_symbol TEXT,
+            token_type TEXT,
+            decimals INTEGER,
+            asset_category TEXT NOT NULL,
+            source TEXT NOT NULL,
+            intelligence_version TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+            idx_asset_registry_address
+        ON ronin_asset_registry (
+            token_address
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def build_asset_registry_key(
+    token_address,
+    token_id,
+):
+    normalized_address = (
+        normalize_address(
+            token_address
+        )
+    )
+
+    token_part = (
+        str(token_id)
+        if token_id is not None
+        else "FUNGIBLE"
+    )
+
+    return (
+        f"{normalized_address}:"
+        f"{token_part}"
+    )
+
+
+def classify_asset_category(
+    token_name,
+    token_type,
+):
+    if token_name == "Axie":
+        return "AXIE_NFT"
+
+    if (
+        token_name
+        == "Axie Consumable Item"
+    ):
+        return "CONSUMABLE"
+
+    if token_name == "Axie Material":
+        return "MATERIAL"
+
+    if token_type == "ERC-20":
+        return "FUNGIBLE_TOKEN"
+
+    if token_type == "ERC-721":
+        return "NFT"
+
+    if token_type == "ERC-1155":
+        return "MULTI_TOKEN"
+
+    return "UNKNOWN"
+
+
+def load_asset_registry_map(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            asset_key,
+            asset_category
+        FROM ronin_asset_registry
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return {
+        row[0]: row[1]
+        for row in rows
+    }
+
+
+def get_transaction_asset_intelligence(
+    db_path,
+    txhash,
+    asset_registry,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            token_address,
+            token_id
+        FROM ronin_token_transfers_raw
+        WHERE tx_hash = ?
+        """,
+        (
+            txhash,
+        ),
+    ).fetchall()
+
+    connection.close()
+
+    asset_keys = set()
+    asset_categories = set()
+
+    for token_address, token_id in rows:
+        if token_address is None:
+            continue
+
+        asset_key = (
+            build_asset_registry_key(
+                token_address,
+                token_id,
+            )
+        )
+
+        asset_keys.add(
+            asset_key
+        )
+
+        category = asset_registry.get(
+            asset_key
+        )
+
+        if category is not None:
+            asset_categories.add(
+                category
+            )
+
+    return {
+        "asset_keys": sorted(
+            asset_keys
+        ),
+        "asset_categories": sorted(
+            asset_categories
+        ),
+    }
+
+
+def build_transaction_intelligence(
+    db_path,
+    transaction,
+    asset_registry,
+):
+    relationships = set()
+    counterparties = {}
+
+    for movement in transaction.get(
+        "movements",
+        [],
+    ):
+        relationship_result = (
+            classify_wallet_relationship(
+                db_path,
+                movement.get(
+                    "from_address"
+                ),
+                movement.get(
+                    "to_address"
+                ),
+            )
+        )
+
+        relationships.add(
+            relationship_result[
+                "relationship"
+            ]
+        )
+
+        counterparty_address = (
+            get_movement_counterparty(
+                movement
+            )
+        )
+
+        if counterparty_address is None:
+            continue
+
+        counterparty = (
+            get_wallet_registry_entry(
+                db_path,
+                counterparty_address,
+            )
+        )
+
+        if (
+            counterparty[
+                "wallet_role"
+            ]
+            == "UNKNOWN"
+        ):
+            continue
+
+        counterparties[
+            counterparty["address"]
+        ] = {
+            "address": (
+                counterparty["address"]
+            ),
+            "label": (
+                counterparty[
+                    "wallet_label"
+                ]
+            ),
+            "ownership_type": (
+                counterparty[
+                    "ownership_type"
+                ]
+            ),
+            "role": (
+                counterparty[
+                    "wallet_role"
+                ]
+            ),
+        }
+
+    internal_result = (
+        detect_internal_user_transfer(
+            db_path,
+            transaction,
+        )
+    )
+
+    asset_result = (
+        get_transaction_asset_intelligence(
+            db_path,
+            transaction["txhash"],
+            asset_registry,
+        )
+    )
+
+    return {
+        "txhash": transaction[
+            "txhash"
+        ],
+        "wallet_relationships": (
+            sorted(
+                relationships
+            )
+        ),
+        "counterparties": list(
+            counterparties.values()
+        ),
+        "asset_categories": (
+            asset_result[
+                "asset_categories"
+            ]
+        ),
+        "asset_keys": (
+            asset_result[
+                "asset_keys"
+            ]
+        ),
+        "is_internal_transfer": (
+            internal_result[
+                "is_internal_transfer"
+            ]
+        ),
+        "intelligence_version": (
+            INTELLIGENCE_VERSION
+        ),
+    }
+
+
+
+def discover_assets_from_raw_transfers(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT DISTINCT
+            token_address,
+            token_id,
+            token_name,
+            token_symbol,
+            token_type,
+            decimals
+        FROM ronin_token_transfers_raw
+        WHERE token_address IS NOT NULL
+        ORDER BY
+            token_name,
+            token_id
+        """
+    ).fetchall()
+
+    connection.close()
+
+    assets = []
+
+    for row in rows:
+        token_address = row[0]
+        token_id = row[1]
+        token_name = row[2]
+        token_symbol = row[3]
+        token_type = row[4]
+        decimals = row[5]
+
+        assets.append(
+            {
+                "asset_key": (
+                    build_asset_registry_key(
+                        token_address,
+                        token_id,
+                    )
+                ),
+                "token_address": (
+                    normalize_address(
+                        token_address
+                    )
+                ),
+                "token_id": (
+                    str(token_id)
+                    if token_id
+                    is not None
+                    else None
+                ),
+                "token_name": token_name,
+                "token_symbol": (
+                    token_symbol
+                ),
+                "token_type": token_type,
+                "decimals": decimals,
+                "asset_category": (
+                    classify_asset_category(
+                        token_name,
+                        token_type,
+                    )
+                ),
+            }
+        )
+
+    return assets
+
+
+def store_transaction_intelligence(
+    db_path,
+    intelligence_rows,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+
+    for row in intelligence_rows:
+        connection.execute(
+            """
+            INSERT INTO
+                blockchain_transaction_intelligence (
+                    txhash,
+                    wallet_relationships_json,
+                    counterparties_json,
+                    asset_categories_json,
+                    asset_keys_json,
+                    is_internal_transfer,
+                    intelligence_version
+                )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(txhash)
+            DO UPDATE SET
+                wallet_relationships_json =
+                    excluded.wallet_relationships_json,
+                counterparties_json =
+                    excluded.counterparties_json,
+                asset_categories_json =
+                    excluded.asset_categories_json,
+                asset_keys_json =
+                    excluded.asset_keys_json,
+                is_internal_transfer =
+                    excluded.is_internal_transfer,
+                intelligence_version =
+                    excluded.intelligence_version,
+                updated_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                row["txhash"],
+                json.dumps(
+                    row[
+                        "wallet_relationships"
+                    ],
+                    sort_keys=True,
+                ),
+                json.dumps(
+                    row["counterparties"],
+                    sort_keys=True,
+                ),
+                json.dumps(
+                    row["asset_categories"],
+                    sort_keys=True,
+                ),
+                json.dumps(
+                    row["asset_keys"],
+                    sort_keys=True,
+                ),
+                (
+                    1
+                    if row[
+                        "is_internal_transfer"
+                    ]
+                    else 0
+                ),
+                row[
+                    "intelligence_version"
+                ],
+            ),
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return processed
+
+
+def store_asset_registry_entries(
+    db_path,
+    assets,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+
+    for asset in assets:
+        connection.execute(
+            """
+            INSERT INTO ronin_asset_registry (
+                asset_key,
+                token_address,
+                token_id,
+                token_name,
+                token_symbol,
+                token_type,
+                decimals,
+                asset_category,
+                source,
+                intelligence_version
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?
+            )
+            ON CONFLICT(asset_key)
+            DO UPDATE SET
+                token_address =
+                    excluded.token_address,
+                token_id =
+                    excluded.token_id,
+                token_name =
+                    excluded.token_name,
+                token_symbol =
+                    excluded.token_symbol,
+                token_type =
+                    excluded.token_type,
+                decimals =
+                    excluded.decimals,
+                asset_category =
+                    excluded.asset_category,
+                source =
+                    excluded.source,
+                intelligence_version =
+                    excluded.intelligence_version,
+                updated_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                asset["asset_key"],
+                asset["token_address"],
+                asset["token_id"],
+                asset["token_name"],
+                asset["token_symbol"],
+                asset["token_type"],
+                asset["decimals"],
+                asset["asset_category"],
+                "RONIN_TOKEN_TRANSFERS",
+                INTELLIGENCE_VERSION,
+            ),
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return processed
+
+
+
+
+
+
 def initialize_economic_events_table(
     db_path,
 ):
@@ -404,6 +1019,695 @@ def initialize_ronin_sync_state_table(
 
     connection.commit()
     connection.close()
+
+
+def initialize_wallet_registry_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        ronin_wallet_registry (
+            address TEXT PRIMARY KEY,
+            wallet_label TEXT,
+            ownership_type TEXT NOT NULL,
+            wallet_role TEXT NOT NULL,
+            source TEXT NOT NULL,
+            intelligence_version TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def upsert_wallet_registry_entry(
+    db_path,
+    address,
+    wallet_label,
+    ownership_type,
+    wallet_role,
+    source,
+):
+    if ownership_type not in (
+        WALLET_OWNERSHIP_TYPES
+    ):
+        raise ValueError(
+            "Invalid ownership type: "
+            f"{ownership_type}"
+        )
+
+    if wallet_role not in WALLET_ROLES:
+        raise ValueError(
+            "Invalid wallet role: "
+            f"{wallet_role}"
+        )
+
+    normalized_address = (
+        normalize_address(
+            address
+        )
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        INSERT INTO ronin_wallet_registry (
+            address,
+            wallet_label,
+            ownership_type,
+            wallet_role,
+            source,
+            intelligence_version
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(address)
+        DO UPDATE SET
+            wallet_label =
+                excluded.wallet_label,
+            ownership_type =
+                excluded.ownership_type,
+            wallet_role =
+                excluded.wallet_role,
+            source =
+                excluded.source,
+            intelligence_version =
+                excluded.intelligence_version,
+            updated_at =
+                CURRENT_TIMESTAMP
+        """,
+        (
+            normalized_address,
+            wallet_label,
+            ownership_type,
+            wallet_role,
+            source,
+            INTELLIGENCE_VERSION,
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def seed_default_wallet_registry(
+    db_path,
+):
+    upsert_wallet_registry_entry(
+        db_path=db_path,
+        address=RONIN_WALLET_ADDRESS,
+        wallet_label=(
+            "Primary Ronin Wallet"
+        ),
+        ownership_type="USER_OWNED",
+        wallet_role="PRIMARY",
+        source="AXIEOS_CONFIG",
+    )
+
+    upsert_wallet_registry_entry(
+        db_path=db_path,
+        address=ZERO_ADDRESS,
+        wallet_label="Zero Address",
+        ownership_type="SYSTEM",
+        wallet_role="SYSTEM",
+        source="AXIEOS_SYSTEM",
+    )
+
+
+def get_wallet_registry_entry(
+    db_path,
+    address,
+):
+    normalized_address = (
+        normalize_address(
+            address
+        )
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    row = connection.execute(
+        """
+        SELECT
+            address,
+            wallet_label,
+            ownership_type,
+            wallet_role,
+            source
+        FROM ronin_wallet_registry
+        WHERE address = ?
+        """,
+        (
+            normalized_address,
+        ),
+    ).fetchone()
+
+    connection.close()
+
+    if row is None:
+        return {
+            "address": normalized_address,
+            "wallet_label": None,
+            "ownership_type": "UNKNOWN",
+            "wallet_role": "UNKNOWN",
+            "source": None,
+        }
+
+    return {
+        "address": row[0],
+        "wallet_label": row[1],
+        "ownership_type": row[2],
+        "wallet_role": row[3],
+        "source": row[4],
+    }
+
+
+def classify_wallet_relationship(
+    db_path,
+    from_address,
+    to_address,
+):
+    sender = get_wallet_registry_entry(
+        db_path,
+        from_address,
+    )
+
+    recipient = get_wallet_registry_entry(
+        db_path,
+        to_address,
+    )
+
+    sender_type = sender[
+        "ownership_type"
+    ]
+
+    recipient_type = recipient[
+        "ownership_type"
+    ]
+
+    if (
+        sender_type == "USER_OWNED"
+        and recipient_type == "USER_OWNED"
+    ):
+        relationship = (
+            "INTERNAL_USER_TRANSFER"
+        )
+
+    elif (
+        sender_type == "USER_OWNED"
+        and recipient_type == "SYSTEM"
+    ):
+        relationship = "USER_TO_SYSTEM"
+
+    elif (
+        sender_type == "SYSTEM"
+        and recipient_type == "USER_OWNED"
+    ):
+        relationship = "SYSTEM_TO_USER"
+
+    elif (
+        sender_type == "USER_OWNED"
+        and recipient_type == "UNKNOWN"
+    ):
+        relationship = "USER_TO_UNKNOWN"
+
+    elif (
+        sender_type == "UNKNOWN"
+        and recipient_type == "USER_OWNED"
+    ):
+        relationship = "UNKNOWN_TO_USER"
+
+    elif (
+        sender_type == "SYSTEM"
+        and recipient_type == "UNKNOWN"
+    ):
+        relationship = "SYSTEM_TO_UNKNOWN"
+
+    elif (
+        sender_type == "UNKNOWN"
+        and recipient_type == "SYSTEM"
+    ):
+        relationship = "UNKNOWN_TO_SYSTEM"
+
+    else:
+        relationship = "UNKNOWN_TO_UNKNOWN"
+
+    return {
+        "relationship": relationship,
+        "from_wallet": sender,
+        "to_wallet": recipient,
+    }
+
+
+def detect_internal_user_transfer(
+    db_path,
+    transaction,
+):
+    movements = transaction.get(
+        "movements",
+        [],
+    )
+
+    if not movements:
+        return {
+            "is_internal_transfer": False,
+            "internal_movements": 0,
+            "total_movements": 0,
+        }
+
+    internal_movements = 0
+
+    for movement in movements:
+        relationship = (
+            classify_wallet_relationship(
+                db_path,
+                movement.get(
+                    "from_address"
+                ),
+                movement.get(
+                    "to_address"
+                ),
+            )
+        )
+
+        if (
+            relationship["relationship"]
+            == "INTERNAL_USER_TRANSFER"
+        ):
+            internal_movements += 1
+
+    return {
+        "is_internal_transfer": (
+            internal_movements
+            == len(movements)
+        ),
+        "internal_movements": (
+            internal_movements
+        ),
+        "total_movements": (
+            len(movements)
+        ),
+    }
+
+
+def classify_transaction_with_intelligence(
+    db_path,
+    transaction,
+):
+    internal_result = (
+        detect_internal_user_transfer(
+            db_path,
+            transaction,
+        )
+    )
+
+    if internal_result[
+        "is_internal_transfer"
+    ]:
+        return {
+            "classification": (
+                "INTERNAL_TRANSFER"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "all movements are between "
+                "user-owned wallets"
+            ),
+        }
+
+    return classify_grouped_transaction(
+        transaction
+    )
+
+
+def validate_historical_intelligence(
+    db_path,
+):
+    transactions = (
+        group_ledger_rows_by_txhash(
+            db_path
+        )
+    )
+
+    asset_registry = (
+        load_asset_registry_map(
+            db_path
+        )
+    )
+
+    inconsistencies = []
+    reclassification_candidates = []
+
+    for transaction in transactions:
+        base_result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        intelligent_result = (
+            classify_transaction_with_intelligence(
+                db_path,
+                transaction,
+            )
+        )
+
+        if (
+            base_result["classification"]
+            != intelligent_result[
+                "classification"
+            ]
+        ):
+            reclassification_candidates.append(
+                {
+                    "txhash": (
+                        transaction["txhash"]
+                    ),
+                    "old": (
+                        base_result[
+                            "classification"
+                        ]
+                    ),
+                    "new": (
+                        intelligent_result[
+                            "classification"
+                        ]
+                    ),
+                }
+            )
+
+        intelligence = (
+            build_transaction_intelligence(
+                db_path,
+                transaction,
+                asset_registry,
+            )
+        )
+
+        classification = (
+            intelligent_result[
+                "classification"
+            ]
+        )
+
+        relationships = set(
+            intelligence[
+                "wallet_relationships"
+            ]
+        )
+
+        roles = {
+            counterparty["role"]
+            for counterparty
+            in intelligence[
+                "counterparties"
+            ]
+        }
+
+        issue = None
+
+        if classification in {
+            "MARKETPLACE_BUY",
+            "MARKETPLACE_SALE",
+        }:
+            if "MARKETPLACE" not in roles:
+                issue = (
+                    "marketplace role missing"
+                )
+
+        elif classification == "TOKEN_SWAP":
+            if "DEX" not in roles:
+                issue = "DEX role missing"
+
+        elif (
+            classification
+            == "STAKING_OR_REWARD"
+        ):
+            if "STAKING" not in roles:
+                issue = (
+                    "staking role missing"
+                )
+
+        elif classification == "MINT_OR_CLAIM":
+            if (
+                "SYSTEM_TO_USER"
+                not in relationships
+            ):
+                issue = (
+                    "system-to-user "
+                    "relationship missing"
+                )
+
+        elif classification in {
+            "CONSUMABLE_BURN",
+            "NFT_BURN",
+        }:
+            if (
+                "USER_TO_SYSTEM"
+                not in relationships
+            ):
+                issue = (
+                    "user-to-system "
+                    "relationship missing"
+                )
+
+        elif (
+            classification
+            == "INTERNAL_TRANSFER"
+        ):
+            if not intelligence[
+                "is_internal_transfer"
+            ]:
+                issue = (
+                    "internal flag missing"
+                )
+
+        if issue is not None:
+            inconsistencies.append(
+                {
+                    "txhash": (
+                        transaction["txhash"]
+                    ),
+                    "classification": (
+                        classification
+                    ),
+                    "issue": issue,
+                }
+            )
+
+    return {
+        "transactions": len(
+            transactions
+        ),
+        "inconsistencies": (
+            inconsistencies
+        ),
+        "reclassification_candidates": (
+            reclassification_candidates
+        ),
+    }
+
+
+def get_movement_counterparty(
+    movement,
+):
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    from_address = normalize_address(
+        movement.get(
+            "from_address"
+        )
+    )
+
+    to_address = normalize_address(
+        movement.get(
+            "to_address"
+        )
+    )
+
+    if from_address == wallet:
+        return to_address
+
+    if to_address == wallet:
+        return from_address
+
+    return None
+
+
+def discover_high_confidence_counterparties(
+    transactions,
+):
+    evidence = {}
+
+    def add_evidence(
+        address,
+        role,
+    ):
+        if address is None:
+            return
+
+        if address in {
+            normalize_address(
+                RONIN_WALLET_ADDRESS
+            ),
+            normalize_address(
+                ZERO_ADDRESS
+            ),
+        }:
+            return
+
+        if address not in evidence:
+            evidence[address] = {
+                "roles": set(),
+                "evidence_count": 0,
+            }
+
+        evidence[address][
+            "roles"
+        ].add(role)
+
+        evidence[address][
+            "evidence_count"
+        ] += 1
+
+    for transaction in transactions:
+        result = (
+            classify_grouped_transaction(
+                transaction
+            )
+        )
+
+        classification = result[
+            "classification"
+        ]
+
+        movements = transaction.get(
+            "movements",
+            [],
+        )
+
+        if classification in {
+            "MARKETPLACE_BUY",
+            "MARKETPLACE_SALE",
+        }:
+            for movement in movements:
+                if (
+                    movement.get("asset")
+                    != "Ronin Wrapped Ether"
+                ):
+                    continue
+
+                counterparty = (
+                    get_movement_counterparty(
+                        movement
+                    )
+                )
+
+                add_evidence(
+                    counterparty,
+                    "MARKETPLACE",
+                )
+
+        elif classification == "TOKEN_SWAP":
+            for movement in movements:
+                counterparty = (
+                    get_movement_counterparty(
+                        movement
+                    )
+                )
+
+                add_evidence(
+                    counterparty,
+                    "DEX",
+                )
+
+        elif (
+            classification
+            == "STAKING_OR_REWARD"
+        ):
+            for movement in movements:
+                counterparty = (
+                    get_movement_counterparty(
+                        movement
+                    )
+                )
+
+                add_evidence(
+                    counterparty,
+                    "STAKING",
+                )
+
+    candidates = []
+
+    for address, details in (
+        evidence.items()
+    ):
+        if len(
+            details["roles"]
+        ) != 1:
+            continue
+
+        role = next(
+            iter(
+                details["roles"]
+            )
+        )
+
+        candidates.append(
+            {
+                "address": address,
+                "role": role,
+                "evidence_count": (
+                    details[
+                        "evidence_count"
+                    ]
+                ),
+            }
+        )
+
+    return candidates
+
+
+def register_discovered_counterparties(
+    db_path,
+    candidates,
+):
+    for candidate in candidates:
+        role = candidate["role"]
+
+        label = (
+            f"Discovered {role.title()} "
+            f"Contract"
+        )
+
+        upsert_wallet_registry_entry(
+            db_path=db_path,
+            address=candidate[
+                "address"
+            ],
+            wallet_label=label,
+            ownership_type="CONTRACT",
+            wallet_role=role,
+            source=(
+                "AXIEOS_TRANSACTION_EVIDENCE"
+            ),
+        )
+
+
 
 
 def refresh_ronin_sync_state_bounds(
@@ -1409,6 +2713,71 @@ def store_transaction_classifications(
     connection.close()
 
     return stored
+
+
+def store_intelligent_transaction_classifications(
+    db_path,
+    transactions,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+
+    for transaction in transactions:
+        result = (
+            classify_transaction_with_intelligence(
+                db_path,
+                transaction,
+            )
+        )
+
+        connection.execute(
+            """
+            INSERT INTO
+                blockchain_transaction_classifications (
+                    txhash,
+                    classification,
+                    confidence,
+                    reason,
+                    method,
+                    classifier_version
+                )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(txhash)
+            DO UPDATE SET
+                classification =
+                    excluded.classification,
+                confidence =
+                    excluded.confidence,
+                reason =
+                    excluded.reason,
+                method =
+                    excluded.method,
+                classifier_version =
+                    excluded.classifier_version,
+                classified_at =
+                    CURRENT_TIMESTAMP
+            """,
+            (
+                transaction["txhash"],
+                result["classification"],
+                result["confidence"],
+                result["reason"],
+                transaction.get("method"),
+                CLASSIFIER_VERSION,
+            ),
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return processed
+
+
 
 
 
@@ -8740,6 +10109,9 @@ def run_ronin_sync_v04(
         ]
     )
 
+
+
+
     # ---------------------------------
     # Output
     # ---------------------------------
@@ -9040,14 +10412,1568 @@ def run_ronin_sync_v04(
     )
 
 
+def run_wallet_registry_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            address,
+            wallet_label,
+            ownership_type,
+            wallet_role,
+            source,
+            intelligence_version
+        FROM ronin_wallet_registry
+        ORDER BY wallet_label
+        """
+    ).fetchall()
+
+    connection.close()
+
+    valid = all(
+        row[2] in WALLET_OWNERSHIP_TYPES
+        and row[3] in WALLET_ROLES
+        and row[5] == INTELLIGENCE_VERSION
+        for row in rows
+    )
+
+    print(
+        "\nRONIN WALLET REGISTRY"
+    )
+
+    print(
+        "Wallets registered:",
+        len(rows),
+    )
+
+    print(
+        "Intelligence version:",
+        INTELLIGENCE_VERSION,
+    )
+
+    print(
+        "Registry validation:",
+        (
+            "PASS"
+            if valid
+            else "FAIL"
+        ),
+    )
+
+    print("\nWALLETS")
+
+    for row in rows:
+        print(
+            "\nLabel:",
+            row[1],
+        )
+
+        print(
+            "Ownership:",
+            row[2],
+        )
+
+        print(
+            "Role:",
+            row[3],
+        )
+
+        print(
+            "Source:",
+            row[4],
+        )
+
+def run_wallet_relationship_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    unknown_address = (
+        "0x1111111111111111111111111111111111111111"
+    )
+
+    tests = [
+        (
+            "Primary to zero",
+            RONIN_WALLET_ADDRESS,
+            ZERO_ADDRESS,
+            "USER_TO_SYSTEM",
+        ),
+        (
+            "Zero to primary",
+            ZERO_ADDRESS,
+            RONIN_WALLET_ADDRESS,
+            "SYSTEM_TO_USER",
+        ),
+        (
+            "Primary to unknown",
+            RONIN_WALLET_ADDRESS,
+            unknown_address,
+            "USER_TO_UNKNOWN",
+        ),
+        (
+            "Unknown to primary",
+            unknown_address,
+            RONIN_WALLET_ADDRESS,
+            "UNKNOWN_TO_USER",
+        ),
+        (
+            "Primary to primary",
+            RONIN_WALLET_ADDRESS,
+            RONIN_WALLET_ADDRESS,
+            "INTERNAL_USER_TRANSFER",
+        ),
+    ]
+
+    passed = 0
+
+    print(
+        "\nRONIN WALLET RELATIONSHIPS"
+    )
+
+    for (
+        label,
+        from_address,
+        to_address,
+        expected,
+    ) in tests:
+        result = classify_wallet_relationship(
+            AXIEOS_DB_PATH,
+            from_address,
+            to_address,
+        )
+
+        actual = result[
+            "relationship"
+        ]
+
+        valid = (
+            actual == expected
+        )
+
+        if valid:
+            passed += 1
+
+        print(
+            f"\n{label}"
+        )
+
+        print(
+            "Expected:",
+            expected,
+        )
+
+        print(
+            "Actual:",
+            actual,
+        )
+
+        print(
+            "Result:",
+            (
+                "PASS"
+                if valid
+                else "FAIL"
+            ),
+        )
+
+    print(
+        "\nTests passed:",
+        f"{passed}/{len(tests)}",
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if passed == len(tests)
+            else "FAIL"
+        ),
+    )
+
+
+def run_internal_transfer_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    test_secondary_address = (
+        "0x2222222222222222222222222222222222222222"
+    )
+
+    unknown_address = (
+        "0x1111111111111111111111111111111111111111"
+    )
+
+    upsert_wallet_registry_entry(
+        db_path=AXIEOS_DB_PATH,
+        address=test_secondary_address,
+        wallet_label=(
+            "Task 71 Test Wallet"
+        ),
+        ownership_type="USER_OWNED",
+        wallet_role="SECONDARY",
+        source="TEST",
+    )
+
+    internal_transaction = {
+        "movements": [
+            {
+                "from_address": (
+                    RONIN_WALLET_ADDRESS
+                ),
+                "to_address": (
+                    test_secondary_address
+                ),
+                "asset": (
+                    "Ronin Wrapped Ether"
+                ),
+                "value_in": "0",
+                "value_out": "1",
+            }
+        ]
+    }
+
+    external_transaction = {
+        "movements": [
+            {
+                "from_address": (
+                    RONIN_WALLET_ADDRESS
+                ),
+                "to_address": (
+                    unknown_address
+                ),
+                "asset": (
+                    "Ronin Wrapped Ether"
+                ),
+                "value_in": "0",
+                "value_out": "1",
+            }
+        ]
+    }
+
+    internal_result = (
+        detect_internal_user_transfer(
+            AXIEOS_DB_PATH,
+            internal_transaction,
+        )
+    )
+
+    external_result = (
+        detect_internal_user_transfer(
+            AXIEOS_DB_PATH,
+            external_transaction,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    connection.execute(
+        """
+        DELETE FROM ronin_wallet_registry
+        WHERE address = ?
+        """,
+        (
+            normalize_address(
+                test_secondary_address
+            ),
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+    test_entry = get_wallet_registry_entry(
+        AXIEOS_DB_PATH,
+        test_secondary_address,
+    )
+
+    cleanup_valid = (
+        test_entry["ownership_type"]
+        == "UNKNOWN"
+    )
+
+    validation = (
+        internal_result[
+            "is_internal_transfer"
+        ]
+        is True
+        and external_result[
+            "is_internal_transfer"
+        ]
+        is False
+        and cleanup_valid
+    )
+
+    print(
+        "\nRONIN INTERNAL TRANSFER DETECTION"
+    )
+
+    print(
+        "Owned to owned:",
+        internal_result[
+            "is_internal_transfer"
+        ],
+    )
+
+    print(
+        "Owned to unknown:",
+        external_result[
+            "is_internal_transfer"
+        ],
+    )
+
+    print(
+        "Test wallet cleanup:",
+        (
+            "PASS"
+            if cleanup_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+    
+def run_counterparty_discovery_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    candidates = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        candidates,
+    )
+
+    role_counts = {}
+
+    for candidate in candidates:
+        role = candidate["role"]
+
+        role_counts[role] = (
+            role_counts.get(
+                role,
+                0,
+            )
+            + 1
+        )
+
+    expected_roles = {
+        "MARKETPLACE",
+        "DEX",
+        "STAKING",
+    }
+
+    roles_found = set(
+        role_counts
+    )
+
+    validation = (
+        expected_roles
+        <= roles_found
+    )
+
+    print(
+        "\nRONIN COUNTERPARTY DISCOVERY"
+    )
+
+    print(
+        "Transactions analyzed:",
+        len(transactions),
+    )
+
+    print(
+        "High-confidence counterparties:",
+        len(candidates),
+    )
+
+    print("\nROLE COUNTS")
+
+    for role in sorted(
+        role_counts
+    ):
+        print(
+            f"{role}: "
+            f"{role_counts[role]}"
+        )
+
+    print("\nCOUNTERPARTIES")
+
+    for candidate in sorted(
+        candidates,
+        key=lambda item: (
+            item["role"],
+            -item[
+                "evidence_count"
+            ],
+        ),
+    ):
+        print(
+            "\nRole:",
+            candidate["role"],
+        )
+
+        print(
+            "Address:",
+            candidate["address"],
+        )
+
+        print(
+            "Evidence:",
+            candidate[
+                "evidence_count"
+            ],
+        )
+
+    print(
+        "\nRequired roles found:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_asset_registry_test():
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    processed = (
+        store_asset_registry_entries(
+            AXIEOS_DB_PATH,
+            assets,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM ronin_asset_registry
+        """
+    ).fetchone()[0]
+
+    unique_keys = connection.execute(
+        """
+        SELECT COUNT(
+            DISTINCT asset_key
+        )
+        FROM ronin_asset_registry
+        """
+    ).fetchone()[0]
+
+    category_counts = (
+        connection.execute(
+            """
+            SELECT
+                asset_category,
+                COUNT(*)
+            FROM ronin_asset_registry
+            GROUP BY asset_category
+            ORDER BY asset_category
+            """
+        ).fetchall()
+    )
+
+    examples = connection.execute(
+        """
+        SELECT
+            token_name,
+            token_symbol,
+            token_type,
+            token_id,
+            asset_category
+        FROM ronin_asset_registry
+        ORDER BY
+            token_name,
+            token_id
+        LIMIT 15
+        """
+    ).fetchall()
+
+    invalid = connection.execute(
+        """
+        SELECT
+            asset_category
+        FROM ronin_asset_registry
+        """
+    ).fetchall()
+
+    connection.close()
+
+    invalid_count = sum(
+        1
+        for row in invalid
+        if row[0]
+        not in ASSET_CATEGORIES
+    )
+
+    validation = (
+        processed > 0
+        and total == unique_keys
+        and invalid_count == 0
+    )
+
+    print(
+        "\nRONIN ASSET REGISTRY"
+    )
+
+    print(
+        "Assets discovered:",
+        len(assets),
+    )
+
+    print(
+        "Assets processed:",
+        processed,
+    )
+
+    print(
+        "Assets stored:",
+        total,
+    )
+
+    print(
+        "Unique asset keys:",
+        unique_keys,
+    )
+
+    print(
+        "Invalid categories:",
+        invalid_count,
+    )
+
+    print(
+        "Intelligence version:",
+        INTELLIGENCE_VERSION,
+    )
+
+    print("\nCATEGORY COUNTS")
+
+    for category, count in (
+        category_counts
+    ):
+        print(
+            f"{category}: {count}"
+        )
+
+    print("\nEXAMPLES")
+
+    for row in examples:
+        print(
+            "\nName:",
+            row[0],
+        )
+
+        print(
+            "Symbol:",
+            row[1],
+        )
+
+        print(
+            "Type:",
+            row[2],
+        )
+
+        print(
+            "Token ID:",
+            row[3],
+        )
+
+        print(
+            "Category:",
+            row[4],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
 
 
 
+def run_transaction_intelligence_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_transaction_intelligence_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    asset_registry = (
+        load_asset_registry_map(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    intelligence_rows = []
+
+    for transaction in transactions:
+        intelligence_rows.append(
+            build_transaction_intelligence(
+                AXIEOS_DB_PATH,
+                transaction,
+                asset_registry,
+            )
+        )
+
+    processed = (
+        store_transaction_intelligence(
+            AXIEOS_DB_PATH,
+            intelligence_rows,
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_intelligence
+        """
+    ).fetchone()[0]
+
+    unique_txhashes = connection.execute(
+        """
+        SELECT COUNT(DISTINCT txhash)
+        FROM blockchain_transaction_intelligence
+        """
+    ).fetchone()[0]
+
+    internal_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_intelligence
+        WHERE is_internal_transfer = 1
+        """
+    ).fetchone()[0]
+
+    with_counterparty = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transaction_intelligence
+            WHERE counterparties_json != '[]'
+            """
+        ).fetchone()[0]
+    )
+
+    with_assets = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_intelligence
+        WHERE asset_categories_json != '[]'
+        """
+    ).fetchone()[0]
+
+    invalid_version = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transaction_intelligence
+        WHERE intelligence_version != ?
+        """,
+        (
+            INTELLIGENCE_VERSION,
+        ),
+    ).fetchone()[0]
+
+    examples = connection.execute(
+        """
+        SELECT
+            txhash,
+            wallet_relationships_json,
+            counterparties_json,
+            asset_categories_json,
+            is_internal_transfer
+        FROM blockchain_transaction_intelligence
+        WHERE
+            counterparties_json != '[]'
+            OR asset_categories_json != '[]'
+        LIMIT 10
+        """
+    ).fetchall()
+
+    connection.close()
+
+    validation = (
+        processed == len(transactions)
+        and total == len(transactions)
+        and unique_txhashes == total
+        and invalid_version == 0
+    )
+
+    print(
+        "\nRONIN TRANSACTION INTELLIGENCE"
+    )
+
+    print(
+        "Transactions analyzed:",
+        len(transactions),
+    )
+
+    print(
+        "Intelligence processed:",
+        processed,
+    )
+
+    print(
+        "Intelligence stored:",
+        total,
+    )
+
+    print(
+        "Unique txhashes:",
+        unique_txhashes,
+    )
+
+    print(
+        "Internal transfers:",
+        internal_count,
+    )
+
+    print(
+        "Known counterparties:",
+        with_counterparty,
+    )
+
+    print(
+        "Transactions with asset intelligence:",
+        with_assets,
+    )
+
+    print(
+        "Invalid versions:",
+        invalid_version,
+    )
+
+    print(
+        "Intelligence version:",
+        INTELLIGENCE_VERSION,
+    )
+
+    print("\nEXAMPLES")
+
+    for row in examples:
+        print(
+            "\nTX:",
+            row[0],
+        )
+
+        print(
+            "Relationships:",
+            row[1],
+        )
+
+        print(
+            "Counterparties:",
+            row[2],
+        )
+
+        print(
+            "Asset categories:",
+            row[3],
+        )
+
+        print(
+            "Internal:",
+            bool(row[4]),
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_historical_intelligence_validation_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    result = (
+        validate_historical_intelligence(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    zero_entry = (
+        get_wallet_registry_entry(
+            AXIEOS_DB_PATH,
+            ZERO_ADDRESS,
+        )
+    )
+
+    zero_role_valid = (
+        zero_entry["wallet_role"]
+        == "SYSTEM"
+    )
+
+    taxonomy_valid = (
+        validate_classification_taxonomy()
+    )
+
+    # Synthetic internal-transfer
+    # regression test.
+    test_secondary = (
+        "0x2222222222222222222222222222222222222222"
+    )
+
+    upsert_wallet_registry_entry(
+        db_path=AXIEOS_DB_PATH,
+        address=test_secondary,
+        wallet_label=(
+            "Task 75 Test Wallet"
+        ),
+        ownership_type="USER_OWNED",
+        wallet_role="SECONDARY",
+        source="TEST",
+    )
+
+    synthetic_transaction = {
+        "txhash": "0xtask75internal",
+        "movements": [
+            {
+                "from_address": (
+                    RONIN_WALLET_ADDRESS
+                ),
+                "to_address": (
+                    test_secondary
+                ),
+                "asset": (
+                    "Ronin Wrapped Ether"
+                ),
+                "value_in": "0",
+                "value_out": "1",
+            }
+        ],
+    }
+
+    synthetic_result = (
+        classify_transaction_with_intelligence(
+            AXIEOS_DB_PATH,
+            synthetic_transaction,
+        )
+    )
+
+    internal_valid = (
+        synthetic_result[
+            "classification"
+        ]
+        == "INTERNAL_TRANSFER"
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    connection.execute(
+        """
+        DELETE FROM ronin_wallet_registry
+        WHERE address = ?
+        """,
+        (
+            normalize_address(
+                test_secondary
+            ),
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+    validation = (
+        zero_role_valid
+        and taxonomy_valid
+        and internal_valid
+        and len(
+            result["inconsistencies"]
+        )
+        == 0
+    )
+
+    print(
+        "\nRONIN HISTORICAL INTELLIGENCE VALIDATION"
+    )
+
+    print(
+        "Transactions checked:",
+        result["transactions"],
+    )
+
+    print(
+        "Historical inconsistencies:",
+        len(
+            result["inconsistencies"]
+        ),
+    )
+
+    print(
+        "Reclassification candidates:",
+        len(
+            result[
+                "reclassification_candidates"
+            ]
+        ),
+    )
+
+    print(
+        "Zero address role:",
+        zero_entry["wallet_role"],
+    )
+
+    print(
+        "Zero address semantics:",
+        (
+            "PASS"
+            if zero_role_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Internal-transfer regression:",
+        (
+            "PASS"
+            if internal_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Taxonomy validation:",
+        (
+            "PASS"
+            if taxonomy_valid
+            else "FAIL"
+        ),
+    )
+
+    if result["inconsistencies"]:
+        print(
+            "\nINCONSISTENCIES"
+        )
+
+        for item in result[
+            "inconsistencies"
+        ][:10]:
+            print(item)
+
+    if result[
+        "reclassification_candidates"
+    ]:
+        print(
+            "\nRECLASSIFICATION CANDIDATES"
+        )
+
+        for item in result[
+            "reclassification_candidates"
+        ][:10]:
+            print(item)
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_ronin_sync_v05(
+    incremental_max_pages=20,
+    backfill_pages=1,
+):
+    # Run the complete proven V0.4 pipeline first.
+    run_ronin_sync_v04(
+        incremental_max_pages=(
+            incremental_max_pages
+        ),
+        backfill_pages=backfill_pages,
+    )
+
+    print(
+        "\nAXIEOS ASSET & WALLET "
+        "INTELLIGENCE V0.5"
+    )
+
+    # ---------------------------------
+    # Initialize intelligence tables
+    # ---------------------------------
+
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_transaction_intelligence_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    # ---------------------------------
+    # Current grouped transactions
+    # ---------------------------------
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Counterparty intelligence
+    # ---------------------------------
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    # ---------------------------------
+    # Asset intelligence
+    # ---------------------------------
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    assets_processed = (
+        store_asset_registry_entries(
+            AXIEOS_DB_PATH,
+            assets,
+        )
+    )
+
+    asset_registry = (
+        load_asset_registry_map(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Intelligence-aware classification
+    # ---------------------------------
+
+    classifications_processed = (
+        store_intelligent_transaction_classifications(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    classification_validation = (
+        validate_classification_storage(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Transaction intelligence
+    # ---------------------------------
+
+    intelligence_rows = []
+
+    for transaction in transactions:
+        intelligence_rows.append(
+            build_transaction_intelligence(
+                AXIEOS_DB_PATH,
+                transaction,
+                asset_registry,
+            )
+        )
+
+    intelligence_processed = (
+        store_transaction_intelligence(
+            AXIEOS_DB_PATH,
+            intelligence_rows,
+        )
+    )
+
+    # ---------------------------------
+    # Historical consistency
+    # ---------------------------------
+
+    historical_validation = (
+        validate_historical_intelligence(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Database validation
+    # ---------------------------------
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    wallet_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM ronin_wallet_registry
+        """
+    ).fetchone()[0]
+
+    asset_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM ronin_asset_registry
+        """
+    ).fetchone()[0]
+
+    intelligence_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transaction_intelligence
+            """
+        ).fetchone()[0]
+    )
+
+    unique_intelligence = (
+        connection.execute(
+            """
+            SELECT COUNT(DISTINCT txhash)
+            FROM blockchain_transaction_intelligence
+            """
+        ).fetchone()[0]
+    )
+
+    invalid_asset_categories = (
+        connection.execute(
+            """
+            SELECT asset_category
+            FROM ronin_asset_registry
+            """
+        ).fetchall()
+    )
+
+    invalid_intelligence_versions = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transaction_intelligence
+            WHERE intelligence_version != ?
+            """,
+            (
+                INTELLIGENCE_VERSION,
+            ),
+        ).fetchone()[0]
+    )
+
+    internal_intelligence_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transaction_intelligence
+            WHERE is_internal_transfer = 1
+            """
+        ).fetchone()[0]
+    )
+
+    internal_classification_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_transaction_classifications
+            WHERE classification =
+                'INTERNAL_TRANSFER'
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    invalid_asset_count = sum(
+        1
+        for row in invalid_asset_categories
+        if row[0] not in ASSET_CATEGORIES
+    )
+
+    zero_entry = get_wallet_registry_entry(
+        AXIEOS_DB_PATH,
+        ZERO_ADDRESS,
+    )
+
+    zero_valid = (
+        zero_entry["wallet_role"]
+        == "SYSTEM"
+    )
+
+    intelligence_count_valid = (
+        intelligence_count
+        == len(transactions)
+        == unique_intelligence
+    )
+
+    internal_consistency = (
+        internal_intelligence_count
+        == internal_classification_count
+    )
+
+    historical_valid = (
+        len(
+            historical_validation[
+                "inconsistencies"
+            ]
+        )
+        == 0
+    )
+
+    final_passed = (
+        wallet_count >= 2
+        and asset_count > 0
+        and assets_processed > 0
+        and intelligence_count_valid
+        and classifications_processed
+        == len(transactions)
+        and intelligence_processed
+        == len(transactions)
+        and invalid_asset_count == 0
+        and invalid_intelligence_versions == 0
+        and zero_valid
+        and internal_consistency
+        and historical_valid
+        and classification_validation[
+            "passed"
+        ]
+        and validate_classification_taxonomy()
+    )
+
+    print(
+        "\nWALLET INTELLIGENCE"
+    )
+
+    print(
+        "Registered wallets:",
+        wallet_count,
+    )
+
+    print(
+        "Discovered counterparties:",
+        len(counterparties),
+    )
+
+    print(
+        "Zero address role:",
+        zero_entry["wallet_role"],
+    )
+
+    print(
+        "\nASSET INTELLIGENCE"
+    )
+
+    print(
+        "Assets discovered:",
+        len(assets),
+    )
+
+    print(
+        "Assets stored:",
+        asset_count,
+    )
+
+    print(
+        "Invalid asset categories:",
+        invalid_asset_count,
+    )
+
+    print(
+        "\nTRANSACTION INTELLIGENCE"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Classifications processed:",
+        classifications_processed,
+    )
+
+    print(
+        "Intelligence processed:",
+        intelligence_processed,
+    )
+
+    print(
+        "Intelligence stored:",
+        intelligence_count,
+    )
+
+    print(
+        "Unique intelligence txhashes:",
+        unique_intelligence,
+    )
+
+    print(
+        "Internal transfers:",
+        internal_intelligence_count,
+    )
+
+    print(
+        "Internal classifications:",
+        internal_classification_count,
+    )
+
+    print(
+        "Historical inconsistencies:",
+        len(
+            historical_validation[
+                "inconsistencies"
+            ]
+        ),
+    )
+
+    print(
+        "\nRONIN V0.5 VALIDATION"
+    )
+
+    print(
+        "Wallet registry:",
+        (
+            "PASS"
+            if wallet_count >= 2
+            and zero_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Asset registry:",
+        (
+            "PASS"
+            if (
+                asset_count > 0
+                and invalid_asset_count == 0
+            )
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Classification:",
+        (
+            "PASS"
+            if classification_validation[
+                "passed"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Transaction intelligence:",
+        (
+            "PASS"
+            if (
+                intelligence_count_valid
+                and invalid_intelligence_versions
+                == 0
+            )
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Internal-transfer consistency:",
+        (
+            "PASS"
+            if internal_consistency
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Historical consistency:",
+        (
+            "PASS"
+            if historical_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Intelligence version:",
+        RONIN_INTELLIGENCE_VERSION,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if final_passed
+            else "FAIL"
+        ),
+    )
 
 
 
 if __name__ == "__main__":
-    run_ronin_sync_v04(
+    run_ronin_sync_v05(
         incremental_max_pages=20,
         backfill_pages=1,
     )
