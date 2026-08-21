@@ -35,6 +35,12 @@ RONIN_TOKEN_TRANSFERS_URL = (
 )
 
 
+RONIN_SYNC_ENDPOINTS = {
+    "transactions",
+    "token_transfers",
+}
+
+
 TRANSACTION_CLASSIFICATIONS = {
     "MARKETPLACE_BUY",
     "MARKETPLACE_SALE",
@@ -144,7 +150,7 @@ ZERO_ADDRESS = (
 
 CLASSIFIER_VERSION = "0.2"
 
-
+RONIN_SYNC_VERSION = "0.4"
 
 
 def load_transaction_response(
@@ -357,6 +363,730 @@ def initialize_economic_events_table(
     connection.close()
 
 
+def initialize_ronin_sync_state_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        ronin_sync_state (
+            endpoint TEXT PRIMARY KEY,
+            newest_timestamp TEXT,
+            oldest_timestamp TEXT,
+            backfill_cursor_json TEXT,
+            backfill_complete INTEGER NOT NULL
+                DEFAULT 0,
+            state_updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    for endpoint in sorted(
+        RONIN_SYNC_ENDPOINTS
+    ):
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO
+                ronin_sync_state (
+                    endpoint
+                )
+            VALUES (?)
+            """,
+            (
+                endpoint,
+            ),
+        )
+
+    connection.commit()
+    connection.close()
+
+
+def refresh_ronin_sync_state_bounds(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    endpoint_tables = {
+        "transactions": (
+            "ronin_api_transactions_raw"
+        ),
+        "token_transfers": (
+            "ronin_token_transfers_raw"
+        ),
+    }
+
+    for endpoint, table_name in (
+        endpoint_tables.items()
+    ):
+        row = connection.execute(
+            f"""
+            SELECT
+                MAX(timestamp),
+                MIN(timestamp)
+            FROM {table_name}
+            """
+        ).fetchone()
+
+        newest_timestamp = row[0]
+        oldest_timestamp = row[1]
+
+        connection.execute(
+            """
+            UPDATE ronin_sync_state
+            SET
+                newest_timestamp = ?,
+                oldest_timestamp = ?,
+                state_updated_at =
+                    CURRENT_TIMESTAMP
+            WHERE endpoint = ?
+            """,
+            (
+                newest_timestamp,
+                oldest_timestamp,
+                endpoint,
+            ),
+        )
+
+    connection.commit()
+    connection.close()
+
+
+
+def get_ronin_sync_state(
+    db_path,
+    endpoint,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    row = connection.execute(
+        """
+        SELECT
+            endpoint,
+            newest_timestamp,
+            oldest_timestamp,
+            backfill_cursor_json,
+            backfill_complete
+        FROM ronin_sync_state
+        WHERE endpoint = ?
+        """,
+        (
+            endpoint,
+        ),
+    ).fetchone()
+
+    connection.close()
+
+    if row is None:
+        return None
+
+    cursor = None
+
+    if row[3]:
+        cursor = json.loads(
+            row[3]
+        )
+
+    return {
+        "endpoint": row[0],
+        "newest_timestamp": row[1],
+        "oldest_timestamp": row[2],
+        "backfill_cursor": cursor,
+        "backfill_complete": bool(
+            row[4]
+        ),
+    }
+
+
+def ronin_timestamp_to_unix(
+    timestamp,
+):
+    return int(
+        datetime.fromisoformat(
+            timestamp.replace(
+                "Z",
+                "+00:00",
+            )
+        ).timestamp()
+    )
+
+
+def get_legacy_csv_safety_boundary(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    transaction_oldest = (
+        connection.execute(
+            """
+            SELECT MIN(timestamp)
+            FROM ronin_api_transactions_raw
+            """
+        ).fetchone()[0]
+    )
+
+    transfer_oldest = (
+        connection.execute(
+            """
+            SELECT MIN(timestamp)
+            FROM ronin_token_transfers_raw
+            """
+        ).fetchone()[0]
+    )
+
+    candidates = [
+        value
+        for value in {
+            transaction_oldest,
+            transfer_oldest,
+        }
+        if value is not None
+    ]
+
+    if not candidates:
+        connection.close()
+        return None
+
+    oldest_api_timestamp = min(
+        candidates
+    )
+
+    oldest_api_unix = (
+        ronin_timestamp_to_unix(
+            oldest_api_timestamp
+        )
+    )
+
+    row = connection.execute(
+        """
+        SELECT
+            unixtimestamp,
+            datetime
+        FROM blockchain_transactions
+        WHERE unixtimestamp < ?
+        ORDER BY unixtimestamp DESC
+        LIMIT 1
+        """,
+        (
+            oldest_api_unix,
+        ),
+    ).fetchone()
+
+    connection.close()
+
+    if row is None:
+        return None
+
+    return {
+        "unixtimestamp": row[0],
+        "datetime": row[1],
+    }
+
+
+def get_oldest_staged_key(
+    db_path,
+    endpoint,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    if endpoint == "transactions":
+        row = connection.execute(
+            """
+            SELECT tx_hash
+            FROM ronin_api_transactions_raw
+            ORDER BY
+                timestamp ASC,
+                block_number ASC
+            LIMIT 1
+            """
+        ).fetchone()
+
+    elif endpoint == "token_transfers":
+        row = connection.execute(
+            """
+            SELECT transfer_key
+            FROM ronin_token_transfers_raw
+            ORDER BY
+                timestamp ASC,
+                block_number ASC,
+                log_index ASC
+            LIMIT 1
+            """
+        ).fetchone()
+
+    else:
+        connection.close()
+
+        raise ValueError(
+            f"Unknown endpoint: {endpoint}"
+        )
+
+    connection.close()
+
+    if row is None:
+        return None
+
+    return row[0]
+
+
+def get_backfill_url(
+    endpoint,
+):
+    if endpoint == "transactions":
+        return RONIN_TRANSACTIONS_URL
+
+    if endpoint == "token_transfers":
+        return RONIN_TOKEN_TRANSFERS_URL
+
+    raise ValueError(
+        f"Unknown endpoint: {endpoint}"
+    )
+
+
+def normalize_backfill_items(
+    endpoint,
+    response,
+):
+    items = response.get(
+        "items",
+        [],
+    )
+
+    if endpoint == "transactions":
+        return normalize_transactions(
+            items
+        )
+
+    if endpoint == "token_transfers":
+        return normalize_token_transfers(
+            items
+        )
+
+    raise ValueError(
+        f"Unknown endpoint: {endpoint}"
+    )
+
+
+def get_backfill_item_key(
+    endpoint,
+    item,
+):
+    if endpoint == "transactions":
+        return item["tx_hash"]
+
+    if endpoint == "token_transfers":
+        return item["transfer_key"]
+
+    raise ValueError(
+        f"Unknown endpoint: {endpoint}"
+    )
+
+
+def bootstrap_backfill_cursor(
+    db_path,
+    endpoint,
+    max_scan_pages=100,
+):
+    oldest_key = get_oldest_staged_key(
+        db_path,
+        endpoint,
+    )
+
+    if oldest_key is None:
+        return None, 0
+
+    url = get_backfill_url(
+        endpoint
+    )
+
+    response = fetch_json(
+        url
+    )
+
+    pages_scanned = 0
+
+    while response is not None:
+        pages_scanned += 1
+
+        items = normalize_backfill_items(
+            endpoint,
+            response,
+        )
+
+        keys = {
+            get_backfill_item_key(
+                endpoint,
+                item,
+            )
+            for item in items
+        }
+
+        if oldest_key in keys:
+            return (
+                get_next_page_params(
+                    response
+                ),
+                pages_scanned,
+            )
+
+        if (
+            pages_scanned
+            >= max_scan_pages
+        ):
+            raise RuntimeError(
+                "Could not locate "
+                "historical boundary"
+            )
+
+        next_cursor = (
+            get_next_page_params(
+                response
+            )
+        )
+
+        if not next_cursor:
+            return None, pages_scanned
+
+        response = fetch_json(
+            url,
+            params=next_cursor,
+        )
+
+    return None, pages_scanned
+
+
+def backfill_ronin_endpoint_batch(
+    db_path,
+    endpoint,
+    max_pages=1,
+):
+    state = get_ronin_sync_state(
+        db_path,
+        endpoint,
+    )
+
+    if state["backfill_complete"]:
+        return {
+            "bootstrap_pages": 0,
+            "pages_fetched": 0,
+            "items_found": 0,
+            "items_inserted": 0,
+            "stop_reason": (
+                "ALREADY_COMPLETE"
+            ),
+        }
+
+    cursor = state[
+        "backfill_cursor"
+    ]
+
+    bootstrap_pages = 0
+
+    if cursor is None:
+        (
+            cursor,
+            bootstrap_pages,
+        ) = bootstrap_backfill_cursor(
+            db_path,
+            endpoint,
+        )
+
+    if cursor is None:
+        set_ronin_backfill_complete(
+            db_path,
+            endpoint,
+            True,
+        )
+
+        return {
+            "bootstrap_pages": (
+                bootstrap_pages
+            ),
+            "pages_fetched": 0,
+            "items_found": 0,
+            "items_inserted": 0,
+            "stop_reason": "NO_NEXT_PAGE",
+        }
+
+    boundary = (
+        get_legacy_csv_safety_boundary(
+            db_path
+        )
+    )
+
+    if boundary is None:
+        raise RuntimeError(
+            "Legacy CSV safety boundary "
+            "could not be determined"
+        )
+
+    url = get_backfill_url(
+        endpoint
+    )
+
+    pages_fetched = 0
+    items_found = 0
+    items_inserted = 0
+    stop_reason = "BATCH_LIMIT"
+
+    while pages_fetched < max_pages:
+        response = fetch_json(
+            url,
+            params=cursor,
+        )
+
+        pages_fetched += 1
+
+        items = normalize_backfill_items(
+            endpoint,
+            response,
+        )
+
+        safe_items = []
+        boundary_reached = False
+
+        for item in items:
+            item_unix = (
+                ronin_timestamp_to_unix(
+                    item["timestamp"]
+                )
+            )
+
+            if (
+                item_unix
+                <= boundary[
+                    "unixtimestamp"
+                ]
+            ):
+                boundary_reached = True
+                break
+
+            safe_items.append(
+                item
+            )
+
+        items_found += len(
+            safe_items
+        )
+
+        if endpoint == "transactions":
+            inserted = (
+                insert_raw_api_transactions(
+                    db_path,
+                    safe_items,
+                )
+            )
+
+        else:
+            inserted = (
+                insert_raw_token_transfers(
+                    db_path,
+                    safe_items,
+                )
+            )
+
+        items_inserted += inserted
+
+        if boundary_reached:
+            save_ronin_backfill_cursor(
+                db_path,
+                endpoint,
+                None,
+            )
+
+            set_ronin_backfill_complete(
+                db_path,
+                endpoint,
+                True,
+            )
+
+            stop_reason = (
+                "LEGACY_CSV_BOUNDARY"
+            )
+            break
+
+        next_cursor = (
+            get_next_page_params(
+                response
+            )
+        )
+
+        if not next_cursor:
+            save_ronin_backfill_cursor(
+                db_path,
+                endpoint,
+                None,
+            )
+
+            set_ronin_backfill_complete(
+                db_path,
+                endpoint,
+                True,
+            )
+
+            stop_reason = "NO_NEXT_PAGE"
+            break
+
+        save_ronin_backfill_cursor(
+            db_path,
+            endpoint,
+            next_cursor,
+        )
+
+        cursor = next_cursor
+
+    refresh_ronin_sync_state_bounds(
+        db_path
+    )
+
+    return {
+        "bootstrap_pages": (
+            bootstrap_pages
+        ),
+        "pages_fetched": (
+            pages_fetched
+        ),
+        "items_found": (
+            items_found
+        ),
+        "items_inserted": (
+            items_inserted
+        ),
+        "stop_reason": (
+            stop_reason
+        ),
+    }
+
+
+
+def save_ronin_backfill_cursor(
+    db_path,
+    endpoint,
+    cursor,
+):
+    if endpoint not in RONIN_SYNC_ENDPOINTS:
+        raise ValueError(
+            f"Unknown Ronin endpoint: "
+            f"{endpoint}"
+        )
+
+    cursor_json = None
+
+    if cursor is not None:
+        cursor_json = json.dumps(
+            cursor,
+            sort_keys=True,
+        )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        UPDATE ronin_sync_state
+        SET
+            backfill_cursor_json = ?,
+            state_updated_at =
+                CURRENT_TIMESTAMP
+        WHERE endpoint = ?
+        """,
+        (
+            cursor_json,
+            endpoint,
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def set_ronin_backfill_complete(
+    db_path,
+    endpoint,
+    complete,
+):
+    if endpoint not in RONIN_SYNC_ENDPOINTS:
+        raise ValueError(
+            f"Unknown Ronin endpoint: "
+            f"{endpoint}"
+        )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        UPDATE ronin_sync_state
+        SET
+            backfill_complete = ?,
+            state_updated_at =
+                CURRENT_TIMESTAMP
+        WHERE endpoint = ?
+        """,
+        (
+            1 if complete else 0,
+            endpoint,
+        ),
+    )
+
+    connection.commit()
+    connection.close()
+
+def initialize_ronin_sync_state_table(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS
+        ronin_sync_state (
+            endpoint TEXT PRIMARY KEY,
+            newest_timestamp TEXT,
+            oldest_timestamp TEXT,
+            backfill_cursor_json TEXT,
+            backfill_complete INTEGER NOT NULL
+                DEFAULT 0,
+            state_updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    for endpoint in sorted(
+        RONIN_SYNC_ENDPOINTS
+    ):
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO
+                ronin_sync_state (
+                    endpoint
+                )
+            VALUES (?)
+            """,
+            (
+                endpoint,
+            ),
+        )
+
+    connection.commit()
+    connection.close()
 
 def insert_transactions(
     db_path,
@@ -2568,6 +3298,426 @@ def fetch_normalized_transactions(
     )
 
     return deduplicated_transactions
+
+
+def load_known_transaction_hashes(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT tx_hash
+        FROM ronin_api_transactions_raw
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return {
+        row[0]
+        for row in rows
+    }
+
+
+def load_known_transfer_keys(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT transfer_key
+        FROM ronin_token_transfers_raw
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return {
+        row[0]
+        for row in rows
+    }
+
+
+def fetch_incremental_token_transfers(
+    db_path,
+    max_pages=20,
+):
+    known_keys = (
+        load_known_transfer_keys(
+            db_path
+        )
+    )
+
+    new_transfers = []
+
+    response = fetch_json(
+        RONIN_TOKEN_TRANSFERS_URL
+    )
+
+    pages_fetched = 0
+    reached_known = False
+    stop_reason = None
+
+    while response is not None:
+        pages_fetched += 1
+
+        transfers = (
+            normalize_token_transfers(
+                response.get(
+                    "items",
+                    [],
+                )
+            )
+        )
+
+        for transfer in transfers:
+            transfer_key = transfer[
+                "transfer_key"
+            ]
+
+            if transfer_key in known_keys:
+                reached_known = True
+                stop_reason = (
+                    "KNOWN_TRANSFER"
+                )
+                break
+
+            new_transfers.append(
+                transfer
+            )
+
+        if reached_known:
+            break
+
+        if pages_fetched >= max_pages:
+            stop_reason = "MAX_PAGES"
+            break
+
+        next_page_params = (
+            get_next_page_params(
+                response
+            )
+        )
+
+        if not next_page_params:
+            stop_reason = "NO_NEXT_PAGE"
+            break
+
+        response = fetch_json(
+            RONIN_TOKEN_TRANSFERS_URL,
+            params=next_page_params,
+        )
+
+    unique_transfers = {}
+
+    for transfer in new_transfers:
+        unique_transfers[
+            transfer["transfer_key"]
+        ] = transfer
+
+    return {
+        "transfers": list(
+            unique_transfers.values()
+        ),
+        "pages_fetched": (
+            pages_fetched
+        ),
+        "known_boundary_reached": (
+            reached_known
+        ),
+        "stop_reason": (
+            stop_reason
+        ),
+    }
+
+
+
+
+def fetch_incremental_transactions(
+    db_path,
+    max_pages=20,
+):
+    known_hashes = (
+        load_known_transaction_hashes(
+            db_path
+        )
+    )
+
+    new_transactions = []
+
+    response = fetch_json(
+        RONIN_TRANSACTIONS_URL
+    )
+
+    pages_fetched = 0
+    reached_known = False
+    stop_reason = None
+
+    while response is not None:
+        pages_fetched += 1
+
+        transactions = (
+            normalize_transactions(
+                response.get(
+                    "items",
+                    [],
+                )
+            )
+        )
+
+        for transaction in transactions:
+            tx_hash = transaction[
+                "tx_hash"
+            ]
+
+            if tx_hash in known_hashes:
+                reached_known = True
+                stop_reason = (
+                    "KNOWN_TRANSACTION"
+                )
+                break
+
+            new_transactions.append(
+                transaction
+            )
+
+        if reached_known:
+            break
+
+        if pages_fetched >= max_pages:
+            stop_reason = "MAX_PAGES"
+            break
+
+        next_page_params = (
+            get_next_page_params(
+                response
+            )
+        )
+
+        if not next_page_params:
+            stop_reason = "NO_NEXT_PAGE"
+            break
+
+        response = fetch_json(
+            RONIN_TRANSACTIONS_URL,
+            params=next_page_params,
+        )
+
+    new_transactions = (
+        deduplicate_transactions(
+            new_transactions
+        )
+    )
+
+    return {
+        "transactions": (
+            new_transactions
+        ),
+        "pages_fetched": (
+            pages_fetched
+        ),
+        "known_boundary_reached": (
+            reached_known
+        ),
+        "stop_reason": (
+            stop_reason
+        ),
+    }
+
+
+def get_raw_sync_counts(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    transaction_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_api_transactions_raw
+            """
+        ).fetchone()[0]
+    )
+
+    transfer_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM ronin_token_transfers_raw
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    return {
+        "transactions": transaction_count,
+        "token_transfers": transfer_count,
+    }
+
+
+def get_blockchain_ledger_count(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_transactions
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    return count
+
+
+def materialize_staged_transfers_to_ledger(
+    db_path,
+):
+    staged_transfers = (
+        load_staged_transfers(
+            db_path
+        )
+    )
+
+    ledger_rows = []
+
+    for transfer in staged_transfers:
+        direction = (
+            classify_transfer_direction(
+                transfer
+            )
+        )
+
+        if direction not in {
+            "IN",
+            "OUT",
+        }:
+            continue
+
+        ledger_row = (
+            build_ledger_row_from_transfer(
+                transfer
+            )
+        )
+
+        ledger_rows.append(
+            ledger_row
+        )
+
+    inserted = insert_ledger_rows(
+        db_path,
+        ledger_rows,
+    )
+
+    return {
+        "staged_transfers": len(
+            staged_transfers
+        ),
+        "ledger_rows_prepared": len(
+            ledger_rows
+        ),
+        "ledger_rows_inserted": (
+            inserted
+        ),
+    }
+
+
+def stage_incremental_ronin_data(
+    db_path,
+    max_pages=20,
+):
+    transaction_result = (
+        fetch_incremental_transactions(
+            db_path,
+            max_pages=max_pages,
+        )
+    )
+
+    transfer_result = (
+        fetch_incremental_token_transfers(
+            db_path,
+            max_pages=max_pages,
+        )
+    )
+
+    transactions_inserted = (
+        insert_raw_api_transactions(
+            db_path,
+            transaction_result[
+                "transactions"
+            ],
+        )
+    )
+
+    transfers_inserted = (
+        insert_raw_token_transfers(
+            db_path,
+            transfer_result[
+                "transfers"
+            ],
+        )
+    )
+
+    refresh_ronin_sync_state_bounds(
+        db_path
+    )
+
+    return {
+        "transactions_found": len(
+            transaction_result[
+                "transactions"
+            ]
+        ),
+        "transactions_inserted": (
+            transactions_inserted
+        ),
+        "transaction_pages": (
+            transaction_result[
+                "pages_fetched"
+            ]
+        ),
+        "transaction_stop": (
+            transaction_result[
+                "stop_reason"
+            ]
+        ),
+        "transfers_found": len(
+            transfer_result[
+                "transfers"
+            ]
+        ),
+        "transfers_inserted": (
+            transfers_inserted
+        ),
+        "transfer_pages": (
+            transfer_result[
+                "pages_fetched"
+            ]
+        ),
+        "transfer_stop": (
+            transfer_result[
+                "stop_reason"
+            ]
+        ),
+    }
+
+
+
+
+
 
 
 def normalize_token_transfer(
@@ -6532,6 +7682,1363 @@ def run_realized_pl_test():
         )
 
 
+def run_ronin_sync_state_test():
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    refresh_ronin_sync_state_bounds(
+        AXIEOS_DB_PATH
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            endpoint,
+            newest_timestamp,
+            oldest_timestamp,
+            backfill_cursor_json,
+            backfill_complete
+        FROM ronin_sync_state
+        ORDER BY endpoint
+        """
+    ).fetchall()
+
+    connection.close()
+
+    print(
+        "\nRONIN SYNC STATE"
+    )
+
+    print(
+        "Endpoints:",
+        len(rows),
+    )
+
+    for row in rows:
+        print(
+            "\nEndpoint:",
+            row[0],
+        )
+
+        print(
+            "Newest:",
+            row[1],
+        )
+
+        print(
+            "Oldest:",
+            row[2],
+        )
+
+        print(
+            "Backfill cursor:",
+            row[3],
+        )
+
+        print(
+            "Backfill complete:",
+            bool(row[4]),
+        )
+
+
+def run_incremental_transaction_test():
+    result = (
+        fetch_incremental_transactions(
+            AXIEOS_DB_PATH,
+            max_pages=20,
+        )
+    )
+
+    transactions = result[
+        "transactions"
+    ]
+
+    print(
+        "\nRONIN INCREMENTAL TRANSACTIONS"
+    )
+
+    print(
+        "Pages fetched:",
+        result[
+            "pages_fetched"
+        ],
+    )
+
+    print(
+        "New transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Known boundary reached:",
+        result[
+            "known_boundary_reached"
+        ],
+    )
+
+    print(
+        "Stop reason:",
+        result[
+            "stop_reason"
+        ],
+    )
+
+    if transactions:
+        print(
+            "\nNEW TRANSACTIONS"
+        )
+
+        for transaction in (
+            transactions[:10]
+        ):
+            print(
+                transaction[
+                    "timestamp"
+                ],
+                transaction[
+                    "tx_hash"
+                ],
+            )
+
+
+def run_incremental_transfer_test():
+    result = (
+        fetch_incremental_token_transfers(
+            AXIEOS_DB_PATH,
+            max_pages=20,
+        )
+    )
+
+    transfers = result[
+        "transfers"
+    ]
+
+    print(
+        "\nRONIN INCREMENTAL TOKEN TRANSFERS"
+    )
+
+    print(
+        "Pages fetched:",
+        result[
+            "pages_fetched"
+        ],
+    )
+
+    print(
+        "New transfers:",
+        len(transfers),
+    )
+
+    print(
+        "Known boundary reached:",
+        result[
+            "known_boundary_reached"
+        ],
+    )
+
+    print(
+        "Stop reason:",
+        result[
+            "stop_reason"
+        ],
+    )
+
+    if transfers:
+        print(
+            "\nNEW TRANSFERS"
+        )
+
+        for transfer in transfers[:15]:
+            print(
+                transfer["timestamp"],
+                transfer["tx_hash"],
+                transfer["token_name"],
+                transfer["token_id"],
+                transfer["amount_raw"],
+            )
+
+
+def run_incremental_staging_test():
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    before = get_raw_sync_counts(
+        AXIEOS_DB_PATH
+    )
+
+    result = stage_incremental_ronin_data(
+        AXIEOS_DB_PATH,
+        max_pages=20,
+    )
+
+    after = get_raw_sync_counts(
+        AXIEOS_DB_PATH
+    )
+
+    transaction_delta = (
+        after["transactions"]
+        - before["transactions"]
+    )
+
+    transfer_delta = (
+        after["token_transfers"]
+        - before["token_transfers"]
+    )
+
+    staging_valid = (
+        transaction_delta
+        == result[
+            "transactions_inserted"
+        ]
+        and transfer_delta
+        == result[
+            "transfers_inserted"
+        ]
+    )
+
+    print(
+        "\nRONIN INCREMENTAL STAGING"
+    )
+
+    print(
+        "Transactions before:",
+        before["transactions"],
+    )
+
+    print(
+        "Transactions found:",
+        result[
+            "transactions_found"
+        ],
+    )
+
+    print(
+        "Transactions inserted:",
+        result[
+            "transactions_inserted"
+        ],
+    )
+
+    print(
+        "Transactions after:",
+        after["transactions"],
+    )
+
+    print(
+        "Transaction pages:",
+        result[
+            "transaction_pages"
+        ],
+    )
+
+    print(
+        "Transaction stop:",
+        result[
+            "transaction_stop"
+        ],
+    )
+
+    print()
+
+    print(
+        "Transfers before:",
+        before["token_transfers"],
+    )
+
+    print(
+        "Transfers found:",
+        result[
+            "transfers_found"
+        ],
+    )
+
+    print(
+        "Transfers inserted:",
+        result[
+            "transfers_inserted"
+        ],
+    )
+
+    print(
+        "Transfers after:",
+        after["token_transfers"],
+    )
+
+    print(
+        "Transfer pages:",
+        result[
+            "transfer_pages"
+        ],
+    )
+
+    print(
+        "Transfer stop:",
+        result[
+            "transfer_stop"
+        ],
+    )
+
+    print()
+
+    print(
+        "Staging validation:",
+        (
+            "PASS"
+            if staging_valid
+            else "FAIL"
+        ),
+    )
+
+
+def run_incremental_ledger_test():
+    before = (
+        get_blockchain_ledger_count(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    result = (
+        materialize_staged_transfers_to_ledger(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    after = (
+        get_blockchain_ledger_count(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    inserted_delta = (
+        after - before
+    )
+
+    validation_passed = (
+        inserted_delta
+        == result[
+            "ledger_rows_inserted"
+        ]
+    )
+
+    print(
+        "\nRONIN INCREMENTAL LEDGER"
+    )
+
+    print(
+        "Ledger rows before:",
+        before,
+    )
+
+    print(
+        "Staged transfers:",
+        result[
+            "staged_transfers"
+        ],
+    )
+
+    print(
+        "Ledger rows prepared:",
+        result[
+            "ledger_rows_prepared"
+        ],
+    )
+
+    print(
+        "New ledger rows:",
+        result[
+            "ledger_rows_inserted"
+        ],
+    )
+
+    print(
+        "Ledger rows after:",
+        after,
+    )
+
+    print(
+        "Ledger delta:",
+        inserted_delta,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation_passed
+            else "FAIL"
+        ),
+    )
+
+
+def run_backfill_cursor_state_test():
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    endpoint = "transactions"
+
+    original = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    test_cursor = {
+        "index": 99,
+        "hash": "0xtestcursor",
+        "block_number": 123456,
+        "items_count": 50,
+    }
+
+    save_ronin_backfill_cursor(
+        AXIEOS_DB_PATH,
+        endpoint,
+        test_cursor,
+    )
+
+    set_ronin_backfill_complete(
+        AXIEOS_DB_PATH,
+        endpoint,
+        False,
+    )
+
+    stored = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    cursor_valid = (
+        stored["backfill_cursor"]
+        == test_cursor
+    )
+
+    complete_valid = (
+        stored["backfill_complete"]
+        is False
+    )
+
+    save_ronin_backfill_cursor(
+        AXIEOS_DB_PATH,
+        endpoint,
+        original["backfill_cursor"],
+    )
+
+    set_ronin_backfill_complete(
+        AXIEOS_DB_PATH,
+        endpoint,
+        original["backfill_complete"],
+    )
+
+    restored = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    restore_valid = (
+        restored["backfill_cursor"]
+        == original["backfill_cursor"]
+        and restored["backfill_complete"]
+        == original["backfill_complete"]
+    )
+
+    print(
+        "\nRONIN BACKFILL CURSOR STATE"
+    )
+
+    print(
+        "Endpoint:",
+        endpoint,
+    )
+
+    print(
+        "Cursor round trip:",
+        "PASS" if cursor_valid else "FAIL",
+    )
+
+    print(
+        "Complete flag round trip:",
+        "PASS" if complete_valid else "FAIL",
+    )
+
+    print(
+        "Original state restored:",
+        "PASS" if restore_valid else "FAIL",
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if (
+                cursor_valid
+                and complete_valid
+                and restore_valid
+            )
+            else "FAIL"
+        ),
+    )
+
+
+def run_backfill_cursor_state_test():
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    endpoint = "transactions"
+
+    original = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    test_cursor = {
+        "index": 99,
+        "hash": "0xtestcursor",
+        "block_number": 123456,
+        "items_count": 50,
+    }
+
+    save_ronin_backfill_cursor(
+        AXIEOS_DB_PATH,
+        endpoint,
+        test_cursor,
+    )
+
+    set_ronin_backfill_complete(
+        AXIEOS_DB_PATH,
+        endpoint,
+        False,
+    )
+
+    stored = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    cursor_valid = (
+        stored["backfill_cursor"]
+        == test_cursor
+    )
+
+    complete_valid = (
+        stored["backfill_complete"]
+        is False
+    )
+
+    save_ronin_backfill_cursor(
+        AXIEOS_DB_PATH,
+        endpoint,
+        original["backfill_cursor"],
+    )
+
+    set_ronin_backfill_complete(
+        AXIEOS_DB_PATH,
+        endpoint,
+        original["backfill_complete"],
+    )
+
+    restored = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        endpoint,
+    )
+
+    restore_valid = (
+        restored["backfill_cursor"]
+        == original["backfill_cursor"]
+        and restored["backfill_complete"]
+        == original["backfill_complete"]
+    )
+
+    print(
+        "\nRONIN BACKFILL CURSOR STATE"
+    )
+
+    print(
+        "Endpoint:",
+        endpoint,
+    )
+
+    print(
+        "Cursor round trip:",
+        "PASS" if cursor_valid else "FAIL",
+    )
+
+    print(
+        "Complete flag round trip:",
+        "PASS" if complete_valid else "FAIL",
+    )
+
+    print(
+        "Original state restored:",
+        "PASS" if restore_valid else "FAIL",
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if (
+                cursor_valid
+                and complete_valid
+                and restore_valid
+            )
+            else "FAIL"
+        ),
+    )
+
+
+def run_historical_backfill_test():
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    boundary = (
+        get_legacy_csv_safety_boundary(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    before = get_raw_sync_counts(
+        AXIEOS_DB_PATH
+    )
+
+    tx_first = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "transactions",
+            max_pages=1,
+        )
+    )
+
+    transfer_first = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "token_transfers",
+            max_pages=1,
+        )
+    )
+
+    tx_state_after_first = (
+        get_ronin_sync_state(
+            AXIEOS_DB_PATH,
+            "transactions",
+        )
+    )
+
+    transfer_state_after_first = (
+        get_ronin_sync_state(
+            AXIEOS_DB_PATH,
+            "token_transfers",
+        )
+    )
+
+    tx_second = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "transactions",
+            max_pages=1,
+        )
+    )
+
+    transfer_second = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "token_transfers",
+            max_pages=1,
+        )
+    )
+
+    after = get_raw_sync_counts(
+        AXIEOS_DB_PATH
+    )
+
+    expected_tx_inserted = (
+        tx_first["items_inserted"]
+        + tx_second["items_inserted"]
+    )
+
+    expected_transfer_inserted = (
+        transfer_first[
+            "items_inserted"
+        ]
+        + transfer_second[
+            "items_inserted"
+        ]
+    )
+
+    tx_delta = (
+        after["transactions"]
+        - before["transactions"]
+    )
+
+    transfer_delta = (
+        after["token_transfers"]
+        - before["token_transfers"]
+    )
+
+    tx_resume_valid = (
+        tx_state_after_first[
+            "backfill_complete"
+        ]
+        or tx_second[
+            "bootstrap_pages"
+        ] == 0
+    )
+
+    transfer_resume_valid = (
+        transfer_state_after_first[
+            "backfill_complete"
+        ]
+        or transfer_second[
+            "bootstrap_pages"
+        ] == 0
+    )
+
+    validation = (
+        boundary is not None
+        and tx_delta
+        == expected_tx_inserted
+        and transfer_delta
+        == expected_transfer_inserted
+        and tx_resume_valid
+        and transfer_resume_valid
+    )
+
+    print(
+        "\nRONIN HISTORICAL BACKFILL"
+    )
+
+    print(
+        "Legacy safety boundary:",
+        boundary["datetime"],
+    )
+
+    print(
+        "\nTRANSACTIONS — FIRST BATCH"
+    )
+
+    for key, value in (
+        tx_first.items()
+    ):
+        print(
+            f"{key}: {value}"
+        )
+
+    print(
+        "\nTRANSACTIONS — SECOND BATCH"
+    )
+
+    for key, value in (
+        tx_second.items()
+    ):
+        print(
+            f"{key}: {value}"
+        )
+
+    print(
+        "\nTOKEN TRANSFERS — FIRST BATCH"
+    )
+
+    for key, value in (
+        transfer_first.items()
+    ):
+        print(
+            f"{key}: {value}"
+        )
+
+    print(
+        "\nTOKEN TRANSFERS — SECOND BATCH"
+    )
+
+    for key, value in (
+        transfer_second.items()
+    ):
+        print(
+            f"{key}: {value}"
+        )
+
+    print(
+        "\nTransaction rows added:",
+        tx_delta,
+    )
+
+    print(
+        "Transfer rows added:",
+        transfer_delta,
+    )
+
+    print(
+        "Transaction resume:",
+        (
+            "PASS"
+            if tx_resume_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Transfer resume:",
+        (
+            "PASS"
+            if transfer_resume_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_ronin_sync_v04(
+    incremental_max_pages=20,
+    backfill_pages=1,
+):
+    print(
+        "\nAXIEOS RONIN SYNC V0.4"
+    )
+
+    initialize_ronin_sync_state_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_raw_api_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_raw_transfer_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_classification_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_economic_events_table(
+        AXIEOS_DB_PATH
+    )
+
+    # ---------------------------------
+    # Incremental newest activity
+    # ---------------------------------
+
+    incremental_before = (
+        get_raw_sync_counts(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    incremental = (
+        stage_incremental_ronin_data(
+            AXIEOS_DB_PATH,
+            max_pages=incremental_max_pages,
+        )
+    )
+
+    incremental_after = (
+        get_raw_sync_counts(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Controlled historical backfill
+    # ---------------------------------
+
+    tx_backfill = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "transactions",
+            max_pages=backfill_pages,
+        )
+    )
+
+    transfer_backfill = (
+        backfill_ronin_endpoint_batch(
+            AXIEOS_DB_PATH,
+            "token_transfers",
+            max_pages=backfill_pages,
+        )
+    )
+
+    # ---------------------------------
+    # Materialize transfers to ledger
+    # ---------------------------------
+
+    ledger_before = (
+        get_blockchain_ledger_count(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    ledger_result = (
+        materialize_staged_transfers_to_ledger(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    ledger_after = (
+        get_blockchain_ledger_count(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Classification
+    # ---------------------------------
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    classification_processed = (
+        store_transaction_classifications(
+            AXIEOS_DB_PATH,
+            transactions,
+        )
+    )
+
+    classification_validation = (
+        validate_classification_storage(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    # ---------------------------------
+    # Economics
+    # ---------------------------------
+
+    events = (
+        build_marketplace_economic_events(
+            transactions
+        )
+    )
+
+    events = (
+        match_axie_acquisition_costs(
+            events
+        )
+    )
+
+    events = (
+        calculate_realized_pl(
+            events
+        )
+    )
+
+    economics_processed = (
+        store_economic_events(
+            AXIEOS_DB_PATH,
+            events,
+        )
+    )
+
+    economics_validation = (
+        validate_economic_events_storage(
+            AXIEOS_DB_PATH,
+            events,
+        )
+    )
+
+    # ---------------------------------
+    # Refresh persistent state
+    # ---------------------------------
+
+    refresh_ronin_sync_state_bounds(
+        AXIEOS_DB_PATH
+    )
+
+    tx_state = get_ronin_sync_state(
+        AXIEOS_DB_PATH,
+        "transactions",
+    )
+
+    transfer_state = (
+        get_ronin_sync_state(
+            AXIEOS_DB_PATH,
+            "token_transfers",
+        )
+    )
+
+    # ---------------------------------
+    # Final V0.4 validation
+    # ---------------------------------
+
+    incremental_valid = (
+        incremental[
+            "transaction_stop"
+        ]
+        in {
+            "KNOWN_TRANSACTION",
+            "NO_NEXT_PAGE",
+        }
+        and incremental[
+            "transfer_stop"
+        ]
+        in {
+            "KNOWN_TRANSFER",
+            "NO_NEXT_PAGE",
+        }
+    )
+
+    ledger_valid = (
+        ledger_after
+        - ledger_before
+        == ledger_result[
+            "ledger_rows_inserted"
+        ]
+    )
+
+    backfill_valid = (
+        tx_backfill[
+            "stop_reason"
+        ]
+        in {
+            "BATCH_LIMIT",
+            "LEGACY_CSV_BOUNDARY",
+            "NO_NEXT_PAGE",
+            "ALREADY_COMPLETE",
+        }
+        and transfer_backfill[
+            "stop_reason"
+        ]
+        in {
+            "BATCH_LIMIT",
+            "LEGACY_CSV_BOUNDARY",
+            "NO_NEXT_PAGE",
+            "ALREADY_COMPLETE",
+        }
+    )
+
+    state_valid = (
+        tx_state is not None
+        and transfer_state is not None
+    )
+
+    final_passed = (
+        incremental_valid
+        and ledger_valid
+        and backfill_valid
+        and state_valid
+        and classification_validation[
+            "passed"
+        ]
+        and economics_validation[
+            "passed"
+        ]
+    )
+
+    # ---------------------------------
+    # Output
+    # ---------------------------------
+
+    print(
+        "\nINCREMENTAL SYNC"
+    )
+
+    print(
+        "Transactions before:",
+        incremental_before[
+            "transactions"
+        ],
+    )
+
+    print(
+        "Transactions found:",
+        incremental[
+            "transactions_found"
+        ],
+    )
+
+    print(
+        "Transactions inserted:",
+        incremental[
+            "transactions_inserted"
+        ],
+    )
+
+    print(
+        "Transactions after:",
+        incremental_after[
+            "transactions"
+        ],
+    )
+
+    print(
+        "Transaction pages:",
+        incremental[
+            "transaction_pages"
+        ],
+    )
+
+    print(
+        "Transaction stop:",
+        incremental[
+            "transaction_stop"
+        ],
+    )
+
+    print(
+        "Transfers before:",
+        incremental_before[
+            "token_transfers"
+        ],
+    )
+
+    print(
+        "Transfers found:",
+        incremental[
+            "transfers_found"
+        ],
+    )
+
+    print(
+        "Transfers inserted:",
+        incremental[
+            "transfers_inserted"
+        ],
+    )
+
+    print(
+        "Transfers after:",
+        incremental_after[
+            "token_transfers"
+        ],
+    )
+
+    print(
+        "Transfer pages:",
+        incremental[
+            "transfer_pages"
+        ],
+    )
+
+    print(
+        "Transfer stop:",
+        incremental[
+            "transfer_stop"
+        ],
+    )
+
+    print(
+        "\nHISTORICAL BACKFILL"
+    )
+
+    print(
+        "Transaction backfill inserted:",
+        tx_backfill[
+            "items_inserted"
+        ],
+    )
+
+    print(
+        "Transaction backfill stop:",
+        tx_backfill[
+            "stop_reason"
+        ],
+    )
+
+    print(
+        "Transfer backfill inserted:",
+        transfer_backfill[
+            "items_inserted"
+        ],
+    )
+
+    print(
+        "Transfer backfill stop:",
+        transfer_backfill[
+            "stop_reason"
+        ],
+    )
+
+    print(
+        "\nLEDGER"
+    )
+
+    print(
+        "Ledger rows before:",
+        ledger_before,
+    )
+
+    print(
+        "New ledger rows:",
+        ledger_result[
+            "ledger_rows_inserted"
+        ],
+    )
+
+    print(
+        "Ledger rows after:",
+        ledger_after,
+    )
+
+    print(
+        "\nCLASSIFICATION"
+    )
+
+    print(
+        "Transactions classified:",
+        classification_processed,
+    )
+
+    print(
+        "Unknown classifications:",
+        classification_validation[
+            "unknown_total"
+        ],
+    )
+
+    print(
+        "Classification validation:",
+        (
+            "PASS"
+            if classification_validation[
+                "passed"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nECONOMICS"
+    )
+
+    print(
+        "Economic events processed:",
+        economics_processed,
+    )
+
+    print(
+        "Realized Axie trades:",
+        economics_validation[
+            "realized_total"
+        ],
+    )
+
+    print(
+        "Economics validation:",
+        (
+            "PASS"
+            if economics_validation[
+                "passed"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nSYNC STATE"
+    )
+
+    print(
+        "Transactions oldest:",
+        tx_state[
+            "oldest_timestamp"
+        ],
+    )
+
+    print(
+        "Transactions newest:",
+        tx_state[
+            "newest_timestamp"
+        ],
+    )
+
+    print(
+        "Transactions backfill complete:",
+        tx_state[
+            "backfill_complete"
+        ],
+    )
+
+    print(
+        "Transfers oldest:",
+        transfer_state[
+            "oldest_timestamp"
+        ],
+    )
+
+    print(
+        "Transfers newest:",
+        transfer_state[
+            "newest_timestamp"
+        ],
+    )
+
+    print(
+        "Transfers backfill complete:",
+        transfer_state[
+            "backfill_complete"
+        ],
+    )
+
+    print(
+        "\nRONIN V0.4 VALIDATION"
+    )
+
+    print(
+        "Incremental sync:",
+        (
+            "PASS"
+            if incremental_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Historical backfill:",
+        (
+            "PASS"
+            if backfill_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Ledger:",
+        (
+            "PASS"
+            if ledger_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Persistent state:",
+        (
+            "PASS"
+            if state_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Sync version:",
+        RONIN_SYNC_VERSION,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if final_passed
+            else "FAIL"
+        ),
+    )
+
 
 
 
@@ -6540,6 +9047,7 @@ def run_realized_pl_test():
 
 
 if __name__ == "__main__":
-    run_ronin_sync_v03(
-        max_pages=3
+    run_ronin_sync_v04(
+        incremental_max_pages=20,
+        backfill_pages=1,
     )
