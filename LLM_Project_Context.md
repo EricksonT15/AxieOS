@@ -1,6 +1,124 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-08-08**
+Last updated: **2026-08-22**
+
+---
+
+## 0. Current Checkpoint
+
+AxieOS is an AI-assisted decision-support, accounting, analytics, and optimization system for the Axie Infinity / GameFi ecosystem.
+
+The project is now organized into specialized workstreams coordinated through a master Control Center.
+
+### Project Chat Map
+
+| Chat                                       | Responsibility                                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `00 — AxieOS Project Control Center`       | Overall priorities, roadmap, cross-workstream decisions, project status, and recovery context         |
+| `01 — AxieOS Bounty Board Strategy`        | Daily Bounty Board execution, rerolls, Fortune Slips, BP optimization, and live task decisions        |
+| `02 — AxieOS Development & Python`         | Python implementation, schemas, parsers, optimizer development, accounting logic, and automation      |
+| `03 — AxieOS Marketplace & NFT Strategy`   | Axie, land, accessory, consumable, purchase/sale/release decisions and marketplace strategy           |
+| `04 — AxieOS Wallet, Staking & Terrariums` | Wallet activity, AXS/bAXS, staking, claims, Terrariums, Homeland, and reward snapshots                |
+| `05 — AxieOS Data & Engineering Journal`   | Canonical EOD logs, engineering journal, datasets, reconciliation, data quality, and decision history |
+
+### Current Operating Priorities
+
+1. Preserve and expand the canonical AxieOS data layer.
+2. Continue development of the Bounty Board optimizer using real daily data.
+3. Complete current transaction-accounting and cost-basis reconciliation.
+4. Establish a reusable Ronin CSV transaction-ingestion workflow.
+5. Preserve raw Ronin exports unchanged, even when exports overlap.
+6. Deduplicate and normalize blockchain records programmatically.
+7. Add owned-Axie inventory and bounty-qualification matching.
+8. Build better asset-level ROI tracking for Axies, land, consumables, staking, and Terrariums.
+9. Keep this file updated so a fresh LLM session can resume AxieOS without reconstructing the project from chat history.
+
+### Current Development Checkpoint
+
+The project has progressed significantly beyond the original August 8 blockchain-analytics baseline.
+
+Current accounting dataset:
+
+```text
+Approximately 320 accounting records
+```
+
+Recent cost-basis audit identified:
+
+```text
+51 unresolved sales
+```
+
+Initial classification:
+
+```text
+43 inventory-pool cases
+7 Axie inbound-review cases
+1 no-prior-evidence case
+```
+
+Recent V0.7 development progress:
+
+```text
+Tasks 85–87   Complete
+Task 88       Cost-basis reconciliation / finalization
+Task 89       Swaps — next major accounting area
+```
+
+Recent reconciliation work resolved 18 CocoChoco sales using FIFO methodology.
+
+Remaining review work at the latest checkpoint included:
+
+```text
+25 CocoChoco sales
+8 Axie sales
+```
+
+The immediate development objective is to finish the remaining Task 88 cost-basis review before proceeding to swap accounting.
+
+### August 22 Bounty Board Checkpoint
+
+All six tasks were completed.
+
+```text
+Raw task BP:                 1,758
+6/6 milestone bonuses:        550
+---------------------------------
+Total board contribution:    2,308 BP
+```
+
+Fortune Slips:
+
+```text
+Observed before pouch opening: 1,524
+10 Regular Lucky Pouches:      -100
+Expected remaining:            1,424
+```
+
+Consumable inventory after execution:
+
+```text
+Regular CocoChoco: 15 usable
+Premium CocoChoco: 12 usable
+```
+
+### Recovery Rule
+
+This document is the compact project-resumption context.
+
+Detailed chronology belongs in:
+
+```text
+05 — AxieOS Data & Engineering Journal
+```
+
+Canonical facts should increasingly live in:
+
+* SQLite
+* normalized CSV datasets
+* transaction ledgers
+* asset ledgers
+* structured gameplay records
 
 ---
 
@@ -8,20 +126,32 @@ Last updated: **2026-08-08**
 
 **AxieOS** is an AI-assisted decision-support and analytics system for the Axie Infinity / GameFi ecosystem.
 
-The project is intended to turn blockchain history, gameplay activity, marketplace transactions, staking activity, Terrarium data, and Bounty Board decisions into structured data that can later support:
+The project is intended to transform:
 
-- portfolio analytics
-- wallet analytics
-- profitability analysis
-- Bounty Board optimization
-- Terrarium optimization
-- staking analysis
-- marketplace ROI tracking
-- NFT / Axie inventory analysis
-- explainable recommendations
-- future machine-learning models
+* blockchain history
+* gameplay activity
+* Bounty Board decisions
+* marketplace transactions
+* NFT ownership
+* consumable inventory
+* staking activity
+* Terrarium activity
+* reward claims
 
-The project should prioritize reliable data and analytics before introducing AI or machine learning.
+into structured data that can support:
+
+* portfolio analytics
+* wallet analytics
+* profitability analysis
+* Bounty Board optimization
+* Terrarium optimization
+* staking analysis
+* marketplace ROI tracking
+* NFT / Axie inventory analysis
+* explainable recommendations
+* future machine-learning models
+
+The project should prioritize reliable data and analytics before introducing machine learning.
 
 ---
 
@@ -34,8 +164,11 @@ AxieOS follows these principles:
 3. **Reusable tools**
 4. **Explain recommendations**
 5. **Validate using real player data**
+6. **Preserve raw evidence**
+7. **Separate operational decisions from canonical accounting**
+8. **Do not invent missing transaction data**
 
-The system should avoid making recommendations based only on assumptions when historical data can be collected and measured.
+The system should avoid making recommendations based only on assumptions when historical or blockchain data can be collected and measured.
 
 ---
 
@@ -43,13 +176,13 @@ The system should avoid making recommendations based only on assumptions when hi
 
 Primary development environment:
 
-- Windows
-- Visual Studio Code
-- Python
-- SQLite
-- Git
-- GitHub
-- GitHub Desktop
+* Windows
+* Visual Studio Code
+* Python
+* SQLite
+* Git
+* GitHub
+* GitHub Desktop
 
 Repository:
 
@@ -69,10 +202,16 @@ Documentation is stored under:
 docs/
 ```
 
-Blockchain data is stored under:
+Existing blockchain data is stored under:
 
 ```text
 data/blockchain/
+```
+
+Future Ronin raw-export storage may also use a dedicated structure such as:
+
+```text
+data/ronin/
 ```
 
 ---
@@ -81,25 +220,37 @@ data/blockchain/
 
 ### Canonical SQLite Database
 
-The primary populated AxieOS database is:
+The canonical populated AxieOS database established during the first development phase is:
 
 ```text
 data/blockchain/database/axieos.db
 ```
 
-Current database size after initial import:
+Initial database size after the legacy import:
 
 ```text
 40,960 bytes
 ```
 
-### Current Imported Dataset
+### Initial Imported Dataset
 
-The current legacy blockchain dataset contains:
+The original legacy blockchain dataset contained:
 
-- **37 blockchain transactions**
-- Date range: **2021-06-29 to 2021-12-15**
-- **10 unique wallet / contract addresses**
+```text
+37 blockchain transactions
+```
+
+Date range:
+
+```text
+2021-06-29 to 2021-12-15
+```
+
+Unique wallet / contract addresses:
+
+```text
+10
+```
 
 Source CSV:
 
@@ -132,6 +283,8 @@ status
 source_row_hash
 imported_at
 ```
+
+This original 37-row dataset should be treated as the historical first validated blockchain dataset, not as the complete present-day AxieOS transaction history.
 
 ---
 
@@ -177,15 +330,15 @@ New analytics scripts should use:
 from database import connect_database
 ```
 
-when executed from the `scripts` directory convention currently used by the project.
+when executed according to the current `scripts` directory convention.
 
-The goal is to prevent individual scripts from defining inconsistent database paths.
+The purpose is to prevent individual scripts from defining inconsistent database paths.
 
 ---
 
 ## 7. Blockchain Import Pipeline
 
-### create_database_schema.py
+### `create_database_schema.py`
 
 Location:
 
@@ -195,13 +348,11 @@ scripts/create_database_schema.py
 
 Purpose:
 
-- creates the SQLite schema
-- creates the `blockchain_transactions` table
-- prepares the canonical blockchain database
+* create SQLite schema
+* create blockchain transaction tables
+* prepare the canonical database
 
----
-
-### import_blockchain_csv.py
+### `import_blockchain_csv.py`
 
 Location:
 
@@ -209,14 +360,14 @@ Location:
 scripts/import_blockchain_csv.py
 ```
 
-Current capabilities include:
+Implemented capabilities include:
 
-- CSV import
-- header normalization
-- idempotent imports
-- SHA-256 row hashing
-- duplicate-row prevention
-- consistent database insertion
+* CSV import
+* header normalization
+* idempotent imports
+* SHA-256 row hashing
+* duplicate-row prevention
+* consistent database insertion
 
 Each imported source row receives a deterministic hash stored in:
 
@@ -224,11 +375,9 @@ Each imported source row receives a deterministic hash stored in:
 source_row_hash
 ```
 
-This allows repeated imports without duplicating existing blockchain records.
+This permits repeated imports without duplicating identical source rows.
 
----
-
-### verify_dataset_equivalence.py
+### `verify_dataset_equivalence.py`
 
 Location:
 
@@ -238,12 +387,11 @@ scripts/verify_dataset_equivalence.py
 
 Purpose:
 
-- verify equivalent blockchain datasets
-- support migration and import validation
+* verify equivalent blockchain datasets
+* support migration validation
+* compare imported datasets
 
----
-
-### inspect_database.py
+### `inspect_database.py`
 
 Location:
 
@@ -253,12 +401,11 @@ scripts/inspect_database.py
 
 Purpose:
 
-- inspect SQLite database contents
-- verify imported rows and schema
+* inspect SQLite database contents
+* verify imported records
+* inspect schema state
 
----
-
-### validate_import.py
+### `validate_import.py`
 
 Location:
 
@@ -268,14 +415,14 @@ scripts/validate_import.py
 
 Purpose:
 
-- validate imported blockchain data
-- compare database state with expected source data
+* validate blockchain imports
+* compare database state with expected source data
 
 ---
 
 ## 8. Wallet Analytics
 
-### wallet_summary.py v1.0
+### `wallet_summary.py` v1.0
 
 Location:
 
@@ -283,17 +430,17 @@ Location:
 scripts/wallet_summary.py
 ```
 
-Version 1.0 provides:
+Provides:
 
-- total transaction count
-- first transaction date
-- latest transaction date
-- unique wallet / contract address count
-- transaction method counts
-- token / collectible counts
-- recorded RON network fees
+* total transaction count
+* first transaction date
+* latest transaction date
+* unique wallet / contract count
+* transaction-method counts
+* token / collectible counts
+* recorded RON network fees
 
-Verified results:
+Initial validated dataset results:
 
 ```text
 Total transactions: 37
@@ -302,28 +449,28 @@ Unique addresses: 10
 
 Transaction methods:
 
-| Method | Count |
-|---|---:|
-| transfer | 16 |
-| checkpoint | 12 |
-| swapExactTokensForTokens | 4 |
-| safeTransferFrom | 3 |
-| approve | 1 |
-| 0xbec24050 | 1 |
+| Method                   | Count |
+| ------------------------ | ----: |
+| transfer                 |    16 |
+| checkpoint               |    12 |
+| swapExactTokensForTokens |     4 |
+| safeTransferFrom         |     3 |
+| approve                  |     1 |
+| 0xbec24050               |     1 |
 
-Source-data investigation confirmed that all 37 rows contain:
+All 37 original source rows contained:
 
 ```text
 TxnFee(RON) = 0.0
 ```
 
-Therefore the zero network-fee result produced by the analytics scripts is consistent with the source dataset.
+Therefore zero network fees reported for that specific historical dataset were consistent with the source data.
 
 ---
 
 ## 9. Transaction Analytics
 
-### transaction_summary.py v1.0
+### `transaction_summary.py` v1.0
 
 Location:
 
@@ -331,22 +478,22 @@ Location:
 scripts/transaction_summary.py
 ```
 
-Version 1.0 provides:
+Provides:
 
-- transaction status summary
-- transaction method summary
-- monthly transaction activity
-- wallet direction analysis
-- latest five transactions
-- duplicate transaction hash detection
+* transaction-status summary
+* transaction-method summary
+* monthly transaction activity
+* wallet-direction analysis
+* latest transactions
+* duplicate transaction-hash detection
 
-The script has been tested against the current 37-row blockchain dataset.
+The original version was validated against the 37-row legacy blockchain dataset.
 
 ---
 
 ## 10. Token Analytics
 
-### token_summary.py v1.0
+### `token_summary.py` v1.0
 
 Location:
 
@@ -354,148 +501,192 @@ Location:
 scripts/token_summary.py
 ```
 
-Completed and committed on **2026-08-08**.
+Completed and committed on:
 
-The report calculates, per token or collectible:
+```text
+2026-08-08
+```
 
-- total transaction count
-- incoming transaction count
-- outgoing transaction count
-- zero-movement transaction count
-- total amount received
-- total amount sent
-- net token movement
+Calculates per token / collectible:
 
-Python `Decimal` is used instead of floating-point arithmetic for safer token-value calculations.
+* transaction count
+* incoming count
+* outgoing count
+* zero-movement count
+* total received
+* total sent
+* net movement
 
-### Validated Token Results
+Python `Decimal` is used instead of ordinary floating-point arithmetic for safer financial and token calculations.
+
+### Initial Validated Results
 
 | Token / Collectible | Transactions |
-|---|---:|
-| Axie | 3 |
-| RON | 1 |
-| Ronin Wrapped Ether | 3 |
-| Smooth Love Potion | 30 |
-| **Total** | **37** |
+| ------------------- | -----------: |
+| Axie                |            3 |
+| RON                 |            1 |
+| Ronin Wrapped Ether |            3 |
+| Smooth Love Potion  |           30 |
+| **Total**           |       **37** |
 
-### Axie
-
-```text
-Transactions: 3
-Incoming transactions: 3
-Outgoing transactions: 0
-Zero-movement transactions: 0
-Total received: 3
-Total sent: 0
-Net movement: 3
-```
-
-### RON
-
-```text
-Transactions: 1
-Incoming transactions: 0
-Outgoing transactions: 0
-Zero-movement transactions: 1
-Total received: 0
-Total sent: 0
-Net movement: 0
-```
-
-The RON transaction is an:
-
-```text
-approve
-```
-
-transaction with no token movement.
-
-### Ronin Wrapped Ether
-
-```text
-Transactions: 3
-Incoming transactions: 3
-Outgoing transactions: 0
-Zero-movement transactions: 0
-Total received: 0.0260107944
-Total sent: 0
-Net movement: 0.0260107944
-```
-
-### Smooth Love Potion
-
-```text
-Transactions: 30
-Incoming transactions: 14
-Outgoing transactions: 15
-Zero-movement transactions: 1
-Total received: 21866
-Total sent: 21866
-Net movement: 0
-```
-
-The zero-movement SLP transaction is a:
-
-```text
-checkpoint
-```
-
-transaction.
-
-All token transaction counts reconcile to the full:
-
-```text
-37 transactions
-```
+These figures refer specifically to the original 37-row legacy dataset.
 
 ---
 
-## 11. Current Analytics Development Status
+## 11. Wallet Ownership Rules
 
-### Completed
+### Original Ronin Wallet
 
-- [x] Blockchain dataset preparation
-- [x] Database schema
-- [x] CSV blockchain importer
-- [x] Idempotent import logic
-- [x] SHA-256 row hashing
-- [x] Import validation
-- [x] Database inspection utility
-- [x] Shared database connection module
-- [x] `wallet_summary.py` v1.0
-- [x] `transaction_summary.py` v1.0
-- [x] `token_summary.py` v1.0
-- [x] Database path cleanup
-- [x] Remove accidental empty `data/axieos.db`
+Canonical user-owned Ronin address:
 
----
+```text
+0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610
+```
 
-## 12. Next Development Priorities
+This is the user's **original Ronin wallet**.
 
-The next phase moves from basic blockchain analytics toward structured gameplay and economic analytics.
+It is distinct from the **Ronin Gamer wallet**.
 
-Priority order:
+Transfers between these user-owned wallets must be classified as:
 
-1. **Design the gameplay data model**
-2. Convert Bounty Board daily logs into structured data
-3. Add Terrarium activity and reward tracking
-4. Add marketplace purchase / listing / sale tracking
-5. Add consumable inventory tracking
-6. Add staking and reward tracking
-7. Build Bounty Board reroll analytics
-8. Build profitability calculations
-9. Build recommendation rules
-10. Consider machine learning only after enough structured gameplay data exists
+```text
+internal transfer
+```
+
+They must **not** be counted as:
+
+```text
+external income
+external expense
+purchase
+sale
+```
+
+unless another independent economic event occurred within the same transaction.
+
+Wallet ownership should therefore be part of transaction reconciliation.
 
 ---
 
-## 13. Gameplay Data Model — Planned Scope
+## 12. Ronin Transaction Ledger
 
-The future gameplay database should be able to represent daily Axie activities including:
+AxieOS should maintain a durable transaction-history dataset based on official Ronin exports and blockchain evidence.
+
+### Recommended Structure
+
+```text
+data/
+└── ronin/
+    ├── raw/
+    │   ├── <original downloaded CSV files>
+    │   └── ...
+    ├── processed/
+    │   └── ronin_transaction_ledger.csv
+    └── import_manifest.csv
+```
+
+### Raw-Data Policy
+
+Downloaded Ronin CSV files are immutable source evidence.
+
+Rules:
+
+* Never manually delete overlapping rows from raw exports.
+* Never manually modify transaction values in raw files.
+* Preserve original filenames.
+* Preserve every downloaded file.
+* Overlapping exports are acceptable.
+* Prefer overlap over accidentally leaving gaps in transaction history.
+
+Ronin currently limits CSV exports to relatively small batches, so overlapping files are expected.
+
+### Import Workflow
+
+The eventual importer should:
+
+1. Discover all raw Ronin CSV files.
+2. Read each file.
+3. Normalize headers.
+4. Normalize data types.
+5. Preserve source filename.
+6. Add import metadata.
+7. Combine rows.
+8. Identify duplicates safely.
+9. Produce a normalized canonical transaction ledger.
+10. Record import statistics in an import manifest.
+11. Flag ambiguous or conflicting records instead of silently resolving them.
+
+### Deduplication Rule
+
+Do not automatically assume:
+
+```text
+transaction_hash
+```
+
+is always the complete unique key.
+
+If each CSV row represents one blockchain transaction, transaction hash may be sufficient.
+
+If a blockchain transaction produces several event / transfer rows, use a composite identity based on the actual Ronin export schema.
+
+Possible components include:
+
+```text
+transaction_hash
+log_index
+event_index
+token_contract
+token_id
+from_address
+to_address
+amount
+```
+
+The final deduplication key must be designed **after inspecting real Ronin CSV exports**.
+
+### Import Manifest
+
+A useful import manifest may track:
+
+```text
+source_file
+imported_at
+raw_rows
+unique_rows
+duplicate_rows
+new_rows
+date_range
+validation_status
+```
+
+This allows AxieOS to know what has already been imported without modifying the original evidence.
+
+---
+
+## 13. Axie Identity Rule
+
+Axies must be identified by their immutable:
+
+```text
+asset_id
+```
+
+or Axie/NFT number.
+
+Do **not** use mutable Axie names as canonical identifiers.
+
+Owners can rename Axies, while the blockchain NFT identifier remains stable.
+
+---
+
+## 14. Gameplay Data Model
+
+The gameplay database should represent daily Axie activity.
 
 ### Daily Session
 
-Possible fields:
+Useful fields include:
 
 ```text
 date
@@ -503,15 +694,18 @@ player_id
 shrine_streak
 starting_fortune_slips
 claimed_fortune_slips
+fortune_slips_spent
 ending_fortune_slips
+weekly_bp_start
+weekly_bp_end
+rank_start
+rank_end
 notes
 ```
 
----
+### Bounty Board Task
 
-### Bounty Board
-
-Each Bounty Board task should eventually track:
+Each task should eventually track:
 
 ```text
 date
@@ -527,47 +721,142 @@ reroll_slip_cost
 completion_status
 direct_cost
 consumables_used
+related_asset_id
 time_required
 notes
 ```
 
-This will allow analysis such as:
+This should allow calculations such as:
 
-- BP per Fortune Slip
-- reroll success rate
-- average value of each task category
-- task completion cost
-- task combinations
-- expected task profitability
+* BP per Fortune Slip
+* reroll success rate
+* task-category value
+* task completion cost
+* task combinations
+* expected economic value
+* capital required
+* recoverable capital
+* play-time requirements
 
 ---
 
-## 14. Bounty Board Optimization Goals
+## 15. Bounty Board Strategy
 
-Future AxieOS logic should help answer questions such as:
+### Rank Goals
 
-- Should this task be completed or rerolled?
-- How many Fortune Slips should be spent rerolling?
-- Which tasks can be completed together?
-- What is the cheapest combination of actions?
-- Should a marketplace item be purchased and relisted?
-- What is the expected recoverable capital?
-- How much gameplay time is required?
-- Is a theoretically good task realistically completable today?
-
-An important future variable is:
+Primary operating target:
 
 ```text
-available_play_time
+Top 500
 ```
 
-A task worth 100 BP may be inferior to a lower-cost reroll if the player has no time to complete the original task.
+Long-term target:
+
+```text
+Top 200
+```
+
+### Reroll Mechanics
+
+| Reroll |      Cost | Basic | Intermediate | Advanced | Master |
+| ------ | --------: | ----: | -----------: | -------: | -----: |
+| 1–3    |  10 slips |   35% |          50% |      13% |     2% |
+| 4–6    |  20 slips |   20% |          60% |      17% |     3% |
+| 7–8    |  30 slips |    0% |          60% |      36% |     4% |
+| 9–10   | 100 slips |    0% |           0% |      92% |     8% |
+
+### Current Operating Rules
+
+* Avoid Den of Mysteries.
+* Weak low-BP tasks are candidates for reroll.
+* Preserve Fortune Slips when expected improvement does not justify the cost.
+* Prefer actions that satisfy multiple tasks.
+* Consider real marketplace cost, not BP alone.
+* Existing inventory should be checked before recommending a purchase.
+* Capital preservation takes priority over chasing BP unnecessarily.
+
+### Consumable Reserve Strategy
+
+Current working targets:
+
+```text
+Regular CocoChoco reserve: 10
+Premium CocoChoco reserve: approximately 10–15
+```
+
+Lucky Pouches should generally be opened in useful batches unless a bounty specifically requires another action.
 
 ---
 
-## 15. Marketplace Analytics — Planned Scope
+## 16. Bounty Optimizer
 
-Marketplace records should eventually track:
+The Bounty Optimizer has progressed beyond the original planned stage.
+
+Implemented / established capabilities include:
+
+```text
+KEEP
+REROLL
+COMBO
+```
+
+Additional capabilities include:
+
+* overlap detection
+* consumable inventory checks
+* reroll guardrails
+* sequential rerolls
+* projected versus actual reroll handling
+* plan validation
+* rank-bonus targeting
+* reserve validation
+* daily input builder
+* integrated plan generation
+
+Strategy modes include:
+
+```text
+conserve
+rank_push
+master_chase
+```
+
+### Owned-Axie Inventory Requirement
+
+A major next capability is an owned-Axie inventory layer.
+
+Before recommending that an Axie be purchased, the optimizer should determine whether an existing owned Axie already satisfies the bounty.
+
+Useful fields include:
+
+```text
+asset_id
+class
+level
+breed_count
+collectible_status
+evolved_status
+listing_status
+release_eligibility
+parts
+traits
+acquisition_cost
+current_status
+```
+
+Examples of questions this should answer:
+
+* Do I already own a Beast Axie that satisfies the task?
+* Do I own an Axie eligible for release?
+* Is an eligible Axie currently listed for sale?
+* Does one Axie satisfy multiple simultaneous bounty requirements?
+* Would using an owned Axie create a larger economic loss than buying another one?
+
+---
+
+## 17. Marketplace Analytics
+
+Marketplace records should track:
 
 ```text
 asset_id
@@ -578,6 +867,8 @@ level
 purchase_date
 purchase_price
 purchase_currency
+purchase_fee
+purchase_gas
 listing_date
 listing_price
 sale_date
@@ -592,16 +883,20 @@ release_value
 status
 ```
 
-This is important because many Bounty Board purchases can be relisted and capital may be recovered.
-
-AxieOS should distinguish between:
+Economic analysis should distinguish:
 
 ```text
 Bounty reward
 +
 Marketplace result
++
+Release value
 -
-Fees
+Purchase cost
+-
+Marketplace fees
+-
+Gas
 -
 Consumable cost
 -
@@ -610,23 +905,39 @@ Opportunity cost
 True economic result
 ```
 
----
-
-## 16. Consumable Inventory — Planned Scope
-
-Track inventory such as:
+Marketplace decisions belong operationally in:
 
 ```text
-Regular CocoChoco
-Premium CocoChoco
-Lucky Pouches
-SLP
-RON
-bAXS
-AXS
+03 — AxieOS Marketplace & NFT Strategy
 ```
 
-Inventory changes should ideally be event-based:
+Final transaction/accounting records belong in the canonical data layer and:
+
+```text
+05 — AxieOS Data & Engineering Journal
+```
+
+---
+
+## 18. Consumable Inventory
+
+Canonical Axie Consumable Item mappings:
+
+```text
+Token ID 1 = Regular CocoChoco
+Token ID 2 = Premium CocoChoco
+```
+
+These mappings must be used for:
+
+* purchase classification
+* sale classification
+* inventory
+* cost basis
+* feeding
+* bounty-cost calculations
+
+Inventory events may include:
 
 ```text
 purchase
@@ -634,20 +945,98 @@ sale
 feed
 pouch reward
 craft
-release
-stake
-unstake
-claim
-swap
+release reward
+transfer
 ```
 
-This will eventually eliminate manual inventory reconciliation.
+Consumable inventory should eventually be transaction/event-based rather than manually reconciled.
 
 ---
 
-## 17. Terrarium Analytics — Planned Scope
+## 19. Cost-Basis Accounting
 
-Terrarium data currently being recorded manually includes:
+AxieOS is building transaction-level cost-basis accounting.
+
+Important principles:
+
+* Do not invent acquisition cost.
+* Use blockchain / marketplace evidence when available.
+* Preserve unresolved items for review.
+* Separate owned-wallet transfers from purchases/sales.
+* Use appropriate inventory accounting for fungible consumables.
+* Link NFT sales to specific NFT acquisitions where evidence permits.
+* Record fees separately from gross purchase/sale value.
+* Use high-precision decimal arithmetic.
+
+### CocoChoco
+
+FIFO methodology has been used for resolved CocoChoco inventory-pool sales.
+
+### Axies
+
+Axie transactions should preferably reconcile using:
+
+```text
+asset_id
+```
+
+and transaction history.
+
+If a sale exists without a confidently identified acquisition, classify it as unresolved rather than guessing.
+
+### Swaps
+
+Swap accounting is a major next development area after the current cost-basis reconciliation phase.
+
+---
+
+## 20. Land Asset Accounting
+
+Land should be tracked as an owned NFT asset with acquisition basis and lifetime economics.
+
+### Forest Plot
+
+Canonical known record:
+
+```text
+Asset: Forest Land
+Coordinates: (-123, 9)
+Purchase date: 2025-11-18
+Purchase price: 0.06841 ETH
+Transaction: 0x59a4f8…b8a86b
+Funding source: Erick D. Funds
+Status: Owned
+```
+
+The complete transaction should eventually be reconstructed from the canonical Ronin transaction ledger, including:
+
+```text
+full transaction hash
+timestamp
+buyer wallet
+seller wallet
+marketplace
+gas
+fees
+token / land identifier
+```
+
+Terrarium rewards associated with this Forest plot should eventually be connected to its asset ledger.
+
+This allows analysis of:
+
+* lifetime bAXS earned
+* effective bAXS after conversion deductions
+* capital recovery
+* ROI
+* yield on original cost
+* current asset value versus historical acquisition value
+
+---
+
+## 21. Terrarium Analytics
+
+Terrarium information is currently recorded through manual snapshots.
 
 ### Global
 
@@ -668,7 +1057,7 @@ Global Forest Flame
 
 ### Savannah
 
-For each Savannah plot:
+For each plot:
 
 ```text
 Flame
@@ -685,7 +1074,7 @@ Global Savannah Flame
 
 ### Buff Tracking
 
-Future records should include:
+Future structured records should include:
 
 ```text
 buff_activation_time
@@ -696,44 +1085,47 @@ unbuffed_hours
 buff_active_at_snapshot
 ```
 
-This is important because delayed buff activation can distort rank and reward comparisons.
+Raw Terrarium morning/EOD snapshots belong in:
+
+```text
+04 — AxieOS Wallet, Staking & Terrariums
+```
+
+Finalized daily summaries belong in:
+
+```text
+05 — AxieOS Data & Engineering Journal
+```
 
 ---
 
-## 18. Terrarium Buff Strategy
+## 22. Terrarium Buff Strategy
 
-Current daily buff cost:
+Observed working daily buff cost:
 
 ```text
 Forest:       8 Fortune Slips
 Savannah #1:  3 Fortune Slips
 Savannah #2:  3 Fortune Slips
-Total:       14 Fortune Slips / day
+--------------------------------
+Total:       14 Fortune Slips/day
 ```
 
 Buff duration is stackable.
 
-A future operational strategy being evaluated is adding approximately **7 days of buff duration at once** instead of manually renewing every day.
+A weekly multi-day activation strategy is preferable when it:
 
-Advantages may include:
-
-- less repetitive work
-- lower risk of forgotten activation
-- fewer unbuffed hours
-- cleaner analytics data
-- easier weekly scheduling
-
-The likely weekly anchor being considered is:
-
-```text
-Monday
-```
+* reduces repetitive work
+* lowers risk of forgotten activation
+* prevents unbuffed periods
+* simplifies analysis
+* makes reward comparisons cleaner
 
 ---
 
-## 19. Reward and Staking Analytics — Planned Scope
+## 23. Reward and Staking Analytics
 
-AxieOS should eventually track:
+AxieOS should track:
 
 ```text
 reward_source
@@ -747,6 +1139,8 @@ yield
 APR
 claim_delay
 idle_period
+transaction_hash
+gas
 ```
 
 Relevant reward sources include:
@@ -760,47 +1154,89 @@ bAXS staking
 
 The objective is to measure:
 
-- reward accumulation
-- idle capital
-- claiming frequency
-- compounding frequency
-- staking yield
-- opportunity cost
+* reward accumulation
+* idle capital
+* claiming frequency
+* compounding frequency
+* staking yield
+* opportunity cost
+* transaction costs
+
+Operational staking and claiming belong in:
+
+```text
+04 — AxieOS Wallet, Staking & Terrariums
+```
 
 ---
 
-## 20. Current Player Data Collection Phase
+## 24. Fortune Slip Accounting
 
-Detailed gameplay logs are currently being collected during **August 2026**.
+Fortune Slips are operationally managed in:
 
-The purpose of the daily logs is to create a reliable baseline dataset before gameplay decisions are automated.
+```text
+01 — AxieOS Bounty Board Strategy
+```
 
-The logs contain examples of:
+Track:
 
-- initial Bounty Boards
-- rerolls
-- Fortune Slip consumption
-- task combinations
-- marketplace purchases
-- marketplace sales
-- consumable usage
-- Axie evolution
-- Axie ascension
-- Axie release
-- staking
-- reward claims
-- Terrarium snapshots
-- Terrarium buff timing
+```text
+starting balance
+claim amount
+reroll spending
+Lucky Pouch spending
+Terrarium buff spending
+ending balance
+```
 
-The detailed manual logging phase is intended to become less necessary once AxieOS can store and summarize these activities automatically.
+Important rule:
+
+An estimated balance should be labeled as:
+
+```text
+projected / expected
+```
+
+until an authoritative observed in-game balance is available.
+
+Observed balances override projections.
 
 ---
 
-## 21. Future AI / ML Direction
+## 25. Data Collection Philosophy
 
-Machine learning is **not the immediate priority**.
+Detailed gameplay logs are being collected throughout August 2026.
 
-The expected progression is:
+The purpose is to build a reliable real-player dataset before deeper automation.
+
+Current logs include examples of:
+
+* initial Bounty Boards
+* rerolls
+* Fortune Slip usage
+* task combinations
+* marketplace purchases
+* marketplace sales
+* consumable use
+* Axie evolution
+* Axie ascension
+* Axie releases
+* staking
+* reward claims
+* Terrarium snapshots
+* Terrarium buffs
+* cost-basis reconciliation
+* internal wallet transfers
+
+The long-term objective is to reduce manual logging once these activities can be reconstructed from structured gameplay and blockchain data.
+
+---
+
+## 26. Future AI / ML Direction
+
+Machine learning is not the immediate priority.
+
+Expected progression:
 
 ```text
 Raw Data
@@ -812,19 +1248,20 @@ Raw Data
 → Explainable AI
 ```
 
-Potential future models could include:
+Potential future models include:
 
-- Bounty task expected-value model
-- reroll recommendation model
-- marketplace sale probability model
-- Axie holding-period model
-- Terrarium reward forecasting
-- player strategy simulation
-- NFT ROI estimation
+* Bounty task expected-value model
+* reroll recommendation model
+* marketplace-sale probability model
+* Axie holding-period model
+* Terrarium reward forecast
+* strategy simulation
+* NFT ROI estimation
+* capital-efficiency model
 
-Explainability should remain important.
+Explainability should remain a core requirement.
 
-Possible future use:
+Potential future tooling may include:
 
 ```text
 SHAP
@@ -834,9 +1271,9 @@ for explaining recommendation or prediction drivers.
 
 ---
 
-## 22. Documentation
+## 27. Documentation
 
-Important project documentation includes:
+Important repository documentation includes:
 
 ```text
 README.md
@@ -851,22 +1288,40 @@ Engineering roadmap:
 docs/Engineering/ROADMAP.md
 ```
 
-Architecture and specification documents also exist under:
+Architecture and specification documents exist under:
 
 ```text
 docs/Architecture/
 docs/Specifications/
 ```
 
-`CHANGELOG.md` was previously empty and received its first formal development entry on **2026-08-08**.
+### Documentation Responsibilities
+
+Use:
+
+```text
+LLM_Project_Context.md
+```
+
+for project recovery context.
+
+Use:
+
+```text
+05 — AxieOS Data & Engineering Journal
+```
+
+for chronological engineering and EOD history.
+
+Use structured databases / CSVs for canonical machine-readable records.
+
+Do not turn `LLM_Project_Context.md` into a full daily transcript.
 
 ---
 
-## 23. Git Workflow
+## 28. Git Workflow
 
-The repository is maintained using GitHub and GitHub Desktop.
-
-Typical workflow:
+Typical repository workflow:
 
 ```text
 Edit
@@ -876,44 +1331,97 @@ Edit
 → Push
 ```
 
-Analytics scripts should not be committed until their outputs have been verified against the source data.
+Analytics or accounting changes should not be committed until outputs have been checked against source evidence.
 
-Recent completed commit:
+When possible, meaningful development milestones should also update:
 
 ```text
-Add token summary analytics report
+CHANGELOG.md
+LLM_Project_Context.md
+```
+
+and relevant documentation.
+
+---
+
+## 29. Current Project Position
+
+AxieOS has moved beyond the initial blockchain-summary stage into operational decision support and transaction-level economic accounting.
+
+Current high-level position:
+
+```text
+Blockchain Import                 ✅
+Database Schema                   ✅
+Import Validation                 ✅
+Shared Database Connection        ✅
+Wallet Analytics                  ✅
+Transaction Analytics             ✅
+Token Analytics                   ✅
+Bounty Optimizer V1               ✅ Operational / improving
+Daily Board Input                 ✅
+Sequential Reroll Logic           ✅
+Inventory Reserve Validation      ✅
+Rank Strategy Modes               ✅
+Marketplace Accounting            🔄 Active
+Cost-Basis Reconciliation         🔄 Active
+Ronin CSV Ledger                  ⏭️ Next data-layer expansion
+Owned-Axie Inventory Matching     ⏭️ Planned
+Swap Accounting                   ⏭️ Next accounting phase
+Terrarium Structured Analytics    🔄 Manual data collection
+Staking Analytics                 🔄 Manual / structured records developing
+Automated Gameplay Import         Planned
+AI Recommendations                Future
+Machine Learning                  Future
+```
+
+### Immediate Engineering Sequence
+
+```text
+Finish remaining cost-basis review
+→ Task 89 swap accounting
+→ Ronin CSV ingestion / normalization
+→ Asset and wallet reconciliation
+→ Owned-Axie inventory integration
+→ Expand automated economic analytics
 ```
 
 ---
 
-## 24. Current Project Position
+## 30. LLM Context Maintenance Procedure
 
-AxieOS has completed its first basic blockchain analytics layer.
+Update `LLM_Project_Context.md` after:
 
-Current state:
+* major architecture decisions
+* major schema changes
+* meaningful development milestones
+* major EOD checkpoints
+* changes to canonical wallet ownership
+* changes to asset identification rules
+* important optimizer changes
+* creation of major datasets
+* large transaction-reconciliation milestones
+* before abandoning a very long project chat
 
-```text
-Blockchain Import             ✅
-Database Schema               ✅
-Import Validation             ✅
-Shared Database Connection    ✅
-Wallet Analytics              ✅
-Transaction Analytics         ✅
-Token Analytics               ✅
-Gameplay Data Model           ⏭️ NEXT
-Gameplay Data Import          Pending
-Bounty Optimization           Pending
-Terrarium Analytics           Pending
-Marketplace Analytics         Pending
-Staking Analytics             Pending
-AI Recommendations            Future
-Machine Learning              Future
-```
+The file does **not** need to be updated after every conversation.
 
-The immediate next engineering task is:
+A useful rule is:
 
 ```text
-Design the AxieOS gameplay data model.
+Operational work happens in Chats 01–04.
+Canonical EOD / engineering history goes to Chat 05.
+Overall priorities and recovery coordination belong to Chat 00.
+LLM_Project_Context.md stores the compact state required to resume the project.
 ```
 
-This model will convert the manually collected August gameplay logs into structured, queryable data that can later power the Bounty Board, Terrarium, marketplace, staking, and strategy-analysis modules.
+---
+
+## 31. Fresh-Chat Recovery Instruction
+
+When an AxieOS chat becomes too long or a new project conversation must be started, provide this file and instruct:
+
+> Continue AxieOS from the Current Checkpoint. Treat `LLM_Project_Context.md` as the compact project-recovery context. Use the canonical datasets, transaction records, and EOD / Engineering Journal for detailed evidence. Preserve established wallet ownership, accounting, asset-identification, and strategy rules unless newer source evidence explicitly supersedes them.
+
+---
+
+:::
