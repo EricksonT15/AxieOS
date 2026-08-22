@@ -19,6 +19,10 @@ RONIN_WALLET_ADDRESS = (
     "0x1eD8B3F3BD6a624De47f81Beea101f0d15CDfbC8"
 )
 
+ORIGINAL_RONIN_WALLET_ADDRESS = (
+    "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610"
+)
+
 RONIN_TRANSACTIONS_URL = (
     "https://explorer.roninchain.com/api/v2/"
     "addresses/"
@@ -52,6 +56,7 @@ TRANSACTION_CLASSIFICATIONS = {
     "MINT_OR_CLAIM",
     "STAKING_OR_REWARD",
     "INTERNAL_TRANSFER",
+    "TOKEN_BURN",
     "UNKNOWN",
 }
 
@@ -90,6 +95,10 @@ CLASSIFICATION_DESCRIPTIONS = {
     "INTERNAL_TRANSFER": (
         "Asset movement between "
         "user-owned wallets"
+    ),
+    "TOKEN_BURN": (
+        "Fungible or multi-token asset "
+        "sent to the zero address."
     ),
     "UNKNOWN": (
         "Transaction needs review"
@@ -257,10 +266,15 @@ CLASSIFICATION_TO_ACCOUNTING_EVENT = {
     "NFT_BURN": "ASSET_BURN",
     "MINT_OR_CLAIM": "MINT_OR_CLAIM",
     "STAKING_OR_REWARD": "STAKING_OR_REWARD",
+    "TOKEN_BURN": "ASSET_BURN",
     "UNKNOWN": "UNKNOWN",
 }
 
 
+COCOCHOCO_TOKEN_LABELS = {
+    "1": "Regular CocoChoco",
+    "2": "Premium CocoChoco",
+}
 
 def load_transaction_response(
     file_path,
@@ -1246,6 +1260,15 @@ def seed_default_wallet_registry(
 
     upsert_wallet_registry_entry(
         db_path=db_path,
+        address=ORIGINAL_RONIN_WALLET_ADDRESS,
+        wallet_label="Original Ronin Wallet",
+        ownership_type="USER_OWNED",
+        wallet_role="SECONDARY",
+        source="AXIEOS_CONFIG",
+    )
+
+    upsert_wallet_registry_entry(
+        db_path=db_path,
         address=ZERO_ADDRESS,
         wallet_label="Zero Address",
         ownership_type="SYSTEM",
@@ -1457,6 +1480,180 @@ def classify_transaction_with_intelligence(
             ),
         }
 
+    method = transaction.get(
+        "method"
+    )
+
+    # ---------------------------------
+    # Explicit staking operation
+    # ---------------------------------
+
+    if method == "stake":
+        return {
+            "classification": (
+                "STAKING_OR_REWARD"
+            ),
+            "confidence": "HIGH",
+            "reason": (
+                "transaction method is stake"
+            ),
+        }
+
+    # ---------------------------------
+    # Known Axie release contract
+    # ---------------------------------
+
+    for movement in transaction.get(
+        "movements",
+        [],
+    ):
+        if (
+            movement.get("asset")
+            != "Axie"
+        ):
+            continue
+
+        if (
+            get_movement_direction(
+                movement
+            )
+            != "OUT"
+        ):
+            continue
+
+        counterparty_address = (
+            get_movement_counterparty(
+                movement
+            )
+        )
+
+        if counterparty_address is None:
+            continue
+
+        counterparty = (
+            get_wallet_registry_entry(
+                db_path,
+                counterparty_address,
+            )
+        )
+
+        if (
+            counterparty["wallet_role"]
+            == "BURN"
+        ):
+            return {
+                "classification": (
+                    "NFT_BURN"
+                ),
+                "confidence": "HIGH",
+                "reason": (
+                    "Axie transferred to "
+                    "a proven release contract"
+                ),
+            }
+
+    # ---------------------------------
+    # Known staking contract
+    # Incoming OR outgoing
+    # ---------------------------------
+
+    for movement in transaction.get(
+        "movements",
+        [],
+    ):
+        direction = (
+            get_movement_direction(
+                movement
+            )
+        )
+
+        if direction not in {
+            "IN",
+            "OUT",
+        }:
+            continue
+
+        counterparty_address = (
+            get_movement_counterparty(
+                movement
+            )
+        )
+
+        if counterparty_address is None:
+            continue
+
+        counterparty = (
+            get_wallet_registry_entry(
+                db_path,
+                counterparty_address,
+            )
+        )
+
+        if (
+            counterparty["wallet_role"]
+            == "STAKING"
+        ):
+            return {
+                "classification": (
+                    "STAKING_OR_REWARD"
+                ),
+                "confidence": "HIGH",
+                "reason": (
+                    "movement involves "
+                    "a proven staking contract"
+                ),
+            }
+
+    # ---------------------------------
+    # Zero-address burns
+    # ---------------------------------
+
+    zero_address = normalize_address(
+        ZERO_ADDRESS
+    )
+
+    for movement in transaction.get(
+        "movements",
+        [],
+    ):
+        if (
+            get_movement_direction(
+                movement
+            )
+            != "OUT"
+        ):
+            continue
+
+        to_address = normalize_address(
+            movement.get(
+                "to_address"
+            )
+        )
+
+        if to_address != zero_address:
+            continue
+
+        if (
+            movement.get("asset")
+            == "Axie"
+        ):
+            classification = (
+                "NFT_BURN"
+            )
+        else:
+            classification = (
+                "TOKEN_BURN"
+            )
+
+        return {
+            "classification": classification,
+            "confidence": "HIGH",
+            "reason": (
+                "asset transferred to "
+                "the zero address"
+            ),
+        }
+
     return classify_grouped_transaction(
         transaction
     )
@@ -1565,9 +1762,28 @@ def validate_historical_intelligence(
             classification
             == "STAKING_OR_REWARD"
         ):
-            if "STAKING" not in roles:
+            method = (
+                transaction.get("method")
+                or transaction.get(
+                    "method_name"
+                )
+            )
+
+            staking_methods = {
+                "stake",
+                "restakeRewards",
+                "claimRewards",
+                "claimReward",
+                "claimPendingRewards",
+            }
+
+            if (
+                "STAKING" not in roles
+                and method
+                not in staking_methods
+            ):
                 issue = (
-                    "staking role missing"
+                    "staking evidence missing"
                 )
 
         elif classification == "MINT_OR_CLAIM":
@@ -1583,14 +1799,18 @@ def validate_historical_intelligence(
         elif classification in {
             "CONSUMABLE_BURN",
             "NFT_BURN",
+            "TOKEN_BURN",
         }:
-            if (
+            burn_evidence_valid = (
                 "USER_TO_SYSTEM"
-                not in relationships
-            ):
+                in relationships
+                or "BURN" in roles
+            )
+
+            if not burn_evidence_valid:
                 issue = (
-                    "user-to-system "
-                    "relationship missing"
+                    "burn relationship "
+                    "or role missing"
                 )
 
         elif (
@@ -4149,9 +4369,10 @@ def select_primary_accounting_movement(
                 return movement
 
     if classification in {
-        "MINT_OR_CLAIM",
-        "STAKING_OR_REWARD",
-        "TRANSFER_IN",
+        "TRANSFER_OUT",
+        "CONSUMABLE_BURN",
+        "NFT_BURN",
+        "TOKEN_BURN",
     }:
         for movement in movements:
             if (
@@ -4613,6 +4834,7 @@ def enrich_non_marketplace_accounting_record(
         "STAKING_OR_REWARD",
         "CONSUMABLE_BURN",
         "NFT_BURN",
+        "TOKEN_BURN",
     }:
         if (
             record["asset_name"]
@@ -5756,6 +5978,156 @@ def run_ronin_sync_v03(
             else "FAIL"
         ),
     )
+
+
+def audit_transfer_review_counterparties(
+    db_path,
+):
+    queue = load_accounting_review_queue(
+        db_path
+    )
+
+    transfer_records = [
+        record
+        for record in queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    ]
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    counterparties = {}
+
+    for record in transfer_records:
+        rows = connection.execute(
+            """
+            SELECT
+                from_address,
+                to_address
+            FROM blockchain_transactions
+            WHERE txhash = ?
+            """,
+            (
+                record["txhash"],
+            ),
+        ).fetchall()
+
+        addresses = set()
+
+        for (
+            from_address,
+            to_address,
+        ) in rows:
+            from_normalized = (
+                normalize_address(
+                    from_address
+                )
+            )
+
+            to_normalized = (
+                normalize_address(
+                    to_address
+                )
+            )
+
+            if (
+                record["event_type"]
+                == "TRANSFER_IN"
+                and to_normalized == wallet
+                and from_normalized
+                != wallet
+            ):
+                addresses.add(
+                    from_normalized
+                )
+
+            elif (
+                record["event_type"]
+                == "TRANSFER_OUT"
+                and from_normalized == wallet
+                and to_normalized
+                != wallet
+            ):
+                addresses.add(
+                    to_normalized
+                )
+
+        for address in addresses:
+            registry_entry = (
+                get_wallet_registry_entry(
+                    db_path,
+                    address,
+                )
+            )
+
+            if address not in counterparties:
+                counterparties[address] = {
+                    "address": address,
+                    "ownership_type": (
+                        registry_entry[
+                            "ownership_type"
+                        ]
+                    ),
+                    "wallet_role": (
+                        registry_entry[
+                            "wallet_role"
+                        ]
+                    ),
+                    "transactions": set(),
+                }
+
+            counterparties[
+                address
+            ]["transactions"].add(
+                record["txhash"]
+            )
+
+    connection.close()
+
+    results = []
+
+    for entry in counterparties.values():
+        results.append(
+            {
+                "address": entry[
+                    "address"
+                ],
+                "ownership_type": entry[
+                    "ownership_type"
+                ],
+                "wallet_role": entry[
+                    "wallet_role"
+                ],
+                "transaction_count": len(
+                    entry[
+                        "transactions"
+                    ]
+                ),
+            }
+        )
+
+    results.sort(
+        key=lambda item: (
+            -item["transaction_count"],
+            item["address"],
+        )
+    )
+
+    return results
+
+
+
+
+
+
 
 
 
@@ -7343,6 +7715,7 @@ def classify_grouped_transaction(
         "restakeRewards",
         "claimRewards",
         "claimReward",
+        "claimPendingRewards",
     }:
         return {
             "classification": (
@@ -15248,11 +15621,6584 @@ def run_ronin_sync_v06(
     )
 
 
+def run_accounting_review_queue_test():
+    queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    total_records = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        """
+    ).fetchone()[0]
+
+    review_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM blockchain_accounting_records
+        WHERE accounting_status = 'REVIEW'
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    event_counts = {}
+
+    invalid_queue_rows = []
+
+    for record in queue:
+        event_type = record[
+            "event_type"
+        ]
+
+        event_counts[event_type] = (
+            event_counts.get(
+                event_type,
+                0,
+            )
+            + 1
+        )
+
+        if (
+            record[
+                "accounting_status"
+            ]
+            != "REVIEW"
+        ):
+            invalid_queue_rows.append(
+                record
+            )
+
+    queue_count_valid = (
+        len(queue)
+        == review_count
+    )
+
+    validation = (
+        queue_count_valid
+        and len(
+            invalid_queue_rows
+        )
+        == 0
+    )
+
+    print(
+        "\nAXIEOS ACCOUNTING REVIEW QUEUE"
+    )
+
+    print(
+        "Total accounting records:",
+        total_records,
+    )
+
+    print(
+        "Database REVIEW records:",
+        review_count,
+    )
+
+    print(
+        "Review queue records:",
+        len(queue),
+    )
+
+    print(
+        "Invalid queue rows:",
+        len(invalid_queue_rows),
+    )
+
+    print(
+        "\nREVIEW BREAKDOWN"
+    )
+
+    for event_type in sorted(
+        event_counts
+    ):
+        print(
+            f"{event_type}: "
+            f"{event_counts[event_type]}"
+        )
+
+    print(
+        "\nREVIEW EXAMPLES"
+    )
+
+    for record in queue[:10]:
+        print(
+            "\nTX:",
+            record["txhash"],
+        )
+
+        print(
+            "Date:",
+            record["datetime"],
+        )
+
+        print(
+            "Event:",
+            record["event_type"],
+        )
+
+        print(
+            "Classification:",
+            record[
+                "classification"
+            ],
+        )
+
+        print(
+            "Asset:",
+            record["asset_name"],
+        )
+
+        print(
+            "Token ID:",
+            record[
+                "asset_token_id"
+            ],
+        )
+
+        print(
+            "Quantity:",
+            record["quantity"],
+        )
+
+        print(
+            "Direction:",
+            record["direction"],
+        )
+
+        print(
+            "Counterparty:",
+            record[
+                "counterparty_role"
+            ],
+        )
+
+        print(
+            "Cost basis:",
+            record["cost_basis"],
+        )
+
+        print(
+            "Realized P/L:",
+            record["realized_pl"],
+        )
+
+        print(
+            "Status:",
+            record[
+                "accounting_status"
+            ],
+        )
+
+    print(
+        "\nQueue count:",
+        (
+            "PASS"
+            if queue_count_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+ACCOUNTING_REVIEW_REASON_CODES = {
+    "MISSING_COST_BASIS",
+    "MISSING_REALIZED_PL",
+    "TRANSFER_OWNERSHIP_UNRESOLVED",
+    "SWAP_COST_BASIS_PENDING",
+    "UNRESOLVED_CLASSIFICATION",
+    "UNSPECIFIED_REVIEW_REASON",
+}
+
+
+
+
+def load_accounting_review_queue(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            accounting_key,
+            txhash,
+            datetime,
+            event_type,
+            classification,
+            asset_name,
+            asset_token_id,
+            quantity,
+            direction,
+            payment_asset,
+            gross_amount,
+            marketplace_fee,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            counterparty_role,
+            accounting_status
+        FROM blockchain_accounting_records
+        WHERE accounting_status = 'REVIEW'
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    connection.close()
+
+    queue = []
+
+    for row in rows:
+        queue.append(
+            {
+                "accounting_key": row[0],
+                "txhash": row[1],
+                "datetime": row[2],
+                "event_type": row[3],
+                "classification": row[4],
+                "asset_name": row[5],
+                "asset_token_id": row[6],
+                "quantity": row[7],
+                "direction": row[8],
+                "payment_asset": row[9],
+                "gross_amount": row[10],
+                "marketplace_fee": row[11],
+                "net_amount": row[12],
+                "cost_basis": row[13],
+                "realized_pl": row[14],
+                "counterparty_role": row[15],
+                "accounting_status": row[16],
+            }
+        )
+
+    return queue
+
+
+def explain_accounting_review_record(
+    record,
+):
+    event_type = record[
+        "event_type"
+    ]
+
+    # ---------------------------------
+    # Marketplace sale
+    # ---------------------------------
+
+    if event_type == "ASSET_SALE":
+        if record["cost_basis"] is None:
+            return {
+                "reason_code": (
+                    "MISSING_COST_BASIS"
+                ),
+                "reason": (
+                    "Sale proceeds are known, "
+                    "but the acquisition cost "
+                    "has not been proven."
+                ),
+            }
+
+        if record["realized_pl"] is None:
+            return {
+                "reason_code": (
+                    "MISSING_REALIZED_PL"
+                ),
+                "reason": (
+                    "Cost basis exists, but "
+                    "realized profit or loss "
+                    "has not been calculated."
+                ),
+            }
+
+    # ---------------------------------
+    # Transfers
+    # ---------------------------------
+
+    if event_type in {
+        "TRANSFER_IN",
+        "TRANSFER_OUT",
+    }:
+        return {
+            "reason_code": (
+                "TRANSFER_OWNERSHIP_UNRESOLVED"
+            ),
+            "reason": (
+                "The ownership or accounting "
+                "purpose of the opposite wallet "
+                "has not been verified."
+            ),
+        }
+
+    # ---------------------------------
+    # Token swaps
+    # ---------------------------------
+
+    if event_type == "TOKEN_SWAP":
+        return {
+            "reason_code": (
+                "SWAP_COST_BASIS_PENDING"
+            ),
+            "reason": (
+                "Both sides of the swap are "
+                "known, but cost-basis and "
+                "realized P/L treatment is "
+                "not yet implemented."
+            ),
+        }
+
+    # ---------------------------------
+    # Unknown transactions
+    # ---------------------------------
+
+    if event_type == "UNKNOWN":
+        return {
+            "reason_code": (
+                "UNRESOLVED_CLASSIFICATION"
+            ),
+            "reason": (
+                "The transaction does not yet "
+                "match a supported accounting "
+                "classification."
+            ),
+        }
+
+    # ---------------------------------
+    # Safety fallback
+    # ---------------------------------
+
+    return {
+        "reason_code": (
+            "UNSPECIFIED_REVIEW_REASON"
+        ),
+        "reason": (
+            "The accounting record is marked "
+            "for review, but no specific review "
+            "rule currently explains why."
+        ),
+    }
+
+
+def enrich_accounting_review_queue(
+    queue,
+):
+    enriched_queue = []
+
+    for record in queue:
+        enriched = dict(
+            record
+        )
+
+        explanation = (
+            explain_accounting_review_record(
+                record
+            )
+        )
+
+        enriched[
+            "review_reason_code"
+        ] = explanation[
+            "reason_code"
+        ]
+
+        enriched[
+            "review_reason"
+        ] = explanation[
+            "reason"
+        ]
+
+        enriched_queue.append(
+            enriched
+        )
+
+    return enriched_queue
+
+
+def run_accounting_review_reason_test():
+    queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    enriched_queue = (
+        enrich_accounting_review_queue(
+            queue
+        )
+    )
+
+    reason_counts = {}
+
+    invalid_reason_codes = []
+    unexplained_records = []
+
+    for record in enriched_queue:
+        reason_code = record[
+            "review_reason_code"
+        ]
+
+        reason_counts[
+            reason_code
+        ] = (
+            reason_counts.get(
+                reason_code,
+                0,
+            )
+            + 1
+        )
+
+        if (
+            reason_code
+            not in ACCOUNTING_REVIEW_REASON_CODES
+        ):
+            invalid_reason_codes.append(
+                record
+            )
+
+        if (
+            reason_code
+            == "UNSPECIFIED_REVIEW_REASON"
+        ):
+            unexplained_records.append(
+                record
+            )
+
+    queue_count_valid = (
+        len(enriched_queue)
+        == len(queue)
+    )
+
+    validation = (
+        queue_count_valid
+        and len(
+            invalid_reason_codes
+        )
+        == 0
+        and len(
+            unexplained_records
+        )
+        == 0
+    )
+
+    print(
+        "\nAXIEOS ACCOUNTING REVIEW REASONS"
+    )
+
+    print(
+        "Review records:",
+        len(queue),
+    )
+
+    print(
+        "Explained records:",
+        len(enriched_queue),
+    )
+
+    print(
+        "Invalid reason codes:",
+        len(
+            invalid_reason_codes
+        ),
+    )
+
+    print(
+        "Unexplained records:",
+        len(
+            unexplained_records
+        ),
+    )
+
+    print(
+        "\nREASON BREAKDOWN"
+    )
+
+    for reason_code in sorted(
+        reason_counts
+    ):
+        print(
+            f"{reason_code}: "
+            f"{reason_counts[reason_code]}"
+        )
+
+    print(
+        "\nREVIEW EXAMPLES"
+    )
+
+    for record in enriched_queue[:10]:
+        print(
+            "\nTX:",
+            record["txhash"],
+        )
+
+        print(
+            "Date:",
+            record["datetime"],
+        )
+
+        print(
+            "Event:",
+            record["event_type"],
+        )
+
+        print(
+            "Asset:",
+            record["asset_name"],
+        )
+
+        print(
+            "Reason code:",
+            record[
+                "review_reason_code"
+            ],
+        )
+
+        print(
+            "Reason:",
+            record[
+                "review_reason"
+            ],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+
+def run_transfer_counterparty_resolution_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    # ---------------------------------
+    # Queue before ownership update
+    # ---------------------------------
+
+    before_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfer_reviews_before = sum(
+        1
+        for record in before_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    # ---------------------------------
+    # Register known owned wallets
+    # ---------------------------------
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    original_wallet_entry = (
+        get_wallet_registry_entry(
+            AXIEOS_DB_PATH,
+            ORIGINAL_RONIN_WALLET_ADDRESS,
+        )
+    )
+
+    # ---------------------------------
+    # Rebuild intelligence dependencies
+    # ---------------------------------
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    # ---------------------------------
+    # Rebuild accounting records
+    # ---------------------------------
+
+    records = []
+
+    for transaction in transactions:
+        record = (
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+        records.append(record)
+
+    store_accounting_records(
+        AXIEOS_DB_PATH,
+        records,
+    )
+
+    # ---------------------------------
+    # Audit after rebuild
+    # ---------------------------------
+
+    after_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfer_reviews_after = sum(
+        1
+        for record in after_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    internal_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status =
+                'NON_TAXABLE_INTERNAL'
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    counterparty_audit = (
+        audit_transfer_review_counterparties(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    unresolved_counterparties = [
+        entry
+        for entry in counterparty_audit
+        if entry["ownership_type"]
+        == "UNKNOWN"
+    ]
+
+    original_wallet_valid = (
+        original_wallet_entry[
+            "ownership_type"
+        ]
+        == "USER_OWNED"
+        and original_wallet_entry[
+            "wallet_role"
+        ]
+        == "SECONDARY"
+    )
+
+    validation = (
+        original_wallet_valid
+        and transfer_reviews_after
+        <= transfer_reviews_before
+    )
+
+    print(
+        "\nAXIEOS TRANSFER COUNTERPARTY RESOLUTION"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Original wallet ownership:",
+        original_wallet_entry[
+            "ownership_type"
+        ],
+    )
+
+    print(
+        "Original wallet role:",
+        original_wallet_entry[
+            "wallet_role"
+        ],
+    )
+
+    print(
+        "Transfer reviews before:",
+        transfer_reviews_before,
+    )
+
+    print(
+        "Transfer reviews after:",
+        transfer_reviews_after,
+    )
+
+    print(
+        "Internal transfers:",
+        internal_count,
+    )
+
+    print(
+        "Remaining counterparties:",
+        len(counterparty_audit),
+    )
+
+    print(
+        "Unresolved counterparties:",
+        len(
+            unresolved_counterparties
+        ),
+    )
+
+    print(
+        "\nTOP UNRESOLVED COUNTERPARTIES"
+    )
+
+    for entry in (
+        unresolved_counterparties[:15]
+    ):
+        print(
+            "\nAddress:",
+            entry["address"],
+        )
+
+        print(
+            "Transactions:",
+            entry[
+                "transaction_count"
+            ],
+        )
+
+        print(
+            "Ownership:",
+            entry[
+                "ownership_type"
+            ],
+        )
+
+        print(
+            "Role:",
+            entry["wallet_role"],
+        )
+
+    print(
+        "\nKnown owned-wallet registration:",
+        (
+            "PASS"
+            if original_wallet_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def discover_release_contracts(
+    transactions,
+):
+    candidates = {}
+
+    for transaction in transactions:
+        if (
+            transaction.get("method")
+            != "requestReleaseAxie"
+        ):
+            continue
+
+        for movement in transaction.get(
+            "movements",
+            [],
+        ):
+            if (
+                movement.get("asset")
+                != "Axie"
+            ):
+                continue
+
+            if (
+                get_movement_direction(
+                    movement
+                )
+                != "OUT"
+            ):
+                continue
+
+            address = (
+                get_movement_counterparty(
+                    movement
+                )
+            )
+
+            if address is None:
+                continue
+
+            address = normalize_address(
+                address
+            )
+
+            candidates[address] = (
+                candidates.get(
+                    address,
+                    0,
+                )
+                + 1
+            )
+
+    return candidates
+
+
+def register_release_contracts(
+    db_path,
+    candidates,
+):
+    registered = 0
+
+    for address, evidence in (
+        candidates.items()
+    ):
+        existing = (
+            get_wallet_registry_entry(
+                db_path,
+                address,
+            )
+        )
+
+        # Never overwrite a wallet
+        # already proven user-owned.
+        if (
+            existing["ownership_type"]
+            == "USER_OWNED"
+        ):
+            continue
+
+        upsert_wallet_registry_entry(
+            db_path=db_path,
+            address=address,
+            wallet_label=(
+                "Axie Release Contract"
+            ),
+            ownership_type="CONTRACT",
+            wallet_role="BURN",
+            source=(
+                "AXIEOS_TRANSACTION_EVIDENCE"
+            ),
+        )
+
+        registered += 1
+
+    return registered
+
+
+def build_unresolved_counterparty_history(
+    db_path,
+):
+    audit = (
+        audit_transfer_review_counterparties(
+            db_path
+        )
+    )
+
+    unresolved = [
+        entry
+        for entry in audit
+        if entry["ownership_type"]
+        == "UNKNOWN"
+    ]
+
+    queue = (
+        load_accounting_review_queue(
+            db_path
+        )
+    )
+
+    transfer_records = [
+        record
+        for record in queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    ]
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    results = []
+
+    for counterparty in unresolved:
+        address = counterparty[
+            "address"
+        ]
+
+        tx_details = []
+
+        for record in transfer_records:
+            rows = connection.execute(
+                """
+                SELECT
+                    txhash,
+                    datetime,
+                    from_address,
+                    to_address,
+                    method,
+                    token_collectibles,
+                    value_in,
+                    value_out
+                FROM blockchain_transactions
+                WHERE txhash = ?
+                """,
+                (
+                    record["txhash"],
+                ),
+            ).fetchall()
+
+            matched = False
+
+            for row in rows:
+                (
+                    txhash,
+                    datetime_value,
+                    from_address,
+                    to_address,
+                    method,
+                    asset,
+                    value_in,
+                    value_out,
+                ) = row
+
+                from_normalized = (
+                    normalize_address(
+                        from_address
+                    )
+                )
+
+                to_normalized = (
+                    normalize_address(
+                        to_address
+                    )
+                )
+
+                if (
+                    from_normalized
+                    == address
+                    and to_normalized
+                    == wallet
+                ):
+                    direction = "IN"
+                    quantity = value_in
+                    matched = True
+
+                elif (
+                    from_normalized
+                    == wallet
+                    and to_normalized
+                    == address
+                ):
+                    direction = "OUT"
+                    quantity = value_out
+                    matched = True
+
+                else:
+                    continue
+
+                tx_details.append(
+                    {
+                        "txhash": txhash,
+                        "datetime": datetime_value,
+                        "direction": direction,
+                        "method": method,
+                        "asset": asset,
+                        "quantity": quantity,
+                    }
+                )
+
+            if matched:
+                continue
+
+        txhashes = {
+            detail["txhash"]
+            for detail in tx_details
+        }
+
+        directions = {}
+
+        assets = {}
+
+        for detail in tx_details:
+            direction = detail[
+                "direction"
+            ]
+
+            directions[direction] = (
+                directions.get(
+                    direction,
+                    0,
+                )
+                + 1
+            )
+
+            asset = detail[
+                "asset"
+            ]
+
+            if asset is not None:
+                assets[asset] = (
+                    assets.get(
+                        asset,
+                        0,
+                    )
+                    + 1
+                )
+
+        dates = [
+            detail["datetime"]
+            for detail in tx_details
+            if detail["datetime"]
+            is not None
+        ]
+
+        results.append(
+            {
+                "address": address,
+                "transaction_count": len(
+                    txhashes
+                ),
+                "movement_count": len(
+                    tx_details
+                ),
+                "first_date": (
+                    min(dates)
+                    if dates
+                    else None
+                ),
+                "last_date": (
+                    max(dates)
+                    if dates
+                    else None
+                ),
+                "directions": directions,
+                "assets": assets,
+                "examples": tx_details[:5],
+            }
+        )
+
+    connection.close()
+
+    results.sort(
+        key=lambda item: (
+            -item[
+                "transaction_count"
+            ],
+            item["address"],
+        )
+    )
+
+    return results
+
+
+def run_unresolved_counterparty_history_test():
+    results = (
+        build_unresolved_counterparty_history(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    print(
+        "\nAXIEOS UNRESOLVED COUNTERPARTY HISTORY"
+    )
+
+    print(
+        "Unresolved counterparties:",
+        len(results),
+    )
+
+    total_transactions = sum(
+        item["transaction_count"]
+        for item in results
+    )
+
+    print(
+        "Counterparty transaction links:",
+        total_transactions,
+    )
+
+    print(
+        "\nTOP COUNTERPARTIES"
+    )
+
+    for item in results[:15]:
+        print(
+            "\nAddress:",
+            item["address"],
+        )
+
+        print(
+            "Transactions:",
+            item[
+                "transaction_count"
+            ],
+        )
+
+        print(
+            "Movements:",
+            item[
+                "movement_count"
+            ],
+        )
+
+        print(
+            "First:",
+            item["first_date"],
+        )
+
+        print(
+            "Last:",
+            item["last_date"],
+        )
+
+        print(
+            "Directions:",
+            item["directions"],
+        )
+
+        print(
+            "Assets:",
+            item["assets"],
+        )
+
+        print(
+            "Examples:"
+        )
+
+        for example in item[
+            "examples"
+        ]:
+            print(
+                " ",
+                example[
+                    "datetime"
+                ],
+                example[
+                    "direction"
+                ],
+                example[
+                    "asset"
+                ],
+                example[
+                    "quantity"
+                ],
+                example[
+                    "method"
+                ],
+                example[
+                    "txhash"
+                ],
+            )
+
+    validation = (
+        len(results) > 0
+        and all(
+            item[
+                "transaction_count"
+            ]
+            > 0
+            for item in results
+        )
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_protocol_transfer_resolution_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    before_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_before = sum(
+        1
+        for record in before_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    release_candidates = (
+        discover_release_contracts(
+            transactions
+        )
+    )
+
+    release_registered = (
+        register_release_contracts(
+            AXIEOS_DB_PATH,
+            release_candidates,
+        )
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    # Keep persistent classification
+    # synchronized with the new rules.
+    store_intelligent_transaction_classifications(
+        AXIEOS_DB_PATH,
+        transactions,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    records = []
+
+    for transaction in transactions:
+        records.append(
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+    store_accounting_records(
+        AXIEOS_DB_PATH,
+        records,
+    )
+
+    after_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_after = sum(
+        1
+        for record in after_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    burn_records = sum(
+        1
+        for record in records
+        if (
+            record["event_type"]
+            == "ASSET_BURN"
+            and record[
+                "accounting_status"
+            ]
+            == "READY"
+        )
+    )
+
+    staking_records = sum(
+        1
+        for record in records
+        if (
+            record["event_type"]
+            == "STAKING_OR_REWARD"
+            and record[
+                "accounting_status"
+            ]
+            == "READY"
+        )
+    )
+
+    resolved = (
+        transfers_before
+        - transfers_after
+    )
+
+    validation = (
+        release_registered > 0
+        and resolved > 0
+        and transfers_after
+        < transfers_before
+    )
+
+    print(
+        "\nAXIEOS PROTOCOL TRANSFER RESOLUTION"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Release contracts discovered:",
+        len(release_candidates),
+    )
+
+    print(
+        "Release contracts registered:",
+        release_registered,
+    )
+
+    print(
+        "Transfer reviews before:",
+        transfers_before,
+    )
+
+    print(
+        "Transfer reviews after:",
+        transfers_after,
+    )
+
+    print(
+        "Transfer reviews resolved:",
+        resolved,
+    )
+
+    print(
+        "READY burn records:",
+        burn_records,
+    )
+
+    print(
+        "READY staking/reward records:",
+        staking_records,
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_staking_role_resolution_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    before_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_before = sum(
+        1
+        for record in before_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    release_candidates = (
+        discover_release_contracts(
+            transactions
+        )
+    )
+
+    register_release_contracts(
+        AXIEOS_DB_PATH,
+        release_candidates,
+    )
+
+    # First pass discovers the known
+    # staking contract from explicit
+    # staking/reward transactions.
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    # Reclassify now that wallet roles
+    # are known.
+    store_intelligent_transaction_classifications(
+        AXIEOS_DB_PATH,
+        transactions,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    records = []
+
+    for transaction in transactions:
+        records.append(
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+    store_accounting_records(
+        AXIEOS_DB_PATH,
+        records,
+    )
+
+    after_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_after = sum(
+        1
+        for record in after_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    staking_ready = sum(
+        1
+        for record in records
+        if (
+            record["event_type"]
+            == "STAKING_OR_REWARD"
+            and record[
+                "accounting_status"
+            ]
+            == "READY"
+        )
+    )
+
+    resolved = (
+        transfers_before
+        - transfers_after
+    )
+
+    validation = (
+        transfers_after
+        <= transfers_before
+        and staking_ready > 0
+    )
+
+    print(
+        "\nAXIEOS STAKING ROLE RESOLUTION"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Transfer reviews before:",
+        transfers_before,
+    )
+
+    print(
+        "Transfer reviews after:",
+        transfers_after,
+    )
+
+    print(
+        "Additional transfers resolved:",
+        resolved,
+    )
+
+    print(
+        "READY staking/reward records:",
+        staking_ready,
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def audit_remaining_transfer_roles(
+    db_path,
+):
+    queue = (
+        load_accounting_review_queue(
+            db_path
+        )
+    )
+
+    transfer_records = [
+        record
+        for record in queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    ]
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    results = []
+
+    for record in transfer_records:
+        rows = connection.execute(
+            """
+            SELECT
+                from_address,
+                to_address
+            FROM blockchain_transactions
+            WHERE txhash = ?
+            """,
+            (
+                record["txhash"],
+            ),
+        ).fetchall()
+
+        addresses = set()
+
+        for (
+            from_address,
+            to_address,
+        ) in rows:
+            from_normalized = (
+                normalize_address(
+                    from_address
+                )
+            )
+
+            to_normalized = (
+                normalize_address(
+                    to_address
+                )
+            )
+
+            if (
+                record["event_type"]
+                == "TRANSFER_IN"
+                and to_normalized == wallet
+                and from_normalized != wallet
+            ):
+                addresses.add(
+                    from_normalized
+                )
+
+            elif (
+                record["event_type"]
+                == "TRANSFER_OUT"
+                and from_normalized == wallet
+                and to_normalized != wallet
+            ):
+                addresses.add(
+                    to_normalized
+                )
+
+        counterparties = []
+
+        for address in sorted(
+            addresses
+        ):
+            entry = (
+                get_wallet_registry_entry(
+                    db_path,
+                    address,
+                )
+            )
+
+            counterparties.append(
+                {
+                    "address": address,
+                    "ownership_type": (
+                        entry[
+                            "ownership_type"
+                        ]
+                    ),
+                    "wallet_role": (
+                        entry[
+                            "wallet_role"
+                        ]
+                    ),
+                }
+            )
+
+        ownership_types = {
+            item["ownership_type"]
+            for item in counterparties
+        }
+
+        roles = {
+            item["wallet_role"]
+            for item in counterparties
+        }
+
+        if not counterparties:
+            bucket = "NO_COUNTERPARTY"
+
+        elif (
+            "USER_OWNED"
+            in ownership_types
+        ):
+            bucket = "USER_OWNED"
+
+        elif (
+            ownership_types
+            == {"UNKNOWN"}
+        ):
+            bucket = "UNKNOWN_ONLY"
+
+        elif (
+            "UNKNOWN"
+            in ownership_types
+        ):
+            bucket = "MIXED"
+
+        else:
+            bucket = "KNOWN_ROLE"
+
+        results.append(
+            {
+                "txhash": record[
+                    "txhash"
+                ],
+                "datetime": record[
+                    "datetime"
+                ],
+                "event_type": record[
+                    "event_type"
+                ],
+                "asset_name": record[
+                    "asset_name"
+                ],
+                "quantity": record[
+                    "quantity"
+                ],
+                "direction": record[
+                    "direction"
+                ],
+                "bucket": bucket,
+                "roles": sorted(
+                    roles
+                ),
+                "counterparties": (
+                    counterparties
+                ),
+            }
+        )
+
+    connection.close()
+
+    return results
+
+
+def run_remaining_transfer_role_audit_test():
+    results = (
+        audit_remaining_transfer_roles(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    bucket_counts = {}
+    role_counts = {}
+
+    for item in results:
+        bucket = item["bucket"]
+
+        bucket_counts[bucket] = (
+            bucket_counts.get(
+                bucket,
+                0,
+            )
+            + 1
+        )
+
+        for role in item["roles"]:
+            role_counts[role] = (
+                role_counts.get(
+                    role,
+                    0,
+                )
+                + 1
+            )
+
+    known_role_records = [
+        item
+        for item in results
+        if item["bucket"]
+        in {
+            "KNOWN_ROLE",
+            "MIXED",
+            "USER_OWNED",
+        }
+    ]
+
+    no_counterparty_records = [
+        item
+        for item in results
+        if item["bucket"]
+        == "NO_COUNTERPARTY"
+    ]
+
+    validation = (
+        sum(
+            bucket_counts.values()
+        )
+        == len(results)
+    )
+
+    print(
+        "\nAXIEOS REMAINING TRANSFER ROLE AUDIT"
+    )
+
+    print(
+        "Remaining transfer reviews:",
+        len(results),
+    )
+
+    print(
+        "\nBUCKETS"
+    )
+
+    for bucket in sorted(
+        bucket_counts
+    ):
+        print(
+            f"{bucket}: "
+            f"{bucket_counts[bucket]}"
+        )
+
+    print(
+        "\nREGISTERED ROLE COUNTS"
+    )
+
+    for role in sorted(
+        role_counts
+    ):
+        print(
+            f"{role}: "
+            f"{role_counts[role]}"
+        )
+
+    print(
+        "\nKNOWN-ROLE TRANSFERS"
+    )
+
+    for item in (
+        known_role_records[:20]
+    ):
+        print(
+            "\nTX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Event:",
+            item["event_type"],
+        )
+
+        print(
+            "Asset:",
+            item["asset_name"],
+        )
+
+        print(
+            "Quantity:",
+            item["quantity"],
+        )
+
+        print(
+            "Direction:",
+            item["direction"],
+        )
+
+        print(
+            "Bucket:",
+            item["bucket"],
+        )
+
+        print(
+            "Roles:",
+            item["roles"],
+        )
+
+        for counterparty in item[
+            "counterparties"
+        ]:
+            print(
+                "Counterparty:",
+                counterparty[
+                    "address"
+                ],
+                counterparty[
+                    "ownership_type"
+                ],
+                counterparty[
+                    "wallet_role"
+                ],
+            )
+
+    if no_counterparty_records:
+        print(
+            "\nNO-COUNTERPARTY TRANSFERS"
+        )
+
+        for item in (
+            no_counterparty_records[:10]
+        ):
+            print(
+                "\nTX:",
+                item["txhash"],
+            )
+
+            print(
+                "Date:",
+                item["datetime"],
+            )
+
+            print(
+                "Event:",
+                item["event_type"],
+            )
+
+            print(
+                "Asset:",
+                item["asset_name"],
+            )
+
+            print(
+                "Direction:",
+                item["direction"],
+            )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_known_role_transaction_bundle_audit():
+    audit = (
+        audit_remaining_transfer_roles(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    known_role_records = [
+        item
+        for item in audit
+        if item["bucket"]
+        == "KNOWN_ROLE"
+    ]
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    valid_bundles = 0
+
+    print(
+        "\nAXIEOS KNOWN-ROLE TRANSACTION BUNDLES"
+    )
+
+    print(
+        "Known-role transfer reviews:",
+        len(known_role_records),
+    )
+
+    for item in known_role_records:
+        txhash = item["txhash"]
+
+        classification_row = (
+            connection.execute(
+                """
+                SELECT
+                    classification,
+                    confidence,
+                    reason
+                FROM blockchain_transaction_classifications
+                WHERE txhash = ?
+                """,
+                (
+                    txhash,
+                ),
+            ).fetchone()
+        )
+
+        movement_rows = (
+            connection.execute(
+                """
+                SELECT
+                    datetime,
+                    method,
+                    token_collectibles,
+                    value_in,
+                    value_out,
+                    from_address,
+                    to_address
+                FROM blockchain_transactions
+                WHERE txhash = ?
+                ORDER BY id
+                """,
+                (
+                    txhash,
+                ),
+            ).fetchall()
+        )
+
+        if movement_rows:
+            valid_bundles += 1
+
+        print(
+            "\n--------------------------------"
+        )
+
+        print(
+            "TX:",
+            txhash,
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Current accounting event:",
+            item["event_type"],
+        )
+
+        print(
+            "Primary asset:",
+            item["asset_name"],
+        )
+
+        print(
+            "Registered roles:",
+            item["roles"],
+        )
+
+        if classification_row:
+            print(
+                "Stored classification:",
+                classification_row[0],
+            )
+
+            print(
+                "Confidence:",
+                classification_row[1],
+            )
+
+            print(
+                "Reason:",
+                classification_row[2],
+            )
+
+        print(
+            "Movement rows:",
+            len(movement_rows),
+        )
+
+        print(
+            "MOVEMENTS"
+        )
+
+        for row in movement_rows:
+            (
+                datetime_value,
+                method,
+                asset,
+                value_in,
+                value_out,
+                from_address,
+                to_address,
+            ) = row
+
+            from_entry = (
+                get_wallet_registry_entry(
+                    AXIEOS_DB_PATH,
+                    from_address,
+                )
+            )
+
+            to_entry = (
+                get_wallet_registry_entry(
+                    AXIEOS_DB_PATH,
+                    to_address,
+                )
+            )
+
+            print(
+                "\n  Method:",
+                method,
+            )
+
+            print(
+                "  Asset:",
+                asset,
+            )
+
+            print(
+                "  Value IN:",
+                value_in,
+            )
+
+            print(
+                "  Value OUT:",
+                value_out,
+            )
+
+            print(
+                "  From:",
+                from_address,
+            )
+
+            print(
+                "  From ownership:",
+                from_entry[
+                    "ownership_type"
+                ],
+            )
+
+            print(
+                "  From role:",
+                from_entry[
+                    "wallet_role"
+                ],
+            )
+
+            print(
+                "  To:",
+                to_address,
+            )
+
+            print(
+                "  To ownership:",
+                to_entry[
+                    "ownership_type"
+                ],
+            )
+
+            print(
+                "  To role:",
+                to_entry[
+                    "wallet_role"
+                ],
+            )
+
+    connection.close()
+
+    validation = (
+        valid_bundles
+        == len(known_role_records)
+    )
+
+    print(
+        "\nBundles inspected:",
+        valid_bundles,
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_known_role_resolution_test():
+    initialize_wallet_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_asset_registry_table(
+        AXIEOS_DB_PATH
+    )
+
+    initialize_accounting_records_table(
+        AXIEOS_DB_PATH
+    )
+
+    seed_default_wallet_registry(
+        AXIEOS_DB_PATH
+    )
+
+    before_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_before = sum(
+        1
+        for record in before_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    transactions = (
+        group_ledger_rows_by_txhash(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    release_candidates = (
+        discover_release_contracts(
+            transactions
+        )
+    )
+
+    register_release_contracts(
+        AXIEOS_DB_PATH,
+        release_candidates,
+    )
+
+    counterparties = (
+        discover_high_confidence_counterparties(
+            transactions
+        )
+    )
+
+    register_discovered_counterparties(
+        AXIEOS_DB_PATH,
+        counterparties,
+    )
+
+    store_intelligent_transaction_classifications(
+        AXIEOS_DB_PATH,
+        transactions,
+    )
+
+    assets = (
+        discover_assets_from_raw_transfers(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    store_asset_registry_entries(
+        AXIEOS_DB_PATH,
+        assets,
+    )
+
+    economics_map = (
+        build_current_marketplace_economics_map(
+            transactions
+        )
+    )
+
+    records = []
+
+    for transaction in transactions:
+        records.append(
+            build_complete_accounting_record(
+                AXIEOS_DB_PATH,
+                transaction,
+                economics_map,
+            )
+        )
+
+    store_accounting_records(
+        AXIEOS_DB_PATH,
+        records,
+    )
+
+    after_queue = (
+        load_accounting_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    transfers_after = sum(
+        1
+        for record in after_queue
+        if record["event_type"] in {
+            "TRANSFER_IN",
+            "TRANSFER_OUT",
+        }
+    )
+
+    remaining_role_audit = (
+        audit_remaining_transfer_roles(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    known_role_remaining = sum(
+        1
+        for item
+        in remaining_role_audit
+        if item["bucket"]
+        == "KNOWN_ROLE"
+    )
+
+    token_burn_ready = sum(
+        1
+        for record in records
+        if (
+            record["classification"]
+            == "TOKEN_BURN"
+            and record[
+                "accounting_status"
+            ]
+            == "READY"
+        )
+    )
+
+    staking_ready = sum(
+        1
+        for record in records
+        if (
+            record["classification"]
+            == "STAKING_OR_REWARD"
+            and record[
+                "accounting_status"
+            ]
+            == "READY"
+        )
+    )
+
+    resolved = (
+        transfers_before
+        - transfers_after
+    )
+
+    validation = (
+        resolved > 0
+        and known_role_remaining == 0
+        and transfers_after
+        < transfers_before
+    )
+
+    print(
+        "\nAXIEOS KNOWN-ROLE RESOLUTION"
+    )
+
+    print(
+        "Transactions:",
+        len(transactions),
+    )
+
+    print(
+        "Transfer reviews before:",
+        transfers_before,
+    )
+
+    print(
+        "Transfer reviews after:",
+        transfers_after,
+    )
+
+    print(
+        "Transfers resolved:",
+        resolved,
+    )
+
+    print(
+        "Known-role transfers remaining:",
+        known_role_remaining,
+    )
+
+    print(
+        "READY token burns:",
+        token_burn_ready,
+    )
+
+    print(
+        "READY staking/reward records:",
+        staking_ready,
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def audit_missing_cost_basis_sales(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    sales = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_name,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            net_amount,
+            cost_basis,
+            realized_pl
+        FROM blockchain_accounting_records
+        WHERE event_type = 'ASSET_SALE'
+          AND accounting_status = 'REVIEW'
+          AND cost_basis IS NULL
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    results = []
+
+    for sale in sales:
+        (
+            txhash,
+            datetime_value,
+            asset_name,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            net_amount,
+            cost_basis,
+            realized_pl,
+        ) = sale
+
+        candidates = []
+
+        if asset_token_id is not None:
+            candidate_rows = connection.execute(
+                """
+                SELECT
+                    txhash,
+                    datetime,
+                    event_type,
+                    asset_name,
+                    asset_token_id,
+                    quantity,
+                    gross_amount,
+                    accounting_status
+                FROM blockchain_accounting_records
+                WHERE asset_token_id = ?
+                  AND datetime < ?
+                  AND event_type IN (
+                      'ASSET_PURCHASE',
+                      'TRANSFER_IN',
+                      'MINT_OR_CLAIM'
+                  )
+                ORDER BY datetime DESC
+                """,
+                (
+                    asset_token_id,
+                    datetime_value,
+                ),
+            ).fetchall()
+
+            for candidate in candidate_rows:
+                candidates.append(
+                    {
+                        "txhash": candidate[0],
+                        "datetime": candidate[1],
+                        "event_type": candidate[2],
+                        "asset_name": candidate[3],
+                        "asset_token_id": candidate[4],
+                        "quantity": candidate[5],
+                        "gross_amount": candidate[6],
+                        "accounting_status": candidate[7],
+                    }
+                )
+
+        if asset_token_id is None:
+            evidence_status = (
+                "MISSING_TOKEN_ID"
+            )
+
+        elif any(
+            candidate["event_type"]
+            == "ASSET_PURCHASE"
+            for candidate in candidates
+        ):
+            evidence_status = (
+                "PRIOR_PURCHASE_FOUND"
+            )
+
+        elif candidates:
+            evidence_status = (
+                "PRIOR_INBOUND_FOUND"
+            )
+
+        else:
+            evidence_status = (
+                "NO_PRIOR_EVIDENCE"
+            )
+
+        results.append(
+            {
+                "txhash": txhash,
+                "datetime": datetime_value,
+                "asset_name": asset_name,
+                "asset_token_id": asset_token_id,
+                "quantity": quantity,
+                "gross_amount": gross_amount,
+                "net_amount": net_amount,
+                "evidence_status": (
+                    evidence_status
+                ),
+                "candidates": candidates,
+            }
+        )
+
+    connection.close()
+
+    return results
+
+
+COST_BASIS_METHOD_CANDIDATES = {
+    "EXACT_NFT_PURCHASE",
+    "INVENTORY_POOL_REQUIRED",
+    "NFT_INBOUND_BASIS_REVIEW",
+    "NO_PRIOR_EVIDENCE",
+    "UNRESOLVED_METHOD",
+}
+
+
+def classify_missing_cost_basis_methods(
+    db_path,
+):
+    audit_results = (
+        audit_missing_cost_basis_sales(
+            db_path
+        )
+    )
+
+    audit_map = {
+        item["txhash"]: item
+        for item in audit_results
+    }
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_name,
+            asset_token_id,
+            asset_category,
+            quantity,
+            net_amount
+        FROM blockchain_accounting_records
+        WHERE event_type = 'ASSET_SALE'
+          AND accounting_status = 'REVIEW'
+          AND cost_basis IS NULL
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    connection.close()
+
+    results = []
+
+    inventory_categories = {
+        "CONSUMABLE",
+        "MATERIAL",
+        "MULTI_TOKEN",
+        "FUNGIBLE_TOKEN",
+    }
+
+    for row in rows:
+        (
+            txhash,
+            datetime_value,
+            asset_name,
+            asset_token_id,
+            asset_category,
+            quantity,
+            net_amount,
+        ) = row
+
+        audit_item = audit_map.get(
+            txhash
+        )
+
+        if audit_item is None:
+            evidence_status = (
+                "NO_PRIOR_EVIDENCE"
+            )
+        else:
+            evidence_status = (
+                audit_item[
+                    "evidence_status"
+                ]
+            )
+
+        is_axie_nft = (
+            asset_name == "Axie"
+            or asset_category
+            == "AXIE_NFT"
+        )
+
+        is_inventory_asset = (
+            asset_category
+            in inventory_categories
+            or asset_name
+            in {
+                "Axie Consumable Item",
+                "Axie Material",
+            }
+        )
+
+        if evidence_status == (
+            "NO_PRIOR_EVIDENCE"
+        ):
+            method = (
+                "NO_PRIOR_EVIDENCE"
+            )
+
+        elif is_axie_nft:
+            if evidence_status == (
+                "PRIOR_PURCHASE_FOUND"
+            ):
+                method = (
+                    "EXACT_NFT_PURCHASE"
+                )
+            else:
+                method = (
+                    "NFT_INBOUND_BASIS_REVIEW"
+                )
+
+        elif is_inventory_asset:
+            method = (
+                "INVENTORY_POOL_REQUIRED"
+            )
+
+        else:
+            method = (
+                "UNRESOLVED_METHOD"
+            )
+
+        results.append(
+            {
+                "txhash": txhash,
+                "datetime": datetime_value,
+                "asset_name": asset_name,
+                "asset_token_id": (
+                    asset_token_id
+                ),
+                "asset_category": (
+                    asset_category
+                ),
+                "quantity": quantity,
+                "net_amount": net_amount,
+                "evidence_status": (
+                    evidence_status
+                ),
+                "cost_basis_method": (
+                    method
+                ),
+            }
+        )
+
+    return results
+
+
+def run_cost_basis_method_audit_test():
+    results = (
+        classify_missing_cost_basis_methods(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    method_counts = {}
+    category_counts = {}
+    asset_counts = {}
+
+    invalid_methods = []
+
+    for item in results:
+        method = item[
+            "cost_basis_method"
+        ]
+
+        method_counts[method] = (
+            method_counts.get(
+                method,
+                0,
+            )
+            + 1
+        )
+
+        category = (
+            item["asset_category"]
+            or "NONE"
+        )
+
+        category_counts[category] = (
+            category_counts.get(
+                category,
+                0,
+            )
+            + 1
+        )
+
+        asset = (
+            item["asset_name"]
+            or "NONE"
+        )
+
+        asset_counts[asset] = (
+            asset_counts.get(
+                asset,
+                0,
+            )
+            + 1
+        )
+
+        if (
+            method
+            not in COST_BASIS_METHOD_CANDIDATES
+        ):
+            invalid_methods.append(
+                item
+            )
+
+    validation = (
+        len(results) > 0
+        and len(
+            invalid_methods
+        )
+        == 0
+        and sum(
+            method_counts.values()
+        )
+        == len(results)
+    )
+
+    print(
+        "\nAXIEOS COST BASIS METHOD AUDIT"
+    )
+
+    print(
+        "Sales needing cost basis:",
+        len(results),
+    )
+
+    print(
+        "Invalid methods:",
+        len(invalid_methods),
+    )
+
+    print(
+        "\nMETHOD BREAKDOWN"
+    )
+
+    for method in sorted(
+        method_counts
+    ):
+        print(
+            f"{method}: "
+            f"{method_counts[method]}"
+        )
+
+    print(
+        "\nASSET CATEGORIES"
+    )
+
+    for category in sorted(
+        category_counts
+    ):
+        print(
+            f"{category}: "
+            f"{category_counts[category]}"
+        )
+
+    print(
+        "\nASSETS"
+    )
+
+    for asset in sorted(
+        asset_counts
+    ):
+        print(
+            f"{asset}: "
+            f"{asset_counts[asset]}"
+        )
+
+    print(
+        "\nINVENTORY COST-BASIS EXAMPLES"
+    )
+
+    inventory_records = [
+        item
+        for item in results
+        if item[
+            "cost_basis_method"
+        ]
+        == "INVENTORY_POOL_REQUIRED"
+    ]
+
+    for item in (
+        inventory_records[:15]
+    ):
+        print(
+            "\nTX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset:",
+            item["asset_name"],
+        )
+
+        print(
+            "Token ID:",
+            item[
+                "asset_token_id"
+            ],
+        )
+
+        print(
+            "Category:",
+            item[
+                "asset_category"
+            ],
+        )
+
+        print(
+            "Quantity sold:",
+            item["quantity"],
+        )
+
+        print(
+            "Evidence:",
+            item[
+                "evidence_status"
+            ],
+        )
+
+        print(
+            "Method:",
+            item[
+                "cost_basis_method"
+            ],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def build_cocochoco_fifo_inventory_audit(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            event_type,
+            classification,
+            asset_token_id,
+            quantity,
+            direction,
+            gross_amount,
+            accounting_status
+        FROM blockchain_accounting_records
+        WHERE asset_name =
+            'Axie Consumable Item'
+          AND asset_token_id IN (
+              '1',
+              '2'
+          )
+        ORDER BY
+            datetime,
+            txhash
+        """
+    ).fetchall()
+
+    connection.close()
+
+    pools = {
+        "1": [],
+        "2": [],
+    }
+
+    results = []
+
+    for row in rows:
+        (
+            txhash,
+            datetime_value,
+            event_type,
+            classification,
+            token_id,
+            quantity_value,
+            direction,
+            gross_amount,
+            accounting_status,
+        ) = row
+
+        token_id = str(
+            token_id
+        )
+
+        quantity = Decimal(
+            str(quantity_value)
+        )
+
+        if quantity <= 0:
+            continue
+
+        label = (
+            COCOCHOCO_TOKEN_LABELS.get(
+                token_id,
+                "Unknown CocoChoco",
+            )
+        )
+
+        # -----------------------------
+        # Inventory acquisition
+        # -----------------------------
+
+        if direction == "IN":
+            if (
+                event_type
+                == "ASSET_PURCHASE"
+                and gross_amount
+                is not None
+            ):
+                total_cost = Decimal(
+                    str(gross_amount)
+                )
+
+                unit_cost = (
+                    total_cost
+                    / quantity
+                )
+
+                basis_status = (
+                    "KNOWN_WETH"
+                )
+
+            else:
+                total_cost = None
+                unit_cost = None
+                basis_status = (
+                    "UNKNOWN_BASIS"
+                )
+
+            pools[token_id].append(
+                {
+                    "txhash": txhash,
+                    "datetime": (
+                        datetime_value
+                    ),
+                    "event_type": (
+                        event_type
+                    ),
+                    "quantity_original": (
+                        quantity
+                    ),
+                    "quantity_remaining": (
+                        quantity
+                    ),
+                    "total_cost": (
+                        total_cost
+                    ),
+                    "unit_cost": (
+                        unit_cost
+                    ),
+                    "basis_status": (
+                        basis_status
+                    ),
+                }
+            )
+
+            results.append(
+                {
+                    "txhash": txhash,
+                    "datetime": (
+                        datetime_value
+                    ),
+                    "token_id": token_id,
+                    "label": label,
+                    "movement": "IN",
+                    "event_type": (
+                        event_type
+                    ),
+                    "quantity": quantity,
+                    "basis_status": (
+                        basis_status
+                    ),
+                    "fifo_cost_basis": (
+                        None
+                    ),
+                    "inventory_shortage": (
+                        Decimal("0")
+                    ),
+                    "segments": [],
+                }
+            )
+
+            continue
+
+        # -----------------------------
+        # Inventory disposition
+        # -----------------------------
+
+        if direction != "OUT":
+            continue
+
+        quantity_needed = quantity
+        segments = []
+
+        fifo_cost_basis = Decimal(
+            "0"
+        )
+
+        unknown_basis_quantity = Decimal(
+            "0"
+        )
+
+        for lot in pools[token_id]:
+            if quantity_needed <= 0:
+                break
+
+            available = lot[
+                "quantity_remaining"
+            ]
+
+            if available <= 0:
+                continue
+
+            consumed = min(
+                available,
+                quantity_needed,
+            )
+
+            lot[
+                "quantity_remaining"
+            ] -= consumed
+
+            quantity_needed -= (
+                consumed
+            )
+
+            if (
+                lot["unit_cost"]
+                is not None
+            ):
+                segment_cost = (
+                    consumed
+                    * lot["unit_cost"]
+                )
+
+                fifo_cost_basis += (
+                    segment_cost
+                )
+
+            else:
+                segment_cost = None
+
+                unknown_basis_quantity += (
+                    consumed
+                )
+
+            segments.append(
+                {
+                    "source_txhash": (
+                        lot["txhash"]
+                    ),
+                    "source_event": (
+                        lot["event_type"]
+                    ),
+                    "quantity": consumed,
+                    "basis_status": (
+                        lot[
+                            "basis_status"
+                        ]
+                    ),
+                    "unit_cost": (
+                        lot["unit_cost"]
+                    ),
+                    "segment_cost": (
+                        segment_cost
+                    ),
+                }
+            )
+
+        shortage = quantity_needed
+
+        if shortage > 0:
+            basis_status = (
+                "INSUFFICIENT_HISTORY"
+            )
+
+            final_cost_basis = None
+
+        elif (
+            unknown_basis_quantity
+            > 0
+        ):
+            basis_status = (
+                "MIXED_OR_UNKNOWN_BASIS"
+            )
+
+            final_cost_basis = None
+
+        else:
+            basis_status = (
+                "FULLY_KNOWN_WETH"
+            )
+
+            final_cost_basis = (
+                fifo_cost_basis
+            )
+
+        results.append(
+            {
+                "txhash": txhash,
+                "datetime": (
+                    datetime_value
+                ),
+                "token_id": token_id,
+                "label": label,
+                "movement": "OUT",
+                "event_type": (
+                    event_type
+                ),
+                "quantity": quantity,
+                "basis_status": (
+                    basis_status
+                ),
+                "fifo_cost_basis": (
+                    final_cost_basis
+                ),
+                "inventory_shortage": (
+                    shortage
+                ),
+                "segments": segments,
+            }
+        )
+
+    remaining_inventory = {}
+
+    for token_id, lots in (
+        pools.items()
+    ):
+        remaining_inventory[
+            token_id
+        ] = sum(
+            (
+                lot[
+                    "quantity_remaining"
+                ]
+                for lot in lots
+            ),
+            Decimal("0"),
+        )
+
+    return {
+        "movements": results,
+        "remaining_inventory": (
+            remaining_inventory
+        ),
+    }
+
+
+def build_cocochoco_fifo_cost_basis_map(
+    db_path,
+):
+    audit = (
+        build_cocochoco_fifo_inventory_audit(
+            db_path
+        )
+    )
+
+    cost_basis_map = {}
+
+    for item in audit["movements"]:
+        if (
+            item["event_type"]
+            != "ASSET_SALE"
+        ):
+            continue
+
+        if (
+            item["basis_status"]
+            != "FULLY_KNOWN_WETH"
+        ):
+            continue
+
+        if (
+            item["fifo_cost_basis"]
+            is None
+        ):
+            continue
+
+        cost_basis_map[
+            item["txhash"]
+        ] = {
+            "txhash": item[
+                "txhash"
+            ],
+            "token_id": item[
+                "token_id"
+            ],
+            "label": item[
+                "label"
+            ],
+            "quantity": item[
+                "quantity"
+            ],
+            "cost_basis": item[
+                "fifo_cost_basis"
+            ],
+        }
+
+    return cost_basis_map
+
+
+def apply_cocochoco_fifo_cost_basis(
+    db_path,
+):
+    cost_basis_map = (
+        build_cocochoco_fifo_cost_basis_map(
+            db_path
+        )
+    )
+
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    processed = 0
+    skipped = 0
+    realized_pl_total = Decimal(
+        "0"
+    )
+
+    for txhash, basis_item in (
+        cost_basis_map.items()
+    ):
+        row = connection.execute(
+            """
+            SELECT
+                net_amount
+            FROM blockchain_accounting_records
+            WHERE txhash = ?
+              AND event_type =
+                  'ASSET_SALE'
+            """,
+            (
+                txhash,
+            ),
+        ).fetchone()
+
+        if (
+            row is None
+            or row[0] is None
+        ):
+            skipped += 1
+            continue
+
+        net_amount = Decimal(
+            str(row[0])
+        )
+
+        cost_basis = Decimal(
+            str(
+                basis_item[
+                    "cost_basis"
+                ]
+            )
+        )
+
+        realized_pl = (
+            net_amount
+            - cost_basis
+        )
+
+        connection.execute(
+            """
+            UPDATE blockchain_accounting_records
+            SET
+                cost_basis = ?,
+                realized_pl = ?,
+                accounting_status =
+                    'READY',
+                updated_at =
+                    CURRENT_TIMESTAMP
+            WHERE txhash = ?
+              AND event_type =
+                  'ASSET_SALE'
+            """,
+            (
+                str(cost_basis),
+                str(realized_pl),
+                txhash,
+            ),
+        )
+
+        realized_pl_total += (
+            realized_pl
+        )
+
+        processed += 1
+
+    connection.commit()
+    connection.close()
+
+    return {
+        "candidates": len(
+            cost_basis_map
+        ),
+        "processed": processed,
+        "skipped": skipped,
+        "realized_pl_total": (
+            realized_pl_total
+        ),
+    }
+
+
+def run_cocochoco_fifo_cost_basis_test():
+    before_audit = (
+        build_cocochoco_fifo_inventory_audit(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    fully_known_before = [
+        item
+        for item
+        in before_audit[
+            "movements"
+        ]
+        if (
+            item["event_type"]
+            == "ASSET_SALE"
+            and item[
+                "basis_status"
+            ]
+            == "FULLY_KNOWN_WETH"
+        )
+    ]
+
+    unresolved_before = [
+        item
+        for item
+        in before_audit[
+            "movements"
+        ]
+        if (
+            item["event_type"]
+            == "ASSET_SALE"
+            and item[
+                "basis_status"
+            ]
+            in {
+                "MIXED_OR_UNKNOWN_BASIS",
+                "INSUFFICIENT_HISTORY",
+            }
+        )
+    ]
+
+    result = (
+        apply_cocochoco_fifo_cost_basis(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    resolved_rows = (
+        connection.execute(
+            """
+            SELECT
+                txhash,
+                asset_token_id,
+                quantity,
+                net_amount,
+                cost_basis,
+                realized_pl,
+                accounting_status
+            FROM blockchain_accounting_records
+            WHERE event_type =
+                'ASSET_SALE'
+              AND asset_name =
+                'Axie Consumable Item'
+              AND asset_token_id
+                  IN ('1', '2')
+              AND cost_basis
+                  IS NOT NULL
+            """
+        ).fetchall()
+    )
+
+    remaining_review = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type =
+                'ASSET_SALE'
+              AND asset_name =
+                'Axie Consumable Item'
+              AND asset_token_id
+                  IN ('1', '2')
+              AND accounting_status =
+                  'REVIEW'
+              AND cost_basis
+                  IS NULL
+            """
+        ).fetchone()[0]
+    )
+
+    regression = (
+        connection.execute(
+            """
+            SELECT
+                net_amount,
+                cost_basis,
+                realized_pl,
+                accounting_status
+            FROM blockchain_accounting_records
+            WHERE txhash = ?
+            """,
+            (
+                "0x9234deddf489357df0003aba68cf0e341247e9f19fb1819e6e815b45c8b41f0b",
+            ),
+        ).fetchone()
+    )
+
+    connection.close()
+
+    regression_valid = (
+        regression is not None
+        and Decimal(
+            str(regression[0])
+        )
+        == Decimal(
+            "0.00018730232"
+        )
+        and Decimal(
+            str(regression[1])
+        )
+        == Decimal(
+            "0.000195617"
+        )
+        and Decimal(
+            str(regression[2])
+        )
+        == Decimal(
+            "-0.00000831468"
+        )
+        and regression[3]
+        == "READY"
+    )
+
+    unresolved_preserved = (
+        remaining_review
+        == len(
+            unresolved_before
+        )
+    )
+
+    validation = (
+        result["candidates"]
+        == len(
+            fully_known_before
+        )
+        and result["processed"]
+        == len(
+            fully_known_before
+        )
+        and result["skipped"]
+        == 0
+        and unresolved_preserved
+        and regression_valid
+    )
+
+    print(
+        "\nAXIEOS COCOCHOCO FIFO COST BASIS"
+    )
+
+    print(
+        "Fully-known sales:",
+        len(
+            fully_known_before
+        ),
+    )
+
+    print(
+        "Cost-basis candidates:",
+        result[
+            "candidates"
+        ],
+    )
+
+    print(
+        "Sales updated:",
+        result[
+            "processed"
+        ],
+    )
+
+    print(
+        "Skipped:",
+        result[
+            "skipped"
+        ],
+    )
+
+    print(
+        "CocoChoco sales still REVIEW:",
+        remaining_review,
+    )
+
+    print(
+        "FIFO realized P/L total:",
+        result[
+            "realized_pl_total"
+        ],
+        "WETH",
+    )
+
+    print(
+        "Premium CocoChoco regression:",
+        (
+            "PASS"
+            if regression_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Unknown-basis sales preserved:",
+        (
+            "PASS"
+            if unresolved_preserved
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nRESOLVED SALE EXAMPLES"
+    )
+
+    for row in resolved_rows[:10]:
+        (
+            txhash,
+            token_id,
+            quantity,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            status,
+        ) = row
+
+        print(
+            "\nTX:",
+            txhash,
+        )
+
+        print(
+            "Asset:",
+            COCOCHOCO_TOKEN_LABELS.get(
+                str(token_id),
+                "Unknown",
+            ),
+        )
+
+        print(
+            "Quantity:",
+            quantity,
+        )
+
+        print(
+            "Net proceeds:",
+            net_amount,
+        )
+
+        print(
+            "FIFO cost basis:",
+            cost_basis,
+        )
+
+        print(
+            "Realized P/L:",
+            realized_pl,
+        )
+
+        print(
+            "Status:",
+            status,
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def audit_unresolved_axie_sale_origins(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    sales = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            net_amount
+        FROM blockchain_accounting_records
+        WHERE event_type = 'ASSET_SALE'
+          AND asset_name = 'Axie'
+          AND accounting_status = 'REVIEW'
+          AND cost_basis IS NULL
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    wallet = normalize_address(
+        RONIN_WALLET_ADDRESS
+    )
+
+    results = []
+
+    for sale in sales:
+        (
+            sale_txhash,
+            sale_datetime,
+            token_id,
+            quantity,
+            gross_amount,
+            net_amount,
+        ) = sale
+
+        raw_rows = connection.execute(
+            """
+            SELECT
+                tx_hash,
+                timestamp,
+                from_address,
+                to_address,
+                token_id,
+                amount_raw
+            FROM ronin_token_transfers_raw
+            WHERE token_name = 'Axie'
+              AND token_id = ?
+            ORDER BY timestamp, tx_hash
+            """,
+            (
+                str(token_id),
+            ),
+        ).fetchall()
+
+        raw_history = []
+
+        for raw_row in raw_rows:
+            (
+                txhash,
+                timestamp,
+                from_address,
+                to_address,
+                raw_token_id,
+                amount_raw,
+            ) = raw_row
+
+            from_normalized = (
+                normalize_address(
+                    from_address
+                )
+            )
+
+            to_normalized = (
+                normalize_address(
+                    to_address
+                )
+            )
+
+            if (
+                to_normalized == wallet
+                and from_normalized != wallet
+            ):
+                direction = "IN"
+                counterparty_address = (
+                    from_normalized
+                )
+
+            elif (
+                from_normalized == wallet
+                and to_normalized != wallet
+            ):
+                direction = "OUT"
+                counterparty_address = (
+                    to_normalized
+                )
+
+            else:
+                direction = "OTHER"
+                counterparty_address = None
+
+            if counterparty_address is not None:
+                registry = (
+                    get_wallet_registry_entry(
+                        db_path,
+                        counterparty_address,
+                    )
+                )
+
+                ownership_type = (
+                    registry[
+                        "ownership_type"
+                    ]
+                )
+
+                wallet_role = (
+                    registry[
+                        "wallet_role"
+                    ]
+                )
+
+            else:
+                ownership_type = None
+                wallet_role = None
+
+            raw_history.append(
+                {
+                    "txhash": txhash,
+                    "timestamp": timestamp,
+                    "direction": direction,
+                    "from_address": (
+                        from_normalized
+                    ),
+                    "to_address": (
+                        to_normalized
+                    ),
+                    "counterparty": (
+                        counterparty_address
+                    ),
+                    "ownership_type": (
+                        ownership_type
+                    ),
+                    "wallet_role": (
+                        wallet_role
+                    ),
+                }
+            )
+
+        prior_accounting = (
+            connection.execute(
+                """
+                SELECT
+                    txhash,
+                    datetime,
+                    event_type,
+                    classification,
+                    gross_amount,
+                    accounting_status
+                FROM blockchain_accounting_records
+                WHERE asset_token_id = ?
+                  AND datetime < ?
+                  AND txhash != ?
+                ORDER BY datetime DESC
+                """,
+                (
+                    str(token_id),
+                    sale_datetime,
+                    sale_txhash,
+                ),
+            ).fetchall()
+        )
+
+        inbound_rows = [
+            item
+            for item in raw_history
+            if (
+                item["direction"]
+                == "IN"
+                and item["txhash"]
+                != sale_txhash
+            )
+        ]
+
+        owned_inbound = [
+            item
+            for item in inbound_rows
+            if item[
+                "ownership_type"
+            ]
+            == "USER_OWNED"
+        ]
+
+        if owned_inbound:
+            origin_status = (
+                "OWNED_WALLET_INBOUND"
+            )
+
+        elif inbound_rows:
+            origin_status = (
+                "EXTERNAL_OR_UNKNOWN_INBOUND"
+            )
+
+        elif prior_accounting:
+            origin_status = (
+                "ACCOUNTING_EVIDENCE_ONLY"
+            )
+
+        else:
+            origin_status = (
+                "NO_ORIGIN_EVIDENCE"
+            )
+
+        results.append(
+            {
+                "sale_txhash": (
+                    sale_txhash
+                ),
+                "sale_datetime": (
+                    sale_datetime
+                ),
+                "token_id": str(
+                    token_id
+                ),
+                "quantity": quantity,
+                "gross_amount": (
+                    gross_amount
+                ),
+                "net_amount": (
+                    net_amount
+                ),
+                "origin_status": (
+                    origin_status
+                ),
+                "raw_history": (
+                    raw_history
+                ),
+                "prior_accounting": (
+                    prior_accounting
+                ),
+            }
+        )
+
+    connection.close()
+
+    return results
+
+
+def run_unresolved_axie_origin_audit_test():
+    results = (
+        audit_unresolved_axie_sale_origins(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    status_counts = {}
+
+    for item in results:
+        status = item[
+            "origin_status"
+        ]
+
+        status_counts[status] = (
+            status_counts.get(
+                status,
+                0,
+            )
+            + 1
+        )
+
+    validation = (
+        len(results) > 0
+        and sum(
+            status_counts.values()
+        )
+        == len(results)
+    )
+
+    print(
+        "\nAXIEOS UNRESOLVED AXIE ORIGIN AUDIT"
+    )
+
+    print(
+        "Axie sales needing basis:",
+        len(results),
+    )
+
+    print(
+        "\nORIGIN BREAKDOWN"
+    )
+
+    for status in sorted(
+        status_counts
+    ):
+        print(
+            f"{status}: "
+            f"{status_counts[status]}"
+        )
+
+    print(
+        "\nAXIE SALE ORIGINS"
+    )
+
+    for item in results:
+        print(
+            "\n------------------------------"
+        )
+
+        print(
+            "Axie ID:",
+            item["token_id"],
+        )
+
+        print(
+            "Sale TX:",
+            item[
+                "sale_txhash"
+            ],
+        )
+
+        print(
+            "Sale date:",
+            item[
+                "sale_datetime"
+            ],
+        )
+
+        print(
+            "Net proceeds:",
+            item[
+                "net_amount"
+            ],
+        )
+
+        print(
+            "Origin status:",
+            item[
+                "origin_status"
+            ],
+        )
+
+        print(
+            "Raw token history:",
+            len(
+                item[
+                    "raw_history"
+                ]
+            ),
+        )
+
+        for history in item[
+            "raw_history"
+        ]:
+            print(
+                " ",
+                history[
+                    "timestamp"
+                ],
+                history[
+                    "direction"
+                ],
+                "Counterparty:",
+                history[
+                    "counterparty"
+                ],
+                "Ownership:",
+                history[
+                    "ownership_type"
+                ],
+                "Role:",
+                history[
+                    "wallet_role"
+                ],
+                "TX:",
+                history[
+                    "txhash"
+                ],
+            )
+
+        print(
+            "Prior accounting records:",
+            len(
+                item[
+                    "prior_accounting"
+                ]
+            ),
+        )
+
+        for prior in item[
+            "prior_accounting"
+        ][:5]:
+            print(
+                " ",
+                prior[1],
+                prior[2],
+                prior[3],
+                "Gross:",
+                prior[4],
+                "Status:",
+                prior[5],
+                "TX:",
+                prior[0],
+            )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+COST_BASIS_REVIEW_REASON_CODES = {
+    "COCOCHOCO_MIXED_OR_UNKNOWN_BASIS",
+    "COCOCHOCO_INSUFFICIENT_HISTORY",
+    "AXIE_UNKNOWN_INBOUND_BASIS",
+    "AXIE_NO_ORIGIN_EVIDENCE",
+}
+
+
+def build_remaining_cost_basis_review_queue(
+    db_path,
+):
+    queue = []
+
+    # ---------------------------------
+    # CocoChoco unresolved sales
+    # ---------------------------------
+
+    fifo_result = (
+        build_cocochoco_fifo_inventory_audit(
+            db_path
+        )
+    )
+
+    for item in fifo_result[
+        "movements"
+    ]:
+        if (
+            item["event_type"]
+            != "ASSET_SALE"
+        ):
+            continue
+
+        if (
+            item["basis_status"]
+            == "MIXED_OR_UNKNOWN_BASIS"
+        ):
+            reason_code = (
+                "COCOCHOCO_MIXED_OR_UNKNOWN_BASIS"
+            )
+
+            reason = (
+                "FIFO inventory includes one "
+                "or more units whose historical "
+                "WETH acquisition basis is unknown."
+            )
+
+        elif (
+            item["basis_status"]
+            == "INSUFFICIENT_HISTORY"
+        ):
+            reason_code = (
+                "COCOCHOCO_INSUFFICIENT_HISTORY"
+            )
+
+            reason = (
+                "Available transaction history "
+                "does not contain enough prior "
+                "inventory to support this sale."
+            )
+
+        else:
+            continue
+
+        queue.append(
+            {
+                "txhash": item["txhash"],
+                "asset_type": "COCOCHOCO",
+                "asset_name": item["label"],
+                "token_id": item["token_id"],
+                "quantity": str(
+                    item["quantity"]
+                ),
+                "reason_code": (
+                    reason_code
+                ),
+                "reason": reason,
+            }
+        )
+
+    # ---------------------------------
+    # Axie unresolved sales
+    # ---------------------------------
+
+    axie_results = (
+        audit_unresolved_axie_sale_origins(
+            db_path
+        )
+    )
+
+    for item in axie_results:
+        if (
+            item["origin_status"]
+            == "EXTERNAL_OR_UNKNOWN_INBOUND"
+        ):
+            reason_code = (
+                "AXIE_UNKNOWN_INBOUND_BASIS"
+            )
+
+            reason = (
+                "The Axie entered from an "
+                "unverified external or unknown "
+                "wallet, so acquisition cost "
+                "cannot yet be proven."
+            )
+
+        elif (
+            item["origin_status"]
+            == "NO_ORIGIN_EVIDENCE"
+        ):
+            reason_code = (
+                "AXIE_NO_ORIGIN_EVIDENCE"
+            )
+
+            reason = (
+                "No earlier acquisition or inbound "
+                "record is available in the current "
+                "AxieOS history."
+            )
+
+        else:
+            continue
+
+        queue.append(
+            {
+                "txhash": item[
+                    "sale_txhash"
+                ],
+                "asset_type": "AXIE",
+                "asset_name": "Axie",
+                "token_id": item[
+                    "token_id"
+                ],
+                "quantity": str(
+                    item["quantity"]
+                ),
+                "reason_code": (
+                    reason_code
+                ),
+                "reason": reason,
+            }
+        )
+
+    queue.sort(
+        key=lambda item: (
+            item["asset_type"],
+            item["token_id"],
+            item["txhash"],
+        )
+    )
+
+    return queue
+
+
+def run_final_cost_basis_review_test():
+    queue = (
+        build_remaining_cost_basis_review_queue(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    connection = sqlite3.connect(
+        AXIEOS_DB_PATH
+    )
+
+    unresolved_sales_db = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND accounting_status = 'REVIEW'
+              AND cost_basis IS NULL
+            """
+        ).fetchone()[0]
+    )
+
+    resolved_cocochoco = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND asset_name =
+                  'Axie Consumable Item'
+              AND asset_token_id
+                  IN ('1', '2')
+              AND accounting_status = 'READY'
+              AND cost_basis IS NOT NULL
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    reason_counts = {}
+    asset_type_counts = {}
+
+    invalid_reason_codes = []
+
+    for item in queue:
+        reason_code = item[
+            "reason_code"
+        ]
+
+        reason_counts[
+            reason_code
+        ] = (
+            reason_counts.get(
+                reason_code,
+                0,
+            )
+            + 1
+        )
+
+        asset_type = item[
+            "asset_type"
+        ]
+
+        asset_type_counts[
+            asset_type
+        ] = (
+            asset_type_counts.get(
+                asset_type,
+                0,
+            )
+            + 1
+        )
+
+        if (
+            reason_code
+            not in COST_BASIS_REVIEW_REASON_CODES
+        ):
+            invalid_reason_codes.append(
+                item
+            )
+
+    unique_txhashes = {
+        item["txhash"]
+        for item in queue
+    }
+
+    unique_valid = (
+        len(unique_txhashes)
+        == len(queue)
+    )
+
+    queue_count_valid = (
+        len(queue)
+        == unresolved_sales_db
+    )
+
+    validation = (
+        queue_count_valid
+        and unique_valid
+        and len(
+            invalid_reason_codes
+        )
+        == 0
+        and resolved_cocochoco
+        >= 18
+    )
+
+    print(
+        "\nAXIEOS FINAL COST BASIS REVIEW"
+    )
+
+    print(
+        "Unresolved sales in database:",
+        unresolved_sales_db,
+    )
+
+    print(
+        "Cost-basis review queue:",
+        len(queue),
+    )
+
+    print(
+        "Resolved CocoChoco sales:",
+        resolved_cocochoco,
+    )
+
+    print(
+        "Unique review txhashes:",
+        len(unique_txhashes),
+    )
+
+    print(
+        "Invalid reason codes:",
+        len(
+            invalid_reason_codes
+        ),
+    )
+
+    print(
+        "\nASSET TYPES"
+    )
+
+    for asset_type in sorted(
+        asset_type_counts
+    ):
+        print(
+            f"{asset_type}: "
+            f"{asset_type_counts[asset_type]}"
+        )
+
+    print(
+        "\nREASON BREAKDOWN"
+    )
+
+    for reason_code in sorted(
+        reason_counts
+    ):
+        print(
+            f"{reason_code}: "
+            f"{reason_counts[reason_code]}"
+        )
+
+    print(
+        "\nAXIE REVIEW ITEMS"
+    )
+
+    axie_items = [
+        item
+        for item in queue
+        if item["asset_type"]
+        == "AXIE"
+    ]
+
+    for item in axie_items:
+        print(
+            "\nAxie ID:",
+            item["token_id"],
+        )
+
+        print(
+            "Sale TX:",
+            item["txhash"],
+        )
+
+        print(
+            "Reason:",
+            item["reason_code"],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def audit_token_swap_accounting(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    swaps = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_name,
+            quantity,
+            payment_asset,
+            gross_amount,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            accounting_status
+        FROM blockchain_accounting_records
+        WHERE event_type = 'TOKEN_SWAP'
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    results = []
+
+    for swap in swaps:
+        (
+            txhash,
+            datetime_value,
+            asset_name,
+            quantity,
+            payment_asset,
+            gross_amount,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            accounting_status,
+        ) = swap
+
+        prior_rows = connection.execute(
+            """
+            SELECT
+                txhash,
+                datetime,
+                event_type,
+                classification,
+                quantity,
+                direction,
+                gross_amount,
+                cost_basis,
+                accounting_status
+            FROM blockchain_accounting_records
+            WHERE asset_name = ?
+              AND datetime < ?
+              AND txhash != ?
+            ORDER BY datetime, txhash
+            """,
+            (
+                asset_name,
+                datetime_value,
+                txhash,
+            ),
+        ).fetchall()
+
+        inbound_rows = [
+            row
+            for row in prior_rows
+            if row[5] == "IN"
+        ]
+
+        purchased_rows = [
+            row
+            for row in inbound_rows
+            if (
+                row[2]
+                == "ASSET_PURCHASE"
+                and row[6]
+                is not None
+            )
+        ]
+
+        basis_rows = [
+            row
+            for row in inbound_rows
+            if row[7] is not None
+        ]
+
+        reward_rows = [
+            row
+            for row in inbound_rows
+            if row[2] in {
+                "MINT_OR_CLAIM",
+                "STAKING_OR_REWARD",
+            }
+        ]
+
+        transfer_rows = [
+            row
+            for row in inbound_rows
+            if row[2]
+            == "TRANSFER_IN"
+        ]
+
+        if basis_rows:
+            basis_status = (
+                "PRIOR_BASIS_RECORDS_EXIST"
+            )
+
+        elif purchased_rows:
+            basis_status = (
+                "PRIOR_PURCHASE_VALUE_EXISTS"
+            )
+
+        elif reward_rows:
+            basis_status = (
+                "REWARD_OR_CLAIM_BASIS_UNRESOLVED"
+            )
+
+        elif transfer_rows:
+            basis_status = (
+                "TRANSFER_BASIS_UNRESOLVED"
+            )
+
+        else:
+            basis_status = (
+                "NO_PRIOR_BASIS_EVIDENCE"
+            )
+
+        results.append(
+            {
+                "txhash": txhash,
+                "datetime": datetime_value,
+                "asset_out": asset_name,
+                "quantity_out": quantity,
+                "asset_in": payment_asset,
+                "quantity_in": gross_amount,
+                "current_cost_basis": (
+                    cost_basis
+                ),
+                "current_realized_pl": (
+                    realized_pl
+                ),
+                "current_status": (
+                    accounting_status
+                ),
+                "basis_status": (
+                    basis_status
+                ),
+                "prior_inbound_count": len(
+                    inbound_rows
+                ),
+                "prior_reward_count": len(
+                    reward_rows
+                ),
+                "prior_transfer_count": len(
+                    transfer_rows
+                ),
+                "prior_purchase_count": len(
+                    purchased_rows
+                ),
+                "prior_basis_count": len(
+                    basis_rows
+                ),
+                "prior_examples": (
+                    inbound_rows[-10:]
+                ),
+            }
+        )
+
+    connection.close()
+
+    return results
+
+
+def run_token_swap_accounting_audit_test():
+    results = (
+        audit_token_swap_accounting(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    status_counts = {}
+
+    for item in results:
+        status = item[
+            "basis_status"
+        ]
+
+        status_counts[status] = (
+            status_counts.get(
+                status,
+                0,
+            )
+            + 1
+        )
+
+    unresolved = [
+        item
+        for item in results
+        if item[
+            "current_cost_basis"
+        ]
+        is None
+    ]
+
+    review_preserved = all(
+        item[
+            "current_status"
+        ]
+        == "REVIEW"
+        for item in unresolved
+    )
+
+    validation = (
+        len(results) > 0
+        and review_preserved
+        and sum(
+            status_counts.values()
+        )
+        == len(results)
+    )
+
+    print(
+        "\nAXIEOS TOKEN SWAP ACCOUNTING AUDIT"
+    )
+
+    print(
+        "Token swaps:",
+        len(results),
+    )
+
+    print(
+        "Swaps without cost basis:",
+        len(unresolved),
+    )
+
+    print(
+        "\nBASIS STATUS"
+    )
+
+    for status in sorted(
+        status_counts
+    ):
+        print(
+            f"{status}: "
+            f"{status_counts[status]}"
+        )
+
+    print(
+        "\nSWAP DETAILS"
+    )
+
+    for item in results:
+        print(
+            "\n------------------------------"
+        )
+
+        print(
+            "TX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset OUT:",
+            item["asset_out"],
+        )
+
+        print(
+            "Quantity OUT:",
+            item["quantity_out"],
+        )
+
+        print(
+            "Asset IN:",
+            item["asset_in"],
+        )
+
+        print(
+            "Quantity IN:",
+            item["quantity_in"],
+        )
+
+        print(
+            "Basis status:",
+            item["basis_status"],
+        )
+
+        print(
+            "Prior inbound records:",
+            item[
+                "prior_inbound_count"
+            ],
+        )
+
+        print(
+            "Prior reward/claim:",
+            item[
+                "prior_reward_count"
+            ],
+        )
+
+        print(
+            "Prior transfers:",
+            item[
+                "prior_transfer_count"
+            ],
+        )
+
+        print(
+            "Prior purchases:",
+            item[
+                "prior_purchase_count"
+            ],
+        )
+
+        print(
+            "Prior records with basis:",
+            item[
+                "prior_basis_count"
+            ],
+        )
+
+        print(
+            "Accounting status:",
+            item[
+                "current_status"
+            ],
+        )
+
+        print(
+            "PRIOR INBOUND EXAMPLES"
+        )
+
+        for prior in item[
+            "prior_examples"
+        ]:
+            print(
+                " ",
+                prior[1],
+                prior[2],
+                prior[3],
+                "Qty:",
+                prior[4],
+                "Gross:",
+                prior[6],
+                "Basis:",
+                prior[7],
+                "TX:",
+                prior[0],
+            )
+
+    print(
+        "\nReview preservation:",
+        (
+            "PASS"
+            if review_preserved
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Validation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def build_accounting_summary(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    total_records = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            """
+        ).fetchone()[0]
+    )
+
+    status_rows = (
+        connection.execute(
+            """
+            SELECT
+                accounting_status,
+                COUNT(*)
+            FROM blockchain_accounting_records
+            GROUP BY accounting_status
+            ORDER BY accounting_status
+            """
+        ).fetchall()
+    )
+
+    event_rows = (
+        connection.execute(
+            """
+            SELECT
+                event_type,
+                COUNT(*)
+            FROM blockchain_accounting_records
+            GROUP BY event_type
+            ORDER BY event_type
+            """
+        ).fetchall()
+    )
+
+    event_status_rows = (
+        connection.execute(
+            """
+            SELECT
+                event_type,
+                accounting_status,
+                COUNT(*)
+            FROM blockchain_accounting_records
+            GROUP BY
+                event_type,
+                accounting_status
+            ORDER BY
+                event_type,
+                accounting_status
+            """
+        ).fetchall()
+    )
+
+    version_rows = (
+        connection.execute(
+            """
+            SELECT
+                accounting_version,
+                COUNT(*)
+            FROM blockchain_accounting_records
+            GROUP BY accounting_version
+            ORDER BY accounting_version
+            """
+        ).fetchall()
+    )
+
+    realized_rows = (
+        connection.execute(
+            """
+            SELECT
+                event_type,
+                COUNT(*),
+                SUM(realized_pl)
+            FROM blockchain_accounting_records
+            WHERE realized_pl IS NOT NULL
+            GROUP BY event_type
+            ORDER BY event_type
+            """
+        ).fetchall()
+    )
+
+    cost_basis_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE cost_basis IS NOT NULL
+            """
+        ).fetchone()[0]
+    )
+
+    realized_pl_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE realized_pl IS NOT NULL
+            """
+        ).fetchone()[0]
+    )
+
+    review_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status = 'REVIEW'
+            """
+        ).fetchone()[0]
+    )
+
+    connection.close()
+
+    return {
+        "total_records": total_records,
+        "status_rows": status_rows,
+        "event_rows": event_rows,
+        "event_status_rows": (
+            event_status_rows
+        ),
+        "version_rows": version_rows,
+        "realized_rows": realized_rows,
+        "cost_basis_count": (
+            cost_basis_count
+        ),
+        "realized_pl_count": (
+            realized_pl_count
+        ),
+        "review_count": review_count,
+    }
+
+
+
+def run_accounting_summary_test():
+    summary = (
+        build_accounting_summary(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    status_total = sum(
+        row[1]
+        for row in summary[
+            "status_rows"
+        ]
+    )
+
+    event_total = sum(
+        row[1]
+        for row in summary[
+            "event_rows"
+        ]
+    )
+
+    event_status_total = sum(
+        row[2]
+        for row in summary[
+            "event_status_rows"
+        ]
+    )
+
+    version_total = sum(
+        row[1]
+        for row in summary[
+            "version_rows"
+        ]
+    )
+
+    validation = (
+        status_total
+        == summary["total_records"]
+        and event_total
+        == summary["total_records"]
+        and event_status_total
+        == summary["total_records"]
+        and version_total
+        == summary["total_records"]
+    )
+
+    print(
+        "\nAXIEOS ACCOUNTING SUMMARY"
+    )
+
+    print(
+        "Total accounting records:",
+        summary["total_records"],
+    )
+
+    print(
+        "Records with cost basis:",
+        summary[
+            "cost_basis_count"
+        ],
+    )
+
+    print(
+        "Records with realized P/L:",
+        summary[
+            "realized_pl_count"
+        ],
+    )
+
+    print(
+        "Records still REVIEW:",
+        summary[
+            "review_count"
+        ],
+    )
+
+    print(
+        "\nSTATUS BREAKDOWN"
+    )
+
+    for status, count in (
+        summary["status_rows"]
+    ):
+        print(
+            f"{status}: {count}"
+        )
+
+    print(
+        "\nEVENT BREAKDOWN"
+    )
+
+    for event_type, count in (
+        summary["event_rows"]
+    ):
+        print(
+            f"{event_type}: {count}"
+        )
+
+    print(
+        "\nEVENT / STATUS MATRIX"
+    )
+
+    for (
+        event_type,
+        status,
+        count,
+    ) in summary[
+        "event_status_rows"
+    ]:
+        print(
+            f"{event_type} / "
+            f"{status}: "
+            f"{count}"
+        )
+
+    print(
+        "\nACCOUNTING VERSIONS"
+    )
+
+    for version, count in (
+        summary["version_rows"]
+    ):
+        print(
+            f"{version}: {count}"
+        )
+
+    print(
+        "\nREALIZED P/L RECORDS"
+    )
+
+    for (
+        event_type,
+        count,
+        realized_total,
+    ) in summary[
+        "realized_rows"
+    ]:
+        print(
+            f"{event_type}: "
+            f"{count} records, "
+            f"{realized_total} WETH"
+        )
+
+    print(
+        "\nRECONCILIATION"
+    )
+
+    print(
+        "Status total:",
+        status_total,
+    )
+
+    print(
+        "Event total:",
+        event_total,
+    )
+
+    print(
+        "Event/status total:",
+        event_status_total,
+    )
+
+    print(
+        "Version total:",
+        version_total,
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def build_realized_pl_marketplace_report(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    purchase_rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_name,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            accounting_status
+        FROM blockchain_accounting_records
+        WHERE event_type = 'ASSET_PURCHASE'
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    sale_rows = connection.execute(
+        """
+        SELECT
+            txhash,
+            datetime,
+            asset_name,
+            asset_token_id,
+            quantity,
+            gross_amount,
+            marketplace_fee,
+            net_amount,
+            cost_basis,
+            realized_pl,
+            accounting_status
+        FROM blockchain_accounting_records
+        WHERE event_type = 'ASSET_SALE'
+        ORDER BY datetime, txhash
+        """
+    ).fetchall()
+
+    connection.close()
+
+    realized_sales = [
+        row
+        for row in sale_rows
+        if (
+            row[10] == "READY"
+            and row[8] is not None
+            and row[9] is not None
+        )
+    ]
+
+    unresolved_sales = [
+        row
+        for row in sale_rows
+        if row[10] == "REVIEW"
+    ]
+
+    def decimal_sum(
+        rows,
+        index,
+    ):
+        total = Decimal("0")
+
+        for row in rows:
+            if row[index] is None:
+                continue
+
+            total += Decimal(
+                str(row[index])
+            )
+
+        return total
+
+    gross_sales = decimal_sum(
+        realized_sales,
+        5,
+    )
+
+    marketplace_fees = decimal_sum(
+        realized_sales,
+        6,
+    )
+
+    net_sales = decimal_sum(
+        realized_sales,
+        7,
+    )
+
+    cost_basis = decimal_sum(
+        realized_sales,
+        8,
+    )
+
+    realized_pl = decimal_sum(
+        realized_sales,
+        9,
+    )
+
+    purchase_total = decimal_sum(
+        purchase_rows,
+        5,
+    )
+
+    asset_summary = {}
+
+    for row in realized_sales:
+        asset_name = (
+            row[2]
+            or "UNKNOWN"
+        )
+
+        if asset_name == (
+            "Axie Consumable Item"
+        ):
+            token_id = str(
+                row[3]
+            )
+
+            asset_name = (
+                COCOCHOCO_TOKEN_LABELS.get(
+                    token_id,
+                    asset_name,
+                )
+            )
+
+        summary = asset_summary.setdefault(
+            asset_name,
+            {
+                "sales": 0,
+                "quantity": Decimal("0"),
+                "gross": Decimal("0"),
+                "fees": Decimal("0"),
+                "net": Decimal("0"),
+                "cost_basis": Decimal("0"),
+                "realized_pl": Decimal("0"),
+            },
+        )
+
+        summary["sales"] += 1
+
+        if row[4] is not None:
+            summary[
+                "quantity"
+            ] += Decimal(
+                str(row[4])
+            )
+
+        if row[5] is not None:
+            summary[
+                "gross"
+            ] += Decimal(
+                str(row[5])
+            )
+
+        if row[6] is not None:
+            summary[
+                "fees"
+            ] += Decimal(
+                str(row[6])
+            )
+
+        if row[7] is not None:
+            summary[
+                "net"
+            ] += Decimal(
+                str(row[7])
+            )
+
+        if row[8] is not None:
+            summary[
+                "cost_basis"
+            ] += Decimal(
+                str(row[8])
+            )
+
+        if row[9] is not None:
+            summary[
+                "realized_pl"
+            ] += Decimal(
+                str(row[9])
+            )
+
+    return {
+        "purchases": purchase_rows,
+        "sales": sale_rows,
+        "realized_sales": realized_sales,
+        "unresolved_sales": unresolved_sales,
+        "purchase_total": purchase_total,
+        "gross_sales": gross_sales,
+        "marketplace_fees": marketplace_fees,
+        "net_sales": net_sales,
+        "cost_basis": cost_basis,
+        "realized_pl": realized_pl,
+        "asset_summary": asset_summary,
+    }
+
+
+def run_realized_pl_marketplace_report_test():
+    report = (
+        build_realized_pl_marketplace_report(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    realized_sales = report[
+        "realized_sales"
+    ]
+
+    unresolved_sales = report[
+        "unresolved_sales"
+    ]
+
+    gross_sales = report[
+        "gross_sales"
+    ]
+
+    marketplace_fees = report[
+        "marketplace_fees"
+    ]
+
+    net_sales = report[
+        "net_sales"
+    ]
+
+    cost_basis = report[
+        "cost_basis"
+    ]
+
+    realized_pl = report[
+        "realized_pl"
+    ]
+
+    net_reconciliation = (
+        gross_sales
+        - marketplace_fees
+    )
+
+    pl_reconciliation = (
+        net_sales
+        - cost_basis
+    )
+
+    net_valid = (
+        net_reconciliation
+        == net_sales
+    )
+
+    pl_valid = (
+        pl_reconciliation
+        == realized_pl
+    )
+
+    sale_count_valid = (
+        len(realized_sales)
+        + len(unresolved_sales)
+        == len(
+            report["sales"]
+        )
+    )
+
+    validation = (
+        len(
+            report["purchases"]
+        )
+        > 0
+        and len(
+            report["sales"]
+        )
+        > 0
+        and sale_count_valid
+        and net_valid
+        and pl_valid
+    )
+
+    print(
+        "\nAXIEOS REALIZED P/L "
+        "AND MARKETPLACE REPORT"
+    )
+
+    print(
+        "Marketplace purchases:",
+        len(
+            report["purchases"]
+        ),
+    )
+
+    print(
+        "Marketplace sales:",
+        len(
+            report["sales"]
+        ),
+    )
+
+    print(
+        "Sales with realized P/L:",
+        len(realized_sales),
+    )
+
+    print(
+        "Sales still unresolved:",
+        len(unresolved_sales),
+    )
+
+    print(
+        "\nPURCHASE ECONOMICS"
+    )
+
+    print(
+        "Total recorded purchase cost:",
+        report[
+            "purchase_total"
+        ],
+        "WETH",
+    )
+
+    print(
+        "\nREALIZED SALE ECONOMICS"
+    )
+
+    print(
+        "Gross sales:",
+        gross_sales,
+        "WETH",
+    )
+
+    print(
+        "Marketplace fees:",
+        marketplace_fees,
+        "WETH",
+    )
+
+    print(
+        "Net proceeds:",
+        net_sales,
+        "WETH",
+    )
+
+    print(
+        "Cost basis:",
+        cost_basis,
+        "WETH",
+    )
+
+    print(
+        "Realized P/L:",
+        realized_pl,
+        "WETH",
+    )
+
+    if cost_basis != 0:
+        realized_roi = (
+            realized_pl
+            / cost_basis
+            * Decimal("100")
+        )
+
+        print(
+            "Realized ROI:",
+            realized_roi,
+            "%",
+        )
+
+    print(
+        "\nREALIZED P/L BY ASSET"
+    )
+
+    for asset_name in sorted(
+        report[
+            "asset_summary"
+        ]
+    ):
+        summary = report[
+            "asset_summary"
+        ][asset_name]
+
+        print(
+            "\nAsset:",
+            asset_name,
+        )
+
+        print(
+            "Sales:",
+            summary["sales"],
+        )
+
+        print(
+            "Quantity:",
+            summary["quantity"],
+        )
+
+        print(
+            "Gross:",
+            summary["gross"],
+            "WETH",
+        )
+
+        print(
+            "Fees:",
+            summary["fees"],
+            "WETH",
+        )
+
+        print(
+            "Net:",
+            summary["net"],
+            "WETH",
+        )
+
+        print(
+            "Cost basis:",
+            summary[
+                "cost_basis"
+            ],
+            "WETH",
+        )
+
+        print(
+            "Realized P/L:",
+            summary[
+                "realized_pl"
+            ],
+            "WETH",
+        )
+
+        if (
+            summary[
+                "cost_basis"
+            ]
+            != 0
+        ):
+            roi = (
+                summary[
+                    "realized_pl"
+                ]
+                / summary[
+                    "cost_basis"
+                ]
+                * Decimal("100")
+            )
+
+            print(
+                "ROI:",
+                roi,
+                "%",
+            )
+
+    print(
+        "\nRECONCILIATION"
+    )
+
+    print(
+        "Gross - fees = net:",
+        (
+            "PASS"
+            if net_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Net - basis = P/L:",
+        (
+            "PASS"
+            if pl_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Sale count:",
+        (
+            "PASS"
+            if sale_count_valid
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+RONIN_PIPELINE_VERSION_V07 = "0.7"
+
+
+
+def validate_v07_accounting_pipeline(
+    db_path,
+):
+    connection = sqlite3.connect(
+        db_path
+    )
+
+    total_records = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            """
+        ).fetchone()[0]
+    )
+
+    review_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE accounting_status = 'REVIEW'
+            """
+        ).fetchone()[0]
+    )
+
+    sale_review_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND accounting_status = 'REVIEW'
+              AND cost_basis IS NULL
+            """
+        ).fetchone()[0]
+    )
+
+    realized_sale_count = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND accounting_status = 'READY'
+              AND cost_basis IS NOT NULL
+              AND realized_pl IS NOT NULL
+            """
+        ).fetchone()[0]
+    )
+
+    ready_sales_missing_basis = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND accounting_status = 'READY'
+              AND (
+                  cost_basis IS NULL
+                  OR realized_pl IS NULL
+              )
+            """
+        ).fetchone()[0]
+    )
+
+    review_sales_with_basis = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND accounting_status = 'REVIEW'
+              AND (
+                  cost_basis IS NOT NULL
+                  OR realized_pl IS NOT NULL
+              )
+            """
+        ).fetchone()[0]
+    )
+
+    token_swap_total = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'TOKEN_SWAP'
+            """
+        ).fetchone()[0]
+    )
+
+    token_swap_review = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'TOKEN_SWAP'
+              AND accounting_status = 'REVIEW'
+            """
+        ).fetchone()[0]
+    )
+
+    cocochoco_resolved = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM blockchain_accounting_records
+            WHERE event_type = 'ASSET_SALE'
+              AND asset_name =
+                  'Axie Consumable Item'
+              AND asset_token_id
+                  IN ('1', '2')
+              AND accounting_status = 'READY'
+              AND cost_basis IS NOT NULL
+              AND realized_pl IS NOT NULL
+            """
+        ).fetchone()[0]
+    )
+
+    version_rows = (
+        connection.execute(
+            """
+            SELECT
+                accounting_version,
+                COUNT(*)
+            FROM blockchain_accounting_records
+            GROUP BY accounting_version
+            ORDER BY accounting_version
+            """
+        ).fetchall()
+    )
+
+    connection.close()
+
+    review_queue = (
+        load_accounting_review_queue(
+            db_path
+        )
+    )
+
+    cost_basis_queue = (
+        build_remaining_cost_basis_review_queue(
+            db_path
+        )
+    )
+
+    report = (
+        build_realized_pl_marketplace_report(
+            db_path
+        )
+    )
+
+    review_queue_valid = (
+        len(review_queue)
+        == review_count
+    )
+
+    cost_basis_queue_valid = (
+        len(cost_basis_queue)
+        == sale_review_count
+    )
+
+    ready_sale_integrity = (
+        ready_sales_missing_basis
+        == 0
+    )
+
+    review_sale_integrity = (
+        review_sales_with_basis
+        == 0
+    )
+
+    swap_integrity = (
+        token_swap_total
+        == token_swap_review
+    )
+
+    net_reconciliation = (
+        report["gross_sales"]
+        - report["marketplace_fees"]
+        == report["net_sales"]
+    )
+
+    pl_reconciliation = (
+        report["net_sales"]
+        - report["cost_basis"]
+        == report["realized_pl"]
+    )
+
+    realized_count_valid = (
+        realized_sale_count
+        == len(
+            report["realized_sales"]
+        )
+    )
+
+    validation = (
+        total_records > 0
+        and review_queue_valid
+        and cost_basis_queue_valid
+        and ready_sale_integrity
+        and review_sale_integrity
+        and swap_integrity
+        and net_reconciliation
+        and pl_reconciliation
+        and realized_count_valid
+    )
+
+    return {
+        "total_records": total_records,
+        "review_count": review_count,
+        "sale_review_count": (
+            sale_review_count
+        ),
+        "realized_sale_count": (
+            realized_sale_count
+        ),
+        "cocochoco_resolved": (
+            cocochoco_resolved
+        ),
+        "token_swap_total": (
+            token_swap_total
+        ),
+        "version_rows": version_rows,
+        "review_queue_valid": (
+            review_queue_valid
+        ),
+        "cost_basis_queue_valid": (
+            cost_basis_queue_valid
+        ),
+        "ready_sale_integrity": (
+            ready_sale_integrity
+        ),
+        "review_sale_integrity": (
+            review_sale_integrity
+        ),
+        "swap_integrity": (
+            swap_integrity
+        ),
+        "net_reconciliation": (
+            net_reconciliation
+        ),
+        "pl_reconciliation": (
+            pl_reconciliation
+        ),
+        "realized_count_valid": (
+            realized_count_valid
+        ),
+        "realized_pl": report[
+            "realized_pl"
+        ],
+        "validation": validation,
+    }
+
+
+def run_ronin_sync_v07():
+    print(
+        "\n================================"
+    )
+
+    print(
+        "AXIEOS RONIN PIPELINE V0.7"
+    )
+
+    print(
+        "================================"
+    )
+
+    # Run the complete V0.6 ingestion,
+    # intelligence, economics, and
+    # accounting pipeline first.
+    run_ronin_sync_v06()
+
+    # V0.7 accounting-review treatment.
+    fifo_result = (
+        apply_cocochoco_fifo_cost_basis(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    validation = (
+        validate_v07_accounting_pipeline(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    print(
+        "\nAXIEOS RONIN V0.7 VALIDATION"
+    )
+
+    print(
+        "Pipeline version:",
+        RONIN_PIPELINE_VERSION_V07,
+    )
+
+    print(
+        "Total accounting records:",
+        validation[
+            "total_records"
+        ],
+    )
+
+    print(
+        "Accounting REVIEW records:",
+        validation[
+            "review_count"
+        ],
+    )
+
+    print(
+        "Unresolved sale basis:",
+        validation[
+            "sale_review_count"
+        ],
+    )
+
+    print(
+        "Realized sales:",
+        validation[
+            "realized_sale_count"
+        ],
+    )
+
+    print(
+        "Resolved CocoChoco sales:",
+        validation[
+            "cocochoco_resolved"
+        ],
+    )
+
+    print(
+        "CocoChoco FIFO candidates:",
+        fifo_result[
+            "candidates"
+        ],
+    )
+
+    print(
+        "CocoChoco FIFO applied:",
+        fifo_result[
+            "processed"
+        ],
+    )
+
+    print(
+        "Token swaps:",
+        validation[
+            "token_swap_total"
+        ],
+    )
+
+    print(
+        "Realized P/L:",
+        validation[
+            "realized_pl"
+        ],
+        "WETH",
+    )
+
+    print(
+        "\nACCOUNTING VERSIONS"
+    )
+
+    for version, count in (
+        validation[
+            "version_rows"
+        ]
+    ):
+        print(
+            f"{version}: {count}"
+        )
+
+    print(
+        "\nV0.7 INTEGRITY CHECKS"
+    )
+
+    print(
+        "Review queue reconciliation:",
+        (
+            "PASS"
+            if validation[
+                "review_queue_valid"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Cost-basis queue reconciliation:",
+        (
+            "PASS"
+            if validation[
+                "cost_basis_queue_valid"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "READY sale basis integrity:",
+        (
+            "PASS"
+            if validation[
+                "ready_sale_integrity"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "REVIEW sale preservation:",
+        (
+            "PASS"
+            if validation[
+                "review_sale_integrity"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Swap review preservation:",
+        (
+            "PASS"
+            if validation[
+                "swap_integrity"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Marketplace net reconciliation:",
+        (
+            "PASS"
+            if validation[
+                "net_reconciliation"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Realized P/L reconciliation:",
+        (
+            "PASS"
+            if validation[
+                "pl_reconciliation"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "Realized sale count:",
+        (
+            "PASS"
+            if validation[
+                "realized_count_valid"
+            ]
+            else "FAIL"
+        ),
+    )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation[
+                "validation"
+            ]
+            else "FAIL"
+        ),
+    )
+
+
+
+
+def run_cocochoco_fifo_inventory_audit_test():
+    result = (
+        build_cocochoco_fifo_inventory_audit(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    movements = result[
+        "movements"
+    ]
+
+    sales = [
+        item
+        for item in movements
+        if item["event_type"]
+        == "ASSET_SALE"
+    ]
+
+    fully_known_sales = [
+        item
+        for item in sales
+        if item["basis_status"]
+        == "FULLY_KNOWN_WETH"
+    ]
+
+    unknown_basis_sales = [
+        item
+        for item in sales
+        if item["basis_status"]
+        == "MIXED_OR_UNKNOWN_BASIS"
+    ]
+
+    insufficient_sales = [
+        item
+        for item in sales
+        if item["basis_status"]
+        == "INSUFFICIENT_HISTORY"
+    ]
+
+    token_counts = {}
+
+    for item in movements:
+        label = item[
+            "label"
+        ]
+
+        token_counts[label] = (
+            token_counts.get(
+                label,
+                0,
+            )
+            + 1
+        )
+
+    validation = (
+        len(sales) > 0
+        and (
+            len(fully_known_sales)
+            + len(unknown_basis_sales)
+            + len(insufficient_sales)
+        )
+        == len(sales)
+    )
+
+    print(
+        "\nAXIEOS COCOCHOCO FIFO INVENTORY AUDIT"
+    )
+
+    print(
+        "Inventory movements:",
+        len(movements),
+    )
+
+    print(
+        "Consumable sales:",
+        len(sales),
+    )
+
+    print(
+        "Sales with fully known basis:",
+        len(
+            fully_known_sales
+        ),
+    )
+
+    print(
+        "Sales with mixed/unknown basis:",
+        len(
+            unknown_basis_sales
+        ),
+    )
+
+    print(
+        "Sales with insufficient history:",
+        len(
+            insufficient_sales
+        ),
+    )
+
+    print(
+        "\nMOVEMENTS BY ASSET"
+    )
+
+    for label in sorted(
+        token_counts
+    ):
+        print(
+            f"{label}: "
+            f"{token_counts[label]}"
+        )
+
+    print(
+        "\nREMAINING INVENTORY"
+    )
+
+    for token_id in (
+        "1",
+        "2",
+    ):
+        print(
+            COCOCHOCO_TOKEN_LABELS[
+                token_id
+            ],
+            ":",
+            result[
+                "remaining_inventory"
+            ][token_id],
+        )
+
+    print(
+        "\nFULLY-KNOWN SALE EXAMPLES"
+    )
+
+    for item in (
+        fully_known_sales[:10]
+    ):
+        print(
+            "\nTX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset:",
+            item["label"],
+        )
+
+        print(
+            "Quantity:",
+            item["quantity"],
+        )
+
+        print(
+            "FIFO cost basis:",
+            item[
+                "fifo_cost_basis"
+            ],
+            "WETH",
+        )
+
+        print(
+            "Segments:",
+            len(
+                item["segments"]
+            ),
+        )
+
+    print(
+        "\nUNKNOWN-BASIS SALE EXAMPLES"
+    )
+
+    for item in (
+        unknown_basis_sales[:10]
+    ):
+        print(
+            "\nTX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset:",
+            item["label"],
+        )
+
+        print(
+            "Quantity:",
+            item["quantity"],
+        )
+
+        print(
+            "Status:",
+            item["basis_status"],
+        )
+
+        for segment in (
+            item["segments"][:5]
+        ):
+            print(
+                " Segment:",
+                segment[
+                    "quantity"
+                ],
+                segment[
+                    "basis_status"
+                ],
+                segment[
+                    "source_event"
+                ],
+                segment[
+                    "source_txhash"
+                ],
+            )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
+
+def run_missing_cost_basis_audit_test():
+    results = (
+        audit_missing_cost_basis_sales(
+            AXIEOS_DB_PATH
+        )
+    )
+
+    status_counts = {}
+
+    for item in results:
+        status = item[
+            "evidence_status"
+        ]
+
+        status_counts[status] = (
+            status_counts.get(
+                status,
+                0,
+            )
+            + 1
+        )
+
+    prior_purchase_records = [
+        item
+        for item in results
+        if item["evidence_status"]
+        == "PRIOR_PURCHASE_FOUND"
+    ]
+
+    prior_inbound_records = [
+        item
+        for item in results
+        if item["evidence_status"]
+        == "PRIOR_INBOUND_FOUND"
+    ]
+
+    missing_token_ids = [
+        item
+        for item in results
+        if item["evidence_status"]
+        == "MISSING_TOKEN_ID"
+    ]
+
+    validation = (
+        sum(
+            status_counts.values()
+        )
+        == len(results)
+    )
+
+    print(
+        "\nAXIEOS MISSING COST BASIS AUDIT"
+    )
+
+    print(
+        "Sales needing cost basis:",
+        len(results),
+    )
+
+    print(
+        "Prior purchases found:",
+        len(
+            prior_purchase_records
+        ),
+    )
+
+    print(
+        "Prior inbound evidence found:",
+        len(
+            prior_inbound_records
+        ),
+    )
+
+    print(
+        "Missing token IDs:",
+        len(
+            missing_token_ids
+        ),
+    )
+
+    print(
+        "\nEVIDENCE BREAKDOWN"
+    )
+
+    for status in sorted(
+        status_counts
+    ):
+        print(
+            f"{status}: "
+            f"{status_counts[status]}"
+        )
+
+    print(
+        "\nRECOVERABLE EXAMPLES"
+    )
+
+    recoverable = (
+        prior_purchase_records
+        + prior_inbound_records
+    )
+
+    for item in recoverable[:15]:
+        print(
+            "\nSALE TX:",
+            item["txhash"],
+        )
+
+        print(
+            "Sale date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset:",
+            item["asset_name"],
+        )
+
+        print(
+            "Token ID:",
+            item[
+                "asset_token_id"
+            ],
+        )
+
+        print(
+            "Net proceeds:",
+            item["net_amount"],
+        )
+
+        print(
+            "Evidence:",
+            item[
+                "evidence_status"
+            ],
+        )
+
+        for candidate in (
+            item["candidates"][:5]
+        ):
+            print(
+                " Candidate:",
+                candidate[
+                    "datetime"
+                ],
+                candidate[
+                    "event_type"
+                ],
+                candidate[
+                    "gross_amount"
+                ],
+                candidate[
+                    "txhash"
+                ],
+            )
+
+    print(
+        "\nMISSING-ID EXAMPLES"
+    )
+
+    for item in missing_token_ids[:10]:
+        print(
+            "\nTX:",
+            item["txhash"],
+        )
+
+        print(
+            "Date:",
+            item["datetime"],
+        )
+
+        print(
+            "Asset:",
+            item["asset_name"],
+        )
+
+        print(
+            "Net proceeds:",
+            item["net_amount"],
+        )
+
+    print(
+        "\nValidation:",
+        (
+            "PASS"
+            if validation
+            else "FAIL"
+        ),
+    )
+
 
 
 
 if __name__ == "__main__":
-    run_ronin_sync_v06(
-        incremental_max_pages=20,
-        backfill_pages=1,
-    )
+    run_ronin_sync_v07()
