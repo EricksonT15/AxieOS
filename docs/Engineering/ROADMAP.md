@@ -4,7 +4,7 @@
 
 **Version:** 1.1  
 **Last Updated:** 2026-08-23  
-**Current Engineering Release:** V0.7
+**Current Engineering Release: V0.9 — Bounty Optimizer Integration**
 
 ---
 
@@ -54,9 +54,9 @@ The long-term objective is to build a reusable GameFi operating system that can:
 | Marketplace Transaction Economics | ✅ Complete |
 | Automated Accounting Pipeline | ✅ Complete |
 | Accounting Review & Reporting | ✅ Complete |
-| Gameplay Data Model | ⏭️ Next |
-| Owned Axie Inventory | ⏭️ Next |
-| Bounty Optimizer Integration | 🟡 Partially Built |
+| Gameplay Data Model | ✅ Complete |
+| Owned Axie Inventory | ✅ Complete |
+| Bounty Optimizer Integration | 🚧 Active |
 | Marketplace Strategy Analytics | ⏳ Planned |
 | Terrarium Analytics | ⏳ Planned |
 | Staking Analytics | ⏳ Planned |
@@ -412,114 +412,277 @@ All layers pass:
 - V0.5 — PASS
 - V0.6 — PASS
 - V0.7 — PASS
+- V0.8 — PASS
 
 ---
 
-# V0.8 — Gameplay Data Model & Owned-Axie Inventory ⏭️ NEXT
+# V0.8 — Gameplay Data Model & Owned-Axie Inventory ✅ COMPLETE
 
 ## Objective
 
-Connect AxieOS blockchain/accounting infrastructure to actual gameplay decision-making.
-
-The next major engineering requirement is a structured model of the player's current Axies and gameplay assets.
+Build the structured gameplay-data foundation required to connect AxieOS blockchain/accounting infrastructure to actual gameplay decision-making.
 
 Blockchain ownership alone is not enough for Bounty Board optimization.
 
-AxieOS must understand characteristics such as:
+AxieOS must understand the player's current Axies, their gameplay attributes, collectible characteristics, body parts, ownership state, and eligibility for bounty requirements.
 
-- Axie ID
-- class
-- level
-- breed count
-- collectible status
-- collectible type
-- evolved status
-- body parts
-- special parts
-- eligibility for bounty requirements
-- acquisition state
-- release eligibility
-- current ownership
-
-## Planned
+## Completed
 
 ### Owned Axie Registry
 
-Create a persistent owned-Axie dataset.
+Built a persistent owned-Axie registry with support for:
 
-Possible fields:
-
-- axie_id
-- wallet_address
+- Axie ID
+- wallet address
+- ownership status
 - class
-- level
-- breed_count
-- collectible_type
-- is_collectible
-- is_evolved
-- ownership_status
-- acquisition_txhash
-- acquisition_datetime
-- acquisition_cost
-- current_status
-- last_updated
+- gameplay level
+- breed count
+- collectible status
+- evolved status
+- acquisition transaction
+- acquisition datetime
+- acquisition cost
+- ownership-date provenance
+- last-seen state
+- data source
+
+Current ownership is derived from live Ronin contract state rather than accounting history alone.
+
+Final current roster:
+
+- 136 currently owned Axies
+- 137 total historical registry records
+- Axie #7087631 correctly resolved as SOLD
+
+### Origins / Sky Mavis Gameplay Integration
+
+Integrated the official Sky Mavis Origins API.
+
+Implemented:
+
+- Origins API authentication
+- current Ronin fighter retrieval
+- full fighter roster synchronization
+- class synchronization
+- gameplay level synchronization
+- six-part Axie profiles
+- part class
+- part type
+- part value
+- part stage
+- Origins card catalog integration
+- human-readable body-part names
+
+Final body-part coverage:
+
+- 136 / 136 current Axies with complete six-part profiles
+- 816 / 816 current body parts named
+- 285 Origins part families resolved
+
+### On-Chain Axie Metadata
+
+Integrated direct Ronin Axie contract reads for:
+
+- breed count
+- Axie genes
+- genetic collectible signals
+
+The contract-level field was tested and intentionally rejected as a gameplay-level source.
+
+Origins `xp.currentLevel` remains authoritative for gameplay level.
+
+### Evolution Detection
+
+Implemented evolution-state detection from Origins part-stage data.
+
+Final current roster:
+
+- 65 evolved Axies
+- 71 non-evolved Axies
+
+### Collectible Intelligence
+
+Implemented Axie genetic decoding and collectible classification.
+
+Supported collection signals include:
+
+- Mystic
+- Bionic
+- Japanese
+- XMAS
+- Summer
+- Nightmare
+- Shiny
+- Origin
+- Meo Corp I
+- Meo Corp II
+
+Multi-collection Axies are supported.
+
+Final current roster:
+
+- 16 collectible Axies
+- 120 non-collectible Axies
+- 17 collection trait rows
+- 1 multi-collection Axie
+- 0 unmapped special genetic signals
 
 ### Gameplay Qualification Layer
 
-Determine whether an owned Axie satisfies requirements such as:
+Built a reusable qualification engine for currently owned Axies.
 
-- specific class,
-- minimum level,
-- collectible requirement,
-- evolved requirement,
-- specific body part,
-- Japanese collectible,
-- Mystic collectible,
-- ownership-duration requirement.
+Supported criteria:
 
-### Inventory State
+- specific class
+- minimum level
+- maximum level
+- minimum breed count
+- maximum breed count
+- evolved requirement
+- collectible requirement
+- required collection
+- any allowed collection
+- required named body part
+- any allowed named body part
+- minimum ownership duration
 
-Begin moving gameplay inventory from manually entered balances toward event-based state.
+The qualification engine uses three states:
 
-Priority assets:
+- QUALIFIED
+- DISQUALIFIED
+- UNKNOWN
 
-- Regular CocoChoco
-- Premium CocoChoco
-- Fortune Slips
-- Lucky Pouches
-- release materials
+`UNKNOWN` is used when required underlying data cannot be verified safely.
 
-### Blockchain ↔ Gameplay Linking
+Validated examples include:
 
-Connect:
+- Level 20+ qualification
+- Plant Level 20+ qualification
+- evolved collectible qualification
+- Japanese collectible qualification
+- Mystic collectible qualification
+- Pincer body-part qualification
+- evolved + Pincer qualification
+- ownership-duration qualification
 
-- marketplace purchases,
-- marketplace sales,
-- Axie ownership,
-- consumable acquisition,
-- consumable sale,
-- release events,
-- gameplay inventory.
+Current Pincer-qualified Axies:
 
-## Expected Deliverable
+- #3576345
+- #6251324
+- #11755726
 
-AxieOS should be able to answer:
+Current evolved + Pincer-qualified Axies:
 
-> Which Axies do I currently own, and which current Bounty Board tasks can each Axie satisfy?
+- #3576345
+- #6251324
+
+### Ownership-Duration Intelligence
+
+Validated Origins `ownership.lastTransferTime` against local blockchain acquisition timestamps.
+
+Validation result:
+
+- 9 / 9 exact matches
+
+Ownership-start provenance for the current roster:
+
+- 9 `RONIN_LOCAL_TRANSFER`
+- 115 `SKYMAVIS_ORIGINS_LAST_TRANSFER`
+- 12 `LEGACY_HISTORY_UNRESOLVED`
+
+Exact ownership-start dates are available for 124 / 136 current Axies.
+
+The remaining 12 Axies appear to require historical reconciliation with legacy Ronin-chain data.
+
+AxieOS deliberately does not fabricate ownership dates for these records.
+
+Ownership-duration qualification therefore returns `UNKNOWN` for those Axies.
+
+### Ronin RPC Reliability
+
+Hardened live Ronin reads for production use.
+
+Implemented:
+
+- request pacing
+- retry logic
+- exponential backoff
+- HTTP 429 rate-limit handling
+- shared Axie-core caching
+
+The shared Axie-core cache allows breed-count and collectible-genetics stages to reuse the same blockchain reads rather than querying every Axie twice.
+
+### V0.8 Production Pipeline
+
+Implemented the production runner:
+
+`run_gameplay_data_v08()`
+
+Production stages:
+
+1. Current ownership synchronization
+2. Origins gameplay metadata
+3. On-chain breed counts
+4. Collectible intelligence
+5. Human-readable body-part names
+6. Ownership-start provenance
+7. Final database validation
+
+## Final Production Validation
+
+- Current owned Axies: 136
+- Class coverage: 136 / 136
+- Gameplay level coverage: 136 / 136
+- Breed-count coverage: 136 / 136
+- Collectible-status coverage: 136 / 136
+- Evolution-status coverage: 136 / 136
+- Complete named six-part profiles: 136 / 136
+- Named body parts: 816 / 816
+- Evolved Axies: 65
+- Collectible Axies: 16
+- Collection trait rows: 17
+- Exact ownership-start dates: 124
+- Legacy-history unresolved: 12
+- Unknown ownership provenance: 0
+- Qualification engine: PASS
+- V0.8 Database Validation: PASS
+- V0.8 Production Pipeline: PASS
+
+## Deferred to V0.9
+
+The following originally planned V0.8 items are intentionally carried forward into Bounty integration:
+
+- event-based CocoChoco inventory state
+- Fortune Slip structured state
+- Lucky Pouch structured state
+- release-material inventory state
+- live Bounty Board task mapping
+- direct Bounty optimizer integration
+- optimizer recommendation vs actual-result tracking
+
+## Final Deliverable
+
+V0.8 provides a verified gameplay-data and qualification foundation capable of answering:
+
+> Which Axies do I currently own, what gameplay characteristics do they have, and which gameplay requirements can each Axie satisfy?
 
 ---
 
-# V0.9 — Bounty Optimizer Integration
+# V0.9 — Bounty Optimizer Integration 🚧 ACTIVE
 
 ## Objective
 
-Connect the existing Bounty Board optimization engine to live structured AxieOS data.
+Connect the existing Bounty Board optimization engine to the verified V0.8 gameplay-data layer and live structured AxieOS state.
+
+The goal is to remove manual Axie qualification and progressively remove manual gameplay-inventory inputs.
 
 ## Existing Capabilities
 
 The Bounty optimizer already supports:
 
 - KEEP / REROLL / COMBO decisions
+- sequential rerolls
 - reroll costs
 - reroll probabilities
 - Fortune Slip conservation
@@ -534,21 +697,97 @@ The Bounty optimizer already supports:
 - plan validation
 - rank bonus targeting
 
+V0.8 now additionally provides:
+
+- authoritative current owned-Axie roster
+- Axie class
+- gameplay level
+- breed count
+- evolution status
+- collectible status
+- collection membership
+- named body parts
+- ownership-duration qualification
+- safe UNKNOWN handling
+
 ## Planned
 
-- Replace manual Axie qualification inputs
-- Pull eligible Axies from owned-Axie registry
-- Pull CocoChoco inventory from gameplay inventory
-- Pull Fortune Slip balance from structured state
-- Integrate marketplace acquisition cost
-- Integrate release economics
+### Live Axie Qualification Integration
+
+- Replace manually entered Axie qualification assumptions
+- Pull eligible Axies directly from `gameplay_owned_axies`
+- Use the V0.8 qualification engine for live Bounty task requirements
+- Return exact qualifying Axie IDs for each applicable task
+- Prevent use of Axies that are no longer owned
+
+### Bounty Task Requirement Model
+
+Create structured mappings between Bounty Board tasks and qualification criteria.
+
+Examples:
+
+- class requirement
+- minimum level
+- evolved requirement
+- collectible requirement
+- Japanese collectible
+- Mystic collectible
+- specific body part
+- ownership-duration requirement
+
+### Gameplay Inventory State
+
+Move key gameplay inventory away from manually entered balances.
+
+Priority assets:
+
+- Regular CocoChoco
+- Premium CocoChoco
+- Fortune Slips
+- Lucky Pouches
+- release materials
+
+### Blockchain ↔ Gameplay Linking
+
+Connect gameplay inventory and Bounty decisions with:
+
+- marketplace purchases
+- marketplace sales
+- Axie ownership
+- consumable acquisition
+- consumable sale
+- release events
+- gameplay consumption
+
+### Bounty Outcome Tracking
+
 - Track actual daily BP outcome
 - Track optimizer recommendation vs actual result
-- Store historical bounty decisions
+- Store historical Bounty decisions
+- Record reroll decisions
+- Record task completion
+- Record resource consumption
+- Support later strategy-performance analysis
+
+### Economics Integration
+
+- Integrate marketplace acquisition cost
+- Integrate release economics
+- Expose economic cost of completing Bounty tasks where relevant
+- Preserve capital-conservation guardrails
 
 ## Expected Deliverable
 
-A daily Bounty Board recommendation generated from live AxieOS state.
+AxieOS should generate a daily Bounty Board recommendation from live structured state, including:
+
+1. KEEP / REROLL / COMBO recommendation
+2. Exact eligible owned Axie where applicable
+3. Required gameplay inventory
+4. Expected BP
+5. Fortune Slip cost
+6. Economic cost where applicable
+7. Rank-strategy impact
+8. Validation that the recommendation is executable
 
 ---
 
@@ -804,7 +1043,9 @@ Recommendations should include:
 
 ## Sprint Goal
 
-Begin **V0.8 — Gameplay Data Model & Owned-Axie Inventory**.
+Begin **V0.9 — Bounty Optimizer Integration**.
+
+Connect the completed V0.8 gameplay-data and Axie qualification foundation to the existing Bounty Board optimizer.
 
 ## Completed Before This Sprint
 
@@ -819,20 +1060,31 @@ Begin **V0.8 — Gameplay Data Model & Owned-Axie Inventory**.
 - [x] Automated Accounting Pipeline V0.6
 - [x] Accounting Review & Reporting V0.7
 - [x] V0.7 production validation
-- [x] V0.7 commit and push
+- [x] Gameplay Data Model & Owned-Axie Inventory V0.8
+- [x] 136-Axie current ownership reconciliation
+- [x] Origins gameplay metadata integration
+- [x] On-chain breed-count and genetic intelligence
+- [x] 816 body-part name mappings
+- [x] Collectible classification
+- [x] Ownership-duration provenance
+- [x] Bounty qualification engine
+- [x] V0.8 database validation
+- [x] V0.8 production pipeline validation
+- [x] V0.8 commit and push
 
 ## Current Tasks
 
-- [x] Modernize ROADMAP.md
-- [ ] Define V0.8 gameplay data model
-- [ ] Design owned-Axie registry schema
-- [ ] Build owned-Axie persistence layer
-- [ ] Import / synchronize owned Axie state
-- [ ] Add Axie gameplay attributes
-- [ ] Build bounty qualification matcher
-- [ ] Connect CocoChoco inventory identity
-- [ ] Validate owned-Axie state
-- [ ] Integrate with Bounty optimizer
+- [ ] Define V0.9 Bounty task requirement model
+- [ ] Map Bounty task types to V0.8 qualification criteria
+- [ ] Connect owned-Axie qualification to Bounty optimizer
+- [ ] Return exact eligible Axie IDs for relevant tasks
+- [ ] Build structured CocoChoco inventory state
+- [ ] Build structured Fortune Slip state
+- [ ] Connect gameplay inventory to optimizer
+- [ ] Integrate Bounty task economics where applicable
+- [ ] Track optimizer recommendation vs actual result
+- [ ] Store historical Bounty decisions
+- [ ] Build V0.9 integration validation
 - [ ] Update LLM_Project_Context.md
 - [ ] Update CHANGELOG.md
 - [ ] Update Engineering_Journal.md
@@ -841,9 +1093,21 @@ Begin **V0.8 — Gameplay Data Model & Owned-Axie Inventory**.
 
 # Immediate Next Step
 
-Begin **V0.8 Task 93 — Gameplay Data Model Design**.
+Begin **V0.9 Task 99 — Bounty Task Requirement Model**.
 
-The first engineering decision is to define the persistent owned-Axie schema before writing synchronization or qualification logic.
+The first V0.9 engineering step is to define how each Bounty Board task translates into structured machine-readable requirements that can be evaluated by the completed V0.8 qualification engine.
+
+Initial mappings should prioritize requirements already supported by V0.8:
+
+- Axie class
+- minimum level
+- evolved status
+- collectible status
+- specific collectible collection
+- named body part
+- ownership duration
+
+This requirement model will become the bridge between live Bounty Board tasks and the owned-Axie qualification engine.
 
 ---
 
