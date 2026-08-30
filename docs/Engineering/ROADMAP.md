@@ -2,9 +2,9 @@
 
 # AxieOS Engineering Roadmap
 
-**Version:** 1.1  
-**Last Updated:** 2026-08-23  
-**Current Engineering Release: V0.9 — Bounty Optimizer Integration**
+**Version:** 1.2  
+**Last Updated:** 2026-08-30  
+**Current Engineering Release: V0.10 — Marketplace Strategy Analytics**
 
 ---
 
@@ -56,8 +56,8 @@ The long-term objective is to build a reusable GameFi operating system that can:
 | Accounting Review & Reporting | ✅ Complete |
 | Gameplay Data Model | ✅ Complete |
 | Owned Axie Inventory | ✅ Complete |
-| Bounty Optimizer Integration | 🚧 Active |
-| Marketplace Strategy Analytics | ⏳ Planned |
+| Bounty Optimizer Integration | ✅ Complete |
+| Marketplace Strategy Analytics | 🚧 Active |
 | Terrarium Analytics | ⏳ Planned |
 | Staking Analytics | ⏳ Planned |
 | Unified Finance Reporting | ⏳ Planned |
@@ -669,125 +669,134 @@ V0.8 provides a verified gameplay-data and qualification foundation capable of a
 
 ---
 
-# V0.9 — Bounty Optimizer Integration 🚧 ACTIVE
+# V0.9 — Bounty Optimizer Integration ✅ COMPLETE
 
 ## Objective
 
-Connect the existing Bounty Board optimization engine to the verified V0.8 gameplay-data layer and live structured AxieOS state.
+Connect the Bounty Board optimization engine to the verified V0.8 gameplay-data layer and structured AxieOS state.
 
-The goal is to remove manual Axie qualification and progressively remove manual gameplay-inventory inputs.
+The release focused on eliminating manual Axie qualification, improving inventory and Fortune Slip state, adding task economics, and establishing recommendation-performance tracking.
 
-## Existing Capabilities
+## Completed
 
-The Bounty optimizer already supports:
+### Bounty Requirement Model
 
-- KEEP / REROLL / COMBO decisions
-- sequential rerolls
-- reroll costs
-- reroll probabilities
-- Fortune Slip conservation
-- rank-push strategy
-- Master-chance strategy
-- inventory requirements
-- Regular CocoChoco reserve
-- Premium CocoChoco reserve
-- overlapping task detection
-- projected vs actual reroll balance
-- daily board input
-- plan validation
-- rank bonus targeting
+- Structured Bounty task requirements
+- Task-name normalization
+- Parameterized task resolution
+- Historical task compatibility
+- Mapping to V0.8 Axie qualification criteria
 
-V0.8 now additionally provides:
+### Owned-Axie Integration
 
-- authoritative current owned-Axie roster
-- Axie class
-- gameplay level
-- breed count
-- evolution status
-- collectible status
-- collection membership
-- named body parts
-- ownership-duration qualification
-- safe UNKNOWN handling
+- Connected owned-Axie qualification directly to the optimizer
+- Returned exact eligible Axie IDs
+- Prevented use of Axies that are no longer owned
+- Supported class, level, breed, evolution, collectible, collection, part, and ownership-duration requirements
 
-## Planned
+### Gameplay Inventory
 
-### Live Axie Qualification Integration
+- Structured Regular and Premium CocoChoco inventory
+- `on_hand`
+- `reserved`
+- `available`
+- Gameplay-database inventory source
+- Verified snapshot + subsequent inventory-event derivation
+- Reserve-aware recommendation validation
 
-- Replace manually entered Axie qualification assumptions
-- Pull eligible Axies directly from `gameplay_owned_axies`
-- Use the V0.8 qualification engine for live Bounty task requirements
-- Return exact qualifying Axie IDs for each applicable task
-- Prevent use of Axies that are no longer owned
+### Fortune Slips
 
-### Bounty Task Requirement Model
+- Structured Fortune Slip state
+- Protected reserves
+- Projected reroll spend
+- Projected remaining balance
+- Reserve-aware reroll decisions
 
-Create structured mappings between Bounty Board tasks and qualification criteria.
+### Bounty Economics
 
-Examples:
+- Explicit task economic inputs
+- Gross cost
+- Expected recovery
+- Net WETH cost
+- BP efficiency
+- Non-WETH costs
+- `INPUT_REQUIRED` handling for missing evidence
+- Explicit COMBO economics to avoid double-counting
 
-- class requirement
-- minimum level
-- evolved requirement
-- collectible requirement
-- Japanese collectible
-- Mystic collectible
-- specific body part
-- ownership-duration requirement
+### Recommendation vs Actual
 
-### Gameplay Inventory State
+Tracked:
 
-Move key gameplay inventory away from manually entered balances.
+- KEEP recommendations
+- REROLL recommendations
+- COMBO recommendations
+- planned BP
+- actual BP
+- planned Fortune Slip spend
+- actual Fortune Slip spend
+- expected net cost
+- actual net cost
+- recommendation-followed status
 
-Priority assets:
+Actual states include:
 
-- Regular CocoChoco
-- Premium CocoChoco
-- Fortune Slips
-- Lucky Pouches
-- release materials
+- PENDING
+- COMPLETED
+- REROLLED
+- SKIPPED
+- PARTIAL
 
-### Blockchain ↔ Gameplay Linking
+### Historical Task Resolution
 
-Connect gameplay inventory and Bounty decisions with:
+Production historical Bounty records were normalized through the current task resolver plus historical compatibility aliases.
 
-- marketplace purchases
-- marketplace sales
-- Axie ownership
-- consumable acquisition
-- consumable sale
-- release events
-- gameplay consumption
+Final validation:
 
-### Bounty Outcome Tracking
+```text
+Final selected historical tasks      72
+Resolved                             72
+Unresolved                            0
+Resolution rate                     100%
+```
 
-- Track actual daily BP outcome
-- Track optimizer recommendation vs actual result
-- Store historical Bounty decisions
-- Record reroll decisions
-- Record task completion
-- Record resource consumption
-- Support later strategy-performance analysis
+### Optimizer Decision Persistence
 
-### Economics Integration
+Added:
 
-- Integrate marketplace acquisition cost
-- Integrate release economics
-- Expose economic cost of completing Bounty tasks where relevant
-- Preserve capital-conservation guardrails
+```text
+bounty_optimizer_runs
+bounty_optimizer_decisions
+```
 
-## Expected Deliverable
+Recommendations are stored initially as `PENDING` and can later be reconciled against actual gameplay evidence.
 
-AxieOS should generate a daily Bounty Board recommendation from live structured state, including:
+Persistence is atomic.
 
-1. KEEP / REROLL / COMBO recommendation
-2. Exact eligible owned Axie where applicable
-3. Required gameplay inventory
-4. Expected BP
-5. Fortune Slip cost
-6. Economic cost where applicable
-7. Rank-strategy impact
-8. Validation that the recommendation is executable
+Historical gameplay outcomes are not retroactively treated as historical AxieOS recommendations.
+
+Normal optimizer execution remains read-only unless recommendation persistence is explicitly requested.
+
+### Final Validation
+
+```text
+V0.9 tests                     25 / 25 PASS
+Historical task resolution            PASS
+Current daily plan                    PASS
+Production history safety             PASS
+
+V0.9 Integration Validation           PASS
+```
+
+Production optimizer-history rows remained unchanged during synthetic validation:
+
+```text
+Optimizer runs                  0 -> 0
+Optimizer decisions             0 -> 0
+```
+
+## Result
+
+V0.9 provides an integrated Bounty Board decision-support system capable of combining structured task requirements, owned-Axie eligibility, gameplay inventory, Fortune Slip economics, task economics, and recommendation-performance tracking.
 
 ---
 
@@ -1043,15 +1052,30 @@ Recommendations should include:
 
 ## Sprint Goal
 
-Begin **V0.9 — Bounty Optimizer Integration**.
+Begin **V0.10 — Marketplace Strategy Analytics**.
 
-Connect the completed V0.8 gameplay-data and Axie qualification foundation to the existing Bounty Board optimizer.
+Build on the completed accounting, owned-Axie, and Bounty infrastructure to help AxieOS evaluate marketplace inventory and capital decisions.
+
+The objective is to move from:
+
+```text
+What happened?
+```
+
+toward:
+
+```text
+What do I own?
+What did it cost?
+What is its current status?
+What should I sell, hold, release, or acquire?
+How efficiently is marketplace capital being used?
+```
 
 ## Completed Before This Sprint
 
 - [x] Development foundation
 - [x] SQLite database foundation
-- [x] Import pipeline
 - [x] Ronin API Sync V0.1
 - [x] Transaction Classification V0.2
 - [x] Transaction Economics V0.3
@@ -1059,55 +1083,74 @@ Connect the completed V0.8 gameplay-data and Axie qualification foundation to th
 - [x] Asset & Wallet Intelligence V0.5
 - [x] Automated Accounting Pipeline V0.6
 - [x] Accounting Review & Reporting V0.7
-- [x] V0.7 production validation
 - [x] Gameplay Data Model & Owned-Axie Inventory V0.8
-- [x] 136-Axie current ownership reconciliation
-- [x] Origins gameplay metadata integration
-- [x] On-chain breed-count and genetic intelligence
-- [x] 816 body-part name mappings
-- [x] Collectible classification
-- [x] Ownership-duration provenance
-- [x] Bounty qualification engine
-- [x] V0.8 database validation
-- [x] V0.8 production pipeline validation
-- [x] V0.8 commit and push
+- [x] Bounty Optimizer Integration V0.9
+- [x] 25 / 25 V0.9 integration tests
+- [x] V0.9 production safety validation
+- [x] V0.9 documentation
+- [x] V0.9 commit and push
 
 ## Current Tasks
 
-- [ ] Define V0.9 Bounty task requirement model
-- [ ] Map Bounty task types to V0.8 qualification criteria
-- [ ] Connect owned-Axie qualification to Bounty optimizer
-- [ ] Return exact eligible Axie IDs for relevant tasks
-- [ ] Build structured CocoChoco inventory state
-- [ ] Build structured Fortune Slip state
-- [ ] Connect gameplay inventory to optimizer
-- [ ] Integrate Bounty task economics where applicable
-- [ ] Track optimizer recommendation vs actual result
-- [ ] Store historical Bounty decisions
-- [ ] Build V0.9 integration validation
-- [ ] Update LLM_Project_Context.md
-- [ ] Update CHANGELOG.md
-- [ ] Update Engineering_Journal.md
+- [ ] Task 110 — Define Marketplace Inventory Report
+- [ ] Task 111 — Build current marketplace inventory model
+- [ ] Task 112 — Link acquisition cost and ownership state
+- [ ] Task 113 — Add listing / sale status
+- [ ] Task 114 — Compute realized and unrealized marketplace metrics
+- [ ] Task 115 — Add holding-period analytics
+- [ ] Task 116 — Add resale and break-even analysis
+- [ ] Task 117 — Add release-candidate economics
+- [ ] Task 118 — Add capital-utilization metrics
+- [ ] Task 119 — Build marketplace strategy scoring
+- [ ] Task 120 — V0.10 integration and production validation
+- [ ] Update `LLM_Project_Context.md`
+- [ ] Update `CHANGELOG.md`
+- [ ] Update `Engineering_Journal.md`
 
 ---
 
 # Immediate Next Step
 
-Begin **V0.9 Task 99 — Bounty Task Requirement Model**.
+Begin **V0.10 Task 110 — Marketplace Inventory Report Definition**.
 
-The first V0.9 engineering step is to define how each Bounty Board task translates into structured machine-readable requirements that can be evaluated by the completed V0.8 qualification engine.
+The first V0.10 engineering task is to define the canonical marketplace inventory view before building strategy recommendations.
 
-Initial mappings should prioritize requirements already supported by V0.8:
+The model should determine which fields can already be sourced reliably from existing AxieOS data.
 
-- Axie class
-- minimum level
-- evolved status
-- collectible status
-- specific collectible collection
-- named body part
-- ownership duration
+Initial fields should include:
 
-This requirement model will become the bridge between live Bounty Board tasks and the owned-Axie qualification engine.
+```text
+asset_id
+asset_type
+ownership_status
+acquisition_date
+acquisition_cost
+acquisition_currency
+current_listing_status
+listing_price
+sale_date
+gross_sale
+marketplace_fee
+net_proceeds
+realized_pl
+realized_roi
+holding_period
+bounty_link
+release_economics
+data_quality
+```
+
+The first step should be a **data-source audit**, not new marketplace recommendation logic.
+
+AxieOS should first determine which of these fields are already provable from:
+
+- accounting records,
+- marketplace events,
+- owned-Axie state,
+- blockchain transactions,
+- gameplay records.
+
+Missing fields must remain explicitly unresolved rather than being estimated without evidence.
 
 ---
 
