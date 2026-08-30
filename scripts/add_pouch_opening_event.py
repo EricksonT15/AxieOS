@@ -1,6 +1,7 @@
 import argparse
 
 from database import connect_database
+from add_inventory_event import add_inventory_event
 
 
 def get_daily_session_id(conn, session_date, player_id):
@@ -75,6 +76,274 @@ def add_pouch_opening_event(
     conn.commit()
 
     return cursor.lastrowid
+
+
+
+
+def add_pouch_reward_inventory_event(
+    conn,
+    daily_session_id,
+    event_datetime,
+    pouch_opening_event_id,
+    item_name,
+    quantity,
+):
+    """
+    Mirror supported pouch rewards into inventory_events.
+
+    inventory_events is the canonical quantity ledger.
+    pouch_reward_items remains the detailed pouch-reward record.
+
+    V0.9 currently treats Regular Choco and Premium Choco
+    as supported optimizer inventory resources.
+    """
+
+    normalized_name = " ".join(
+        str(item_name).strip().split()
+    )
+
+    supported_items = {
+        "regular choco": "Regular Choco",
+        "premium choco": "Premium Choco",
+    }
+
+    canonical_name = supported_items.get(
+        normalized_name.casefold()
+    )
+
+    if canonical_name is None:
+        return None
+
+    if quantity <= 0:
+        raise ValueError(
+            "Pouch reward inventory quantity "
+            "must be positive."
+        )
+
+    return add_inventory_event(
+        conn=conn,
+        daily_session_id=daily_session_id,
+        event_datetime=event_datetime,
+        item_type="Consumable",
+        item_name=canonical_name,
+        event_type="pouch_reward",
+        quantity_change=quantity,
+        notes=(
+            "Inventory mirror from pouch opening "
+            f"event #{pouch_opening_event_id}."
+        ),
+    )
+
+
+
+def run_v09_pouch_inventory_mirror_test():
+    import sqlite3
+
+    print(
+        "\n"
+        "============================================================"
+    )
+    print(
+        "AXIEOS V0.9 POUCH INVENTORY MIRROR TEST"
+    )
+    print(
+        "============================================================"
+    )
+
+    conn = sqlite3.connect(
+        ":memory:"
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE inventory_events (
+            id INTEGER PRIMARY KEY,
+            daily_session_id INTEGER,
+            event_datetime TEXT NOT NULL,
+            item_type TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            quantity_change INTEGER NOT NULL,
+            related_bounty_task_id INTEGER,
+            related_marketplace_event_id INTEGER,
+            notes TEXT,
+            created_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+    all_passed = True
+
+    # --------------------------------------------------------
+    # Regular Choco
+    # --------------------------------------------------------
+
+    regular_id = (
+        add_pouch_reward_inventory_event(
+            conn=conn,
+            daily_session_id=100,
+            event_datetime=(
+                "2026-08-25 12:00:00"
+            ),
+            pouch_opening_event_id=500,
+            item_name="Regular Choco",
+            quantity=3,
+        )
+    )
+
+    regular_row = conn.execute(
+        """
+        SELECT
+            daily_session_id,
+            event_datetime,
+            item_type,
+            item_name,
+            event_type,
+            quantity_change
+        FROM inventory_events
+        WHERE id = ?
+        """,
+        (
+            regular_id,
+        ),
+    ).fetchone()
+
+    regular_expected = (
+        100,
+        "2026-08-25 12:00:00",
+        "Consumable",
+        "Regular Choco",
+        "pouch_reward",
+        3,
+    )
+
+    regular_passed = (
+        regular_row
+        == regular_expected
+    )
+
+    print(
+        "Regular Choco mirror:",
+        "PASS" if regular_passed else "FAIL",
+    )
+    print(
+        "  Row:",
+        regular_row,
+    )
+
+    if not regular_passed:
+        all_passed = False
+
+    # --------------------------------------------------------
+    # Premium Choco
+    # --------------------------------------------------------
+
+    premium_id = (
+        add_pouch_reward_inventory_event(
+            conn=conn,
+            daily_session_id=100,
+            event_datetime=(
+                "2026-08-25 12:01:00"
+            ),
+            pouch_opening_event_id=501,
+            item_name="Premium Choco",
+            quantity=1,
+        )
+    )
+
+    premium_row = conn.execute(
+        """
+        SELECT
+            item_type,
+            item_name,
+            event_type,
+            quantity_change
+        FROM inventory_events
+        WHERE id = ?
+        """,
+        (
+            premium_id,
+        ),
+    ).fetchone()
+
+    premium_passed = (
+        premium_row
+        == (
+            "Consumable",
+            "Premium Choco",
+            "pouch_reward",
+            1,
+        )
+    )
+
+    print(
+        "Premium Choco mirror:",
+        "PASS" if premium_passed else "FAIL",
+    )
+    print(
+        "  Row:",
+        premium_row,
+    )
+
+    if not premium_passed:
+        all_passed = False
+
+    # --------------------------------------------------------
+    # Unsupported reward must not corrupt inventory ledger
+    # --------------------------------------------------------
+
+    unsupported_result = (
+        add_pouch_reward_inventory_event(
+            conn=conn,
+            daily_session_id=100,
+            event_datetime=(
+                "2026-08-25 12:02:00"
+            ),
+            pouch_opening_event_id=502,
+            item_name="Unknown Reward",
+            quantity=5,
+        )
+    )
+
+    row_count = conn.execute(
+        """
+        SELECT COUNT(*)
+        FROM inventory_events
+        """
+    ).fetchone()[0]
+
+    unsupported_passed = (
+        unsupported_result is None
+        and row_count == 2
+    )
+
+    print(
+        "Unsupported reward guardrail:",
+        (
+            "PASS"
+            if unsupported_passed
+            else "FAIL"
+        ),
+    )
+    print(
+        "  Inventory rows:",
+        row_count,
+    )
+
+    if not unsupported_passed:
+        all_passed = False
+
+    conn.close()
+
+    print(
+        "\nV0.9 Pouch Inventory Mirror:",
+        "PASS" if all_passed else "FAIL",
+    )
+
+    return all_passed
+
+
 
 def add_pouch_reward_item(
     conn,
@@ -260,6 +529,17 @@ def main():
             quantity,
         )
 
+        add_pouch_reward_inventory_event(
+            conn=conn,
+            daily_session_id=daily_session_id,
+            event_datetime=args.datetime,
+            pouch_opening_event_id=(
+                pouch_event_id
+            ),
+            item_name=item_name,
+            quantity=quantity,
+        )
+    
     print(f"Pouch opening event ID: {pouch_event_id}")
 
     conn.close()

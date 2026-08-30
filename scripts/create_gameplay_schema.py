@@ -62,6 +62,128 @@ def create_gameplay_schema():
         """
     )
 
+
+
+    # ========================================================
+    # V0.9 — Bounty Optimizer Decision History
+    # ========================================================
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS bounty_optimizer_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            daily_session_id INTEGER NOT NULL,
+
+            run_datetime TEXT NOT NULL,
+            strategy_mode TEXT NOT NULL,
+            optimizer_model_version TEXT NOT NULL,
+
+            run_source TEXT NOT NULL
+                DEFAULT 'LIVE_OPTIMIZER',
+
+            plan_status TEXT,
+            inventory_source TEXT,
+
+            notes TEXT,
+
+            created_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (daily_session_id)
+                REFERENCES gameplay_daily_sessions(id)
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS bounty_optimizer_decisions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            optimizer_run_id INTEGER NOT NULL,
+            decision_index INTEGER NOT NULL,
+
+            tracking_key TEXT NOT NULL,
+            tracking_model_version TEXT NOT NULL,
+
+            decision TEXT NOT NULL,
+            task_ids_json TEXT NOT NULL,
+
+            planned_bp INTEGER,
+            planned_reroll_slips INTEGER,
+
+            economics_status TEXT,
+            expected_net_cost_weth TEXT,
+
+            actual_status TEXT NOT NULL
+                DEFAULT 'PENDING',
+
+            actual_bp INTEGER,
+            actual_slips_spent INTEGER,
+            actual_net_cost_weth TEXT,
+
+            bp_variance INTEGER,
+            slip_variance INTEGER,
+            net_cost_variance_weth TEXT,
+
+            recommendation_followed INTEGER,
+
+            recommendation_json TEXT,
+            actual_outcome_json TEXT,
+
+            notes TEXT,
+
+            created_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (optimizer_run_id)
+                REFERENCES bounty_optimizer_runs(id),
+
+            UNIQUE(
+                optimizer_run_id,
+                decision_index
+            )
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+            idx_bounty_optimizer_runs_session
+        ON bounty_optimizer_runs (
+            daily_session_id,
+            run_datetime
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+            idx_bounty_optimizer_decisions_run
+        ON bounty_optimizer_decisions (
+            optimizer_run_id,
+            decision_index
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+            idx_bounty_optimizer_decisions_tracking
+        ON bounty_optimizer_decisions (
+            tracking_key
+        )
+        """
+    )
+
+
+
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS terrarium_snapshots (
@@ -210,6 +332,52 @@ def create_gameplay_schema():
 
             FOREIGN KEY (related_marketplace_event_id)
                 REFERENCES marketplace_events(id)
+        )
+        """
+    )
+
+
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS gameplay_inventory_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            player_id TEXT NOT NULL DEFAULT 'primary',
+
+            snapshot_datetime TEXT NOT NULL,
+
+            item_type TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+
+            quantity_on_hand INTEGER NOT NULL,
+
+            source TEXT NOT NULL,
+            notes TEXT,
+
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE (
+                player_id,
+                snapshot_datetime,
+                item_type,
+                item_name
+            )
+        )
+        """
+    )
+
+
+
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_gameplay_inventory_snapshots_lookup
+        ON gameplay_inventory_snapshots (
+            player_id,
+            item_type,
+            item_name,
+            snapshot_datetime
         )
         """
     )
@@ -389,11 +557,16 @@ def create_gameplay_schema():
     print("Gameplay schema created successfully.")
     print("Created/verified table: gameplay_daily_sessions")
     print("Created/verified table: bounty_board_tasks")
+    print("Created/verified table: bounty_optimizer_runs")
+    print("Created/verified table: bounty_optimizer_decisions")
     print("Created/verified table: terrarium_snapshots")
     print("Created/verified table: terrarium_plot_snapshots")
     print("Created/verified table: terrarium_group_rankings")
     print("Created/verified table: marketplace_events")
     print("Created/verified table: inventory_events")
+    print(
+        "Created/verified table: gameplay_inventory_snapshots"
+    )
     print("Created/verified table: inventory_event_bounty_tasks")
     print("Created/verified table: pouch_opening_events")
     print("Created/verified table: pouch_reward_items")

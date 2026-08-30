@@ -1346,44 +1346,319 @@ and relevant documentation.
 
 ## 29. Current Project Position
 
-AxieOS has moved beyond the initial blockchain-summary stage into operational decision support and transaction-level economic accounting.
+AxieOS has progressed from blockchain ingestion and accounting into structured gameplay intelligence and operational Bounty Board decision support.
 
-Current high-level position:
+### Release Status
 
 ```text
-Blockchain Import                 ✅
-Database Schema                   ✅
-Import Validation                 ✅
-Shared Database Connection        ✅
-Wallet Analytics                  ✅
-Transaction Analytics             ✅
-Token Analytics                   ✅
-Bounty Optimizer V1               ✅ Operational / improving
-Daily Board Input                 ✅
-Sequential Reroll Logic           ✅
-Inventory Reserve Validation      ✅
-Rank Strategy Modes               ✅
-Marketplace Accounting            🔄 Active
-Cost-Basis Reconciliation         🔄 Active
-Ronin CSV Ledger                  ⏭️ Next data-layer expansion
-Owned-Axie Inventory Matching     ⏭️ Planned
-Swap Accounting                   ⏭️ Next accounting phase
-Terrarium Structured Analytics    🔄 Manual data collection
-Staking Analytics                 🔄 Manual / structured records developing
-Automated Gameplay Import         Planned
-AI Recommendations                Future
-Machine Learning                  Future
+V0.1  Ronin API Sync                         COMPLETE
+V0.2  Transaction Classification             COMPLETE
+V0.3  Transaction Economics                  COMPLETE
+V0.4  Historical + Incremental Sync          COMPLETE
+V0.5  Asset & Wallet Intelligence            COMPLETE
+V0.6  Automated Accounting Pipeline          COMPLETE
+V0.7  Accounting Review & Reporting          COMPLETE
+V0.8  Gameplay Data Model + Owned Axies      COMPLETE
+V0.9  Bounty Optimizer Integration           IMPLEMENTATION + VALIDATION COMPLETE
+                                                Release documentation in progress
 ```
+
+### V0.8 Gameplay Foundation
+
+V0.8 established the structured owned-Axie gameplay layer used by the optimizer.
+
+Production checkpoint:
+
+```text
+Owned Axies                         136
+Gameplay metadata                   136 / 136
+Named parts                         816 / 816
+Collectibles                        16
+Evolved Axies                       65
+Exact ownership provenance          124
+Legacy-history unresolved           12
+
+V0.8 DB Validation                  PASS
+V0.8 Pipeline Validation            PASS
+```
+
+Owned-Axie qualification supports class, level, breed count, evolved status, collectible status / collection, required parts, and minimum ownership days.
+
+Qualification results use:
+
+```text
+QUALIFIED
+DISQUALIFIED
+UNKNOWN
+```
+
+The `UNKNOWN` state is used when historical provenance is insufficient to make an exact determination.
+
+### V0.9 Bounty Optimizer
+
+V0.9 integrates:
+
+```text
+Bounty requirement resolution
+Owned-Axie qualification
+Exact eligible Axie IDs
+Structured CocoChoco inventory
+Structured Fortune Slip state
+Gameplay inventory integration
+Reserve-aware optimization
+Bounty economics
+KEEP / REROLL / COMBO recommendations
+Recommendation-vs-actual tracking
+Optimizer decision persistence
+Actual-outcome reconciliation
+Explicit live recommendation saving
+```
+
+The operational flow is:
+
+```text
+Daily Board
+    ↓
+Task Resolution
+    ↓
+Owned-Axie Qualification
+    ↓
+Inventory + Fortune Slips
+    ↓
+Bounty Economics
+    ↓
+KEEP / REROLL / COMBO
+    ↓
+Recommendation Tracking
+    ↓
+Actual Gameplay Evidence
+    ↓
+Recommendation-vs-Actual Reconciliation
+```
+
+### Inventory and Fortune Slips
+
+Optimizer inventory supports:
+
+```text
+manual
+gameplay_db
+```
+
+Gameplay inventory is derived from the latest verified snapshot plus inventory events occurring strictly after that snapshot.
+
+A missing verified snapshot does not default to zero.
+
+CocoChoco state tracks:
+
+```text
+on_hand
+reserved
+available
+```
+
+Fortune Slip state tracks balance, protected reserve, projected reroll spend, and projected remaining balance.
+
+### Bounty Economics
+
+Economically applicable tasks can use explicit:
+
+```text
+gross_cost_weth
+expected_recovery_weth
+basis
+confidence
+non_weth_costs
+```
+
+Missing economic evidence does not default to zero. The model can instead return:
+
+```text
+INPUT_REQUIRED
+```
+
+COMBO economics require an explicit combined profile so shared execution costs are not accidentally double-counted.
+
+### Recommendation vs Actual
+
+V0.9 tracks planned versus actual:
+
+```text
+BP
+reroll slips
+net WETH cost
+recommendation followed
+```
+
+Actual states include:
+
+```text
+PENDING
+COMPLETED
+REROLLED
+SKIPPED
+PARTIAL
+```
+
+Missing actual evidence remains `PENDING`.
+
+### Historical Task Compatibility
+
+Historical Bounty records contain wording variants from earlier manual logging periods.
+
+V0.9 resolves them using:
+
+```text
+1. Current V0.9 task resolver
+2. Historical compatibility aliases
+```
+
+Historical-only identifiers are kept outside the active `BOUNTY_TASK_CATALOG`.
+
+Production validation:
+
+```text
+Final selected historical tasks      72
+Resolved                             72
+Unresolved                            0
+Resolution rate                     100%
+```
+
+Some non-final historical reroll rows may remain semantically unresolved. They are retained as slot / roll / slip evidence and do not block unrelated recommendation reconciliation.
+
+### Optimizer Decision Persistence
+
+V0.9 introduced:
+
+```text
+bounty_optimizer_runs
+bounty_optimizer_decisions
+```
+
+Architecture:
+
+```text
+gameplay_daily_sessions
+        ↓
+bounty_optimizer_runs
+        ↓
+bounty_optimizer_decisions
+```
+
+One gameplay session may contain multiple optimizer runs because the Bounty Board can change after rerolls.
+
+Recommendations are persisted first as `PENDING`, then reconciled later using actual gameplay evidence.
+
+Persistence is atomic. If a decision insert fails, the entire optimizer run is rolled back.
+
+Normal execution:
+
+```text
+python bounty_optimizer.py
+```
+
+does not automatically save optimizer recommendation history.
+
+Saving recommendation history requires the explicit persistence workflow.
+
+### Historical Recommendation Integrity
+
+Do not reconstruct historical AxieOS recommendations from gameplay outcomes alone.
+
+Historical gameplay can prove what happened, but it does not prove what AxieOS recommended unless that recommendation was actually recorded.
+
+The explicit live-save workflow therefore:
+
+```text
+blocks historical LIVE_OPTIMIZER attribution
+blocks exact duplicate optimizer-plan saves
+keeps normal optimizer execution read-only
+```
+
+At the V0.9 validation checkpoint:
+
+```text
+bounty_optimizer_runs          0 rows
+bounty_optimizer_decisions     0 rows
+```
+
+This is intentional.
+
+All synthetic persistence tests used in-memory SQLite databases. No fabricated historical optimizer recommendations were inserted into the production database.
+
+Genuine optimizer history should begin accumulating only from explicitly saved live recommendations going forward.
+
+### V0.9 Final Validation
+
+The final V0.9 integration validator covers:
+
+```text
+Requirements & Axie qualification
+Inventory, Fortune Slips & daily input
+Bounty economics
+Recommendation-vs-actual tracking
+Gameplay actual-outcome adapter
+Optimizer persistence
+Optimizer reconciliation
+Explicit-save safeguards
+Production historical task resolution
+Current daily-plan regression
+Production-history mutation safety
+```
+
+Final result:
+
+```text
+V0.9 tests                     25 / 25 PASS
+Historical task resolution            PASS
+Current daily plan                    PASS
+Production history safety             PASS
+
+V0.9 Integration Validation           PASS
+```
+
+Production optimizer-history counts remained unchanged:
+
+```text
+Optimizer runs                  0 -> 0
+Optimizer decisions             0 -> 0
+```
+
+### Current Regression Fixture
+
+`bounty_daily_input.py` currently contains the historical August 18, 2026 fixture:
+
+```text
+DAILY_DATE                      2026-08-18
+Observed BP                           2050
+Starting Fortune Slips                1712
+Ending Fortune Slips                  1402
+Strategy                          Conserve
+Minimum reserve                         20
+
+Task BP                               1375
+Additional BP                          675
+Recorded slip spend                    310
+Plan Status                          READY
+Data Quality                         REVIEW
+```
+
+The `REVIEW` state is expected because observed BP contains 675 additional / unattributed BP. It is not a V0.9 optimizer regression failure.
+
+Because this fixture is historical, it must not be saved as a current `LIVE_OPTIMIZER` recommendation.
 
 ### Immediate Engineering Sequence
 
 ```text
-Finish remaining cost-basis review
-→ Task 89 swap accounting
-→ Ronin CSV ingestion / normalization
-→ Asset and wallet reconciliation
-→ Owned-Axie inventory integration
-→ Expand automated economic analytics
+Complete V0.9 documentation
+    ↓
+CHANGELOG.md
+    ↓
+Engineering Journal
+    ↓
+Commit and push V0.9
+    ↓
+Begin next AxieOS release
 ```
 
 ---
