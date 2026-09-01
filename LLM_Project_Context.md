@@ -1,6 +1,6 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-08-22**
+Last updated: **2026-09-01**
 
 ---
 
@@ -37,44 +37,73 @@ The project is now organized into specialized workstreams coordinated through a 
 
 The project has progressed significantly beyond the original August 8 blockchain-analytics baseline.
 
-Current accounting dataset:
+AxieOS has now completed the core engineering work through V0.10.
+
+Current production data includes:
 
 ```text
-Approximately 320 accounting records
+blockchain_transactions              565 rows
+blockchain_accounting_records         405 rows
+gameplay_owned_axies                  137 rows
+canonical marketplace inventory       171 Axies
 ```
 
-Recent cost-basis audit identified:
+Current release status:
 
 ```text
-51 unresolved sales
+V0.1  Ronin API Sync                         COMPLETE
+V0.2  Transaction Classification             COMPLETE
+V0.3  Transaction Economics                  COMPLETE
+V0.4  Historical + Incremental Sync          COMPLETE
+V0.5  Asset & Wallet Intelligence            COMPLETE
+V0.6  Automated Accounting Pipeline          COMPLETE
+V0.7  Accounting Review & Reporting          COMPLETE
+V0.8  Gameplay Data Model + Owned Axies      COMPLETE
+V0.9  Bounty Optimizer Integration           COMPLETE
+V0.10 Marketplace Strategy Analytics         CORE ENGINEERING COMPLETE
 ```
 
-Initial classification:
+V0.10 established the canonical marketplace inventory and strategy-analysis layer.
+
+Final V0.10 production checkpoint:
 
 ```text
-43 inventory-pool cases
-7 Axie inbound-review cases
-1 no-prior-evidence case
+Canonical inventory                    171
+Unique Axies                           171
+
+OPEN_OWNED                             136
+CLOSED_SOLD                             27
+CLOSED_RELEASED                          8
+
+Inventory validator                   PASS
+Inventory errors                         0
+
+Production sign-off                   PASS
+Sign-off errors                           0
 ```
 
-Recent V0.7 development progress:
+Marketplace strategy output currently remains advisory and conservative:
 
 ```text
-Tasks 85–87   Complete
-Task 88       Cost-basis reconciliation / finalization
-Task 89       Swaps — next major accounting area
+STRATEGY_HOLD_PROTECTED                 65
+STRATEGY_HOLD_INSUFFICIENT_DATA         65
+STRATEGY_REVIEW_EXIT_OPTIONS             6
+STRATEGY_NOT_APPLICABLE                 35
+
+Automatic SELL decisions                 0
+Automatic RELEASE decisions              0
 ```
 
-Recent reconciliation work resolved 18 CocoChoco sales using FIFO methodology.
-
-Remaining review work at the latest checkpoint included:
+Current V0.10 closeout tasks:
 
 ```text
-25 CocoChoco sales
-8 Axie sales
+Task 121   Update LLM_Project_Context.md        IN PROGRESS
+Task 122   Update CHANGELOG.md                  PENDING
+Task 123   Engineering Journal completion       PENDING
 ```
 
-The immediate development objective is to finish the remaining Task 88 cost-basis review before proceeding to swap accounting.
+The immediate development objective is to complete V0.10 documentation, then commit and push the validated V0.10 implementation before beginning the next AxieOS release.
+
 
 ### August 22 Bounty Board Checkpoint
 
@@ -1359,8 +1388,18 @@ V0.5  Asset & Wallet Intelligence            COMPLETE
 V0.6  Automated Accounting Pipeline          COMPLETE
 V0.7  Accounting Review & Reporting          COMPLETE
 V0.8  Gameplay Data Model + Owned Axies      COMPLETE
-V0.9  Bounty Optimizer Integration           IMPLEMENTATION + VALIDATION COMPLETE
-                                                Release documentation in progress
+V0.9  Bounty Optimizer Integration           COMPLETE
+V0.10 Marketplace Strategy Analytics         CORE ENGINEERING COMPLETE
+```
+
+V0.10 core implementation and production validation are complete.
+
+Remaining V0.10 work is documentation closeout:
+
+```text
+Task 121   LLM_Project_Context.md             IN PROGRESS
+Task 122   CHANGELOG.md                       PENDING
+Task 123   Engineering Journal                PENDING
 ```
 
 ### V0.8 Gameplay Foundation
@@ -1647,21 +1686,456 @@ The `REVIEW` state is expected because observed BP contains 675 additional / una
 
 Because this fixture is historical, it must not be saved as a current `LIVE_OPTIMIZER` recommendation.
 
+
+
+
 ### Immediate Engineering Sequence
 
 ```text
-Complete V0.9 documentation
-    ↓
-CHANGELOG.md
-    ↓
-Engineering Journal
-    ↓
-Commit and push V0.9
-    ↓
+V0.10 core engineering COMPLETE
+    ->
+Update LLM_Project_Context.md
+    ->
+Update CHANGELOG.md
+    ->
+Write V0.10 Engineering Journal completion record
+    ->
+Commit and push V0.10
+    ->
 Begin next AxieOS release
 ```
 
+## 29A. V0.10 Marketplace Strategy Analytics
+
+V0.10 introduced the canonical Axie marketplace inventory and strategy-analysis layer.
+
+Primary implementation:
+
+```text
+scripts/inventory_report.py
+```
+
+The script is intentionally read-only against the production SQLite database.
+
+Production database:
+
+```text
+data/blockchain/database/axieos.db
+```
+
+The production database remains local / untracked and must not be committed to Git.
+
+### Canonical Marketplace Inventory
+
+The V0.10 inventory is built from the union of relevant Axie IDs across:
+
+```text
+gameplay_owned_axies
+marketplace_events
+blockchain_accounting_records
+```
+
+Production source coverage at final validation:
+
+```text
+gameplay_owned_axies rows             137
+marketplace distinct Axies             11
+accounting distinct Axies              42
+canonical Axie inventory              171
+canonical unique Axies                171
+```
+
+Final canonical position states:
+
+```text
+OPEN_OWNED                             136
+CLOSED_SOLD                             27
+CLOSED_RELEASED                          8
+                                      ----
+TOTAL                                   171
+```
+
+The canonical inventory is not limited to Axies currently present in gameplay inventory. It also retains legitimate historical marketplace / accounting positions so sold and released assets remain available for analytics and reconciliation.
+
+### Ownership and Acquisition Semantics
+
+V0.10 explicitly separates:
+
+```text
+ownership start
+```
+
+from:
+
+```text
+economic acquisition
+```
+
+Ownership-start evidence proves when an Axie entered user ownership.
+
+Economic-acquisition evidence requires defensible purchase / cost evidence.
+
+This distinction prevents transfers, legacy ownership history, or incomplete provenance from being treated as proven purchases.
+
+At the V0.10 checkpoint:
+
+```text
+Known ownership-start datetime          157
+Ownership-start READY                   154
+Ownership-start REVIEW                   17
+
+Known economic acquisition cost          34
+Known acquisition datetime               34
+Known acquisition txhash                 27
+```
+
+For current open positions, only 7 of 136 have proven acquisition cost suitable for READY resale / capital analytics.
+
+### Listing and Sale Semantics
+
+Historical marketplace listing records do not prove that an Axie is currently listed.
+
+V0.10 therefore distinguishes:
+
+```text
+CLOSED_POSITION                         35
+LISTING_RECORDED_UNVERIFIED              1
+UNKNOWN                                135
+```
+
+No live marketplace source is currently connected that can prove a present active listing.
+
+Sale evidence distinguishes accounting-confirmed sales from weaker historical marketplace records.
+
+At the V0.10 checkpoint:
+
+```text
+SOLD_CONFIRMED                          25
+SALE_RECORDED_UNVERIFIED                 2
+NO_SALE_EVIDENCE                       136
+NOT_APPLICABLE_RELEASED                  8
+```
+
+### Datetime Policy
+
+Canonical blockchain / accounting timestamps are treated as UTC.
+
+Older manually entered marketplace timestamps may represent Philippine local time and are retained as REVIEW evidence rather than silently shifted.
+
+Example:
+
+```text
+Axie #2788135 accounting burn:
+2026-08-14 03:57:05 UTC
+
+Legacy marketplace release:
+2026-08-14 11:57:05
+```
+
+The exact eight-hour difference is consistent with Asia/Manila local time, but V0.10 does not silently rewrite legacy timestamps without explicit source proof.
+
+### Realized Economics
+
+Realized P/L is calculated only when accounting evidence is sufficiently complete.
+
+Final production status:
+
+```text
+REALIZED_READY                          14
+REALIZED_REVIEW                         11
+REALIZED_UNAVAILABLE                     2
+REALIZED_NOT_APPLICABLE                144
+```
+
+READY realized rows contain exact accounting-backed:
+
+```text
+gross sale
+marketplace fee
+net proceeds
+cost basis
+realized P/L
+realized ROI
+```
+
+Historical accounting values are used directly rather than recomputing historical marketplace fees.
+
+### Unrealized Economics
+
+V0.10 does not fabricate current market value.
+
+Because no live Axie marketplace-price source is connected:
+
+```text
+current_market_value = unavailable
+unrealized_pl        = unavailable
+unrealized_roi       = unavailable
+```
+
+for all open positions.
+
+This is an intentional data-quality rule.
+
+### Marketplace Fee and Resale Break-Even
+
+A production audit of 25 accounting-backed Axie sales found:
+
+```text
+Observed marketplace fee rate: 4.2500%
+Minimum observed rate:          4.2500%
+Maximum observed rate:          4.2500%
+```
+
+V0.10 therefore uses:
+
+```text
+4.25%
+```
+
+as an explicitly labeled historical marketplace-fee assumption for future resale break-even analysis.
+
+For an open Axie with proven acquisition basis:
+
+```text
+break-even gross sale price
+=
+acquisition cost / (1 - 0.0425)
+```
+
+The model does not currently include purchase gas or future sale gas in WETH break-even because those costs may be denominated in RON and no timestamp-specific RON/WETH conversion model has been established.
+
+Final resale status:
+
+```text
+RESALE_READY                              7
+RESALE_UNAVAILABLE_NO_COST              129
+RESALE_NOT_APPLICABLE                    35
+```
+
+### Holding-Period Analytics
+
+Holding periods use canonical ownership-start evidence.
+
+For open positions, holding time runs from ownership start to the current UTC report timestamp.
+
+For closed positions, holding time ends at confirmed / recorded sale or release.
+
+Final production state:
+
+```text
+HOLDING_READY                           153
+HOLDING_REVIEW                            4
+HOLDING_UNAVAILABLE                      14
+```
+
+The four REVIEW positions are legacy timestamp / provenance cases.
+
+The 14 unavailable positions lack a defensible ownership-start datetime.
+
+Very short holding periods are valid. Historical release candidates were sometimes purchased and released within minutes.
+
+### Release-Candidate Economics
+
+V0.10 introduced the first canonical release-candidate analysis layer.
+
+All 136 currently owned Axies have:
+
+```text
+level
+breed_count
+```
+
+available from `gameplay_owned_axies`.
+
+Current owned-Axie coverage includes:
+
+```text
+Collectible Axies                        16
+Evolved Axies                            65
+Protected collectible/evolved set        65
+```
+
+A collectible or evolved Axie is treated as protected from automatic release analysis.
+
+Final release-analysis states:
+
+```text
+RELEASE_ANALYSIS_READY                    6
+RELEASE_REVIEW_NO_COST_BASIS             65
+RELEASE_REVIEW_PROTECTED_ATTRIBUTE       65
+RELEASE_NOT_APPLICABLE                   35
+```
+
+Only six currently owned, non-protected Axies have sufficient proven capital basis for READY release analysis.
+
+Seven open Axies have proven acquisition basis in total; one of them is evolved and therefore remains protected.
+
+### Release-Economics Limitation
+
+Historical production evidence includes:
+
+```text
+7 accounting-backed Axie burns
+2 legacy marketplace release records
+recorded release material quantities for only 2 releases
+```
+
+Examples of recorded historical material recovery include:
+
+```text
+Axie #12147655
+3 Beast Mementos
+2 Aquatic Mementos
+5 total
+
+Axie #2788135
+18 Bug Mementos
+18 Plant Mementos
+38 Aquatic Mementos
+74 total
+```
+
+Production data does not yet contain a defensible Memento / material market-value model.
+
+Therefore V0.10 intentionally leaves:
+
+```text
+release_expected_recovery_weth = unavailable
+release_expected_pl_weth       = unavailable
+```
+
+No synthetic expected material value is inserted.
+
+Historical `ascendLevel` transactions were found shortly before several releases, but the transaction rows do not contain a reliable Axie ID relationship. They are therefore not automatically assigned to individual Axie release economics.
+
+### Capital Utilization
+
+Because only 7 of 136 open positions have proven acquisition basis, V0.10 labels its capital analytics:
+
+```text
+PARTIAL_COVERAGE
+```
+
+Final fixed-capital checkpoint:
+
+```text
+Open positions                           136
+Open positions with proven cost            7
+Cost-basis coverage                  5.1471%
+
+Proven open capital             0.0037736775 WETH
+Protected-attribute capital     0.0008300000 WETH
+Release-analysis-ready capital  0.0029436775 WETH
+
+Protected capital share                21.9945%
+Release-ready capital share            78.0055%
+```
+
+Capital-days exposure and capital-weighted average holding age are dynamic values because open positions continue aging.
+
+Do not interpret `0.0037736775 WETH` as the cost of the full 136-Axie owned inventory. It represents only the seven open positions with proven acquisition basis.
+
+### Marketplace Strategy Layer
+
+V0.10 deliberately uses rule-based strategy states rather than an artificial 0-100 numeric score.
+
+Final production strategy states:
+
+```text
+STRATEGY_HOLD_PROTECTED                 65
+STRATEGY_HOLD_INSUFFICIENT_DATA         65
+STRATEGY_REVIEW_EXIT_OPTIONS             6
+STRATEGY_NOT_APPLICABLE                 35
+```
+
+Strategy actions:
+
+```text
+HOLD                                    130
+REVIEW                                    6
+NONE                                     35
+```
+
+`STRATEGY_REVIEW_EXIT_OPTIONS` means the Axie has sufficient proven acquisition basis and release-analysis inputs to justify comparing exit alternatives.
+
+It does not mean SELL or RELEASE.
+
+V0.10 safety guardrail:
+
+```text
+Automatic SELL decisions                 0
+Automatic RELEASE decisions              0
+```
+
+The six exit-review positions require additional evidence before AxieOS can select an exit path.
+
+In particular:
+
+```text
+resale decision
+requires live / user-supplied market price
+
+release decision
+requires defensible release-recovery valuation
+```
+
+### V0.10 Production Validation
+
+Final production validation on September 1, 2026:
+
+```text
+Python compile check                   PASS
+SQL write-safety scan                  PASS
+Canonical inventory                    171
+Unique Axies                           171
+Inventory validator                   PASS
+Inventory errors                         0
+Production sign-off                   PASS
+Sign-off errors                           0
+```
+
+Cross-version regression against critical V0.9 components:
+
+```text
+Owned Axie candidates                  PASS
+Recommendation Axie candidates         PASS
+Recommendation vs actual               PASS
+
+Overall                                PASS
+```
+
+This confirms that the V0.10 marketplace implementation did not break the critical V0.9 owned-Axie / Bounty Optimizer candidate and recommendation pipeline.
+
+### V0.10 Engineering Status
+
+Core V0.10 engineering tasks:
+
+```text
+110  Inventory definition                         COMPLETE
+111  Canonical inventory model                    COMPLETE
+112  Acquisition cost + ownership state           COMPLETE
+113  Listing / sale status                        COMPLETE
+114  Realized / unrealized metrics                COMPLETE
+115  Holding-period analytics                     COMPLETE
+116  Resale / break-even analytics                COMPLETE
+117  Release-candidate economics                  COMPLETE
+118  Capital-utilization analytics                COMPLETE
+119  Marketplace strategy scoring                 COMPLETE
+120  Integration / production validation          COMPLETE
+```
+
+Remaining V0.10 closeout:
+
+```text
+121  LLM_Project_Context.md update
+122  CHANGELOG.md update
+123  Engineering Journal completion record
+```
+
+Do not commit the V0.10 implementation until Tasks 121-123 are complete.
+
 ---
+
 
 ## 30. LLM Context Maintenance Procedure
 
