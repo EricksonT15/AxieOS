@@ -1,6 +1,6 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-09-01**
+Last updated: **2026-09-03**
 
 ---
 
@@ -60,7 +60,8 @@ V0.6  Automated Accounting Pipeline          COMPLETE
 V0.7  Accounting Review & Reporting          COMPLETE
 V0.8  Gameplay Data Model + Owned Axies      COMPLETE
 V0.9  Bounty Optimizer Integration           COMPLETE
-V0.10 Marketplace Strategy Analytics         CORE ENGINEERING COMPLETE
+V0.10  Marketplace Strategy Analytics        COMPLETE
+V0.11  Terrarium Analytics                   ACTIVE
 ```
 
 V0.10 established the canonical marketplace inventory and strategy-analysis layer.
@@ -2135,6 +2136,191 @@ Remaining V0.10 closeout:
 Do not commit the V0.10 implementation until Tasks 121-123 are complete.
 
 ---
+
+## 29B. V0.11 Terrarium Analytics — Current Checkpoint
+
+V0.10 Marketplace Strategy Analytics is fully complete.
+
+```text
+Core engineering             COMPLETE
+Production validation        PASS
+Documentation                COMPLETE
+Commit                       COMPLETE
+Push to main                 COMPLETE
+```
+
+A follow-up historical acquisition-cost audit was also completed for the currently owned Nightmare Axies.
+
+Primary script:
+
+```text
+python/nightmare_cost_check.py
+```
+
+Final local evidence result:
+
+```text
+Nightmare Axies checked                 11
+Acquisition costs recovered              0
+Cost evidence requiring review           0
+Cost not recovered                      10
+Ownership history unresolved             1
+```
+
+Ten Nightmare Axies have ownership-start evidence but no defensible acquisition cost in the current local AxieOS data.
+
+Axie:
+
+```text
+#8724306
+```
+
+remains:
+
+```text
+HISTORY_UNRESOLVED
+```
+
+with neither a defensible acquisition cost nor ownership-start datetime in the current local evidence.
+
+The Nightmare audit checked:
+
+```text
+gameplay_owned_axies
+blockchain_accounting_records
+marketplace_events
+blockchain_transactions
+repository files
+Git history
+```
+
+No defensible historical purchase price was recovered.
+
+Do not infer acquisition cost from:
+
+```text
+ownership-start timestamps
+Axie progression expenses
+ascension / evolution spending
+accessory purchases
+unrelated marketplace activity
+```
+
+Further Nightmare cost recovery requires external historical Ronin / Sky Mavis transaction or marketplace evidence.
+
+---
+
+### V0.11 Terrarium Analytics
+
+V0.11 has now started.
+
+Roadmap objective:
+
+```text
+Track land and Terrarium performance over time.
+```
+
+Planned V0.11 components include:
+
+```text
+terrarium_summary.py
+terrarium_projection.py
+structured snapshot storage
+rank history
+flame history
+bAXS distribution history
+land-level yield tracking
+ROI tracking
+```
+
+Planned metrics include:
+
+```text
+Global Lunium
+Flame
+Rank
+Total Flame
+Daily bAXS
+Claimable bAXS
+Total acquired bAXS
+Monthly yield
+Historical yield
+Land ROI
+```
+
+Existing Terrarium-related repository files already identified:
+
+```text
+scripts/add_terrarium_snapshot.py
+docs/Game Mechanics/Terrariums.md
+```
+
+### Current V0.11 Engineering Task
+
+Current checkpoint:
+
+```text
+V0.11 — Task 124
+Audit Existing Terrarium Foundation
+```
+
+Task 124 is currently:
+
+```text
+PAUSED BEFORE AUDIT EXECUTION
+```
+
+The repository discovery step has already confirmed the existing Terrarium script and mechanics document.
+
+The next action is to inspect:
+
+```text
+scripts/add_terrarium_snapshot.py
+docs/Game Mechanics/Terrariums.md
+existing Terrarium / land / flame / Lunium database tables
+```
+
+before creating or modifying any V0.11 code.
+
+Do not begin `terrarium_summary.py`, `terrarium_projection.py`, or Task 125 until the existing Terrarium foundation has been audited.
+
+### Development Instruction
+
+When resuming V0.11:
+
+```text
+Resume Task 124
+    ->
+Audit existing Terrarium implementation
+    ->
+Audit existing database schema / rows
+    ->
+Identify what already exists
+    ->
+Define Task 125 from actual repo state
+```
+
+Continue using the AxieOS development workflow:
+
+```text
+Exact FILE
+Exact placement
+Complete replacement / insertion code
+Exact RUN command
+Expected output
+Validate before next task
+```
+
+Avoid guessed code placement.
+
+---
+
+
+
+
+
+
+
 
 
 ## 30. LLM Context Maintenance Procedure
