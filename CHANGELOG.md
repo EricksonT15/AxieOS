@@ -1,3 +1,85 @@
+## 2026-09-08 — V0.11 Terrarium Analytics
+
+### Added
+
+- Added `scripts/terrarium_summary.py` for canonical and evidence-aware Terrarium analytics.
+- Added `scripts/add_terrarium_evidence.py` for preserving partial historical observations without inventing missing fields.
+- Added dedicated Terrarium snapshot, plot, and ranking evidence tables.
+- Added metric-aware adjacent-versus-bridged change analysis.
+- Added cumulative bAXS composition, competitive Flame-share, and Next Distribution analytics.
+- Added `scripts/terrarium_projection.py`.
+- Added calendar-date-span accumulation projections.
+- Added conservative / base / upside scenarios at 75%, 100%, and 125% of observed pace.
+- Added `scripts/terrarium_roi.py`.
+- Added required runtime `--axs-price-ron` input.
+- Added ROI financial-input guardrails.
+
+### Changed
+
+- Changed unknown Terrarium buff state to remain `NULL`.
+- Removed the false default from `estimated_unbuffed_hours`.
+- Preserved all 17 historical legacy zero values without rewriting historical evidence.
+- Changed partial-observation analytics to operate metric-by-metric.
+- Changed yield terminology to **calendar-date-span average** where exact timestamps are unavailable.
+- Separated historical accumulation from financial assumptions.
+- Applied the corrected Forest acquisition reference of 871.81 RON.
+- Applied the 70% bAXS → AXS conversion assumption with its 30% haircut explicit.
+
+### Historical Coverage
+
+```text
+Canonical snapshots                        17
+Canonical plot rows                        51
+Canonical ranking rows                     34
+
+Partial evidence observations              13
+Evidence plot rows                         29
+Evidence ranking rows                      12
+
+Evidence-aware observations                30
+Represented dates                          18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+### Accumulation Basis
+
+```text
+Forest observed increase             +19.6300 bAXS
+Savannah #1 observed increase         +1.6200 bAXS
+Savannah #2 observed increase         +1.9800 bAXS
+Combined observed increase           +23.2300 bAXS
+
+Calendar-date span                          20 days
+Base nominal pace                      1.1615 bAXS/day
+```
+
+### Financial References
+
+```text
+Forest plot                      (-123, 9)
+Forest purchase                  0.06841 ETH
+Historical RON reference         871.81 RON
+bAXS → AXS conversion            70%
+Explicit haircut                 30%
+```
+
+AXS market price remains a runtime assumption rather than a fixed historical value.
+
+### Validation
+
+- Production Terrarium schema migration: PASS
+- Historical rows preserved: PASS
+- Foreign-key validation: PASS
+- SQLite integrity validation: PASS
+- Future NULL ingestion test: PASS
+- Evidence-aware analytics regression: PASS
+- Projection regression: PASS
+- ROI formula validation: PASS
+- ROI input guardrails: PASS
+- Python compile regression: PASS
+
+---
+
 ## 2026-09-01 — V0.10 Marketplace Strategy Analytics
 
 ### Added

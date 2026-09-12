@@ -68,7 +68,7 @@ def save_snapshot(args):
                 args.snapshot_datetime,
                 args.global_lunium,
                 args.claimable_baxs,
-                int(not args.buff_inactive),
+                args.buff_active,
                 args.buff_activation_time,
                 args.unbuffed_hours,
                 args.notes,
@@ -97,7 +97,7 @@ def save_snapshot(args):
                 args.snapshot_type,
                 args.global_lunium,
                 args.claimable_baxs,
-                int(not args.buff_inactive),
+                args.buff_active,
                 args.buff_activation_time,
                 args.unbuffed_hours,
                 args.notes,
@@ -219,12 +219,35 @@ def main():
     parser.add_argument("--global-lunium", type=int, required=True)
     parser.add_argument("--claimable-baxs", required=True)
 
-    parser.add_argument(
-        "--buff-inactive",
-        action="store_true",
+    buff_group = parser.add_mutually_exclusive_group()
+
+    buff_group.add_argument(
+        "--buff-active",
+        dest="buff_active",
+        action="store_const",
+        const=1,
     )
+
+    buff_group.add_argument(
+        "--buff-inactive",
+        dest="buff_active",
+        action="store_const",
+        const=0,
+    )
+
+    parser.set_defaults(
+        buff_active=None,
+    )
+
+
     parser.add_argument("--buff-activation-time")
-    parser.add_argument("--unbuffed-hours", default="0")
+    parser.add_argument(
+        "--unbuffed-hours",
+        help=(
+            "Observed or defensibly estimated unbuffed hours. "
+            "Omit when unknown; omission stores NULL."
+        ),
+    )
     parser.add_argument("--notes", default="")
 
     parser.add_argument("--forest-flame", type=int, required=True)

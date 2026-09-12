@@ -197,9 +197,9 @@ def create_gameplay_schema():
             global_lunium INTEGER,
             claimable_baxs TEXT,
 
-            buff_active INTEGER NOT NULL DEFAULT 1,
+            buff_active INTEGER,
             buff_activation_time TEXT,
-            estimated_unbuffed_hours TEXT DEFAULT '0',
+            estimated_unbuffed_hours TEXT,
 
             notes TEXT,
 
@@ -267,6 +267,115 @@ def create_gameplay_schema():
         )
         """
     )
+
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS terrarium_snapshot_evidence (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            session_date TEXT NOT NULL,
+            player_id TEXT NOT NULL DEFAULT 'primary',
+
+            snapshot_type TEXT NOT NULL,
+
+            observed_datetime TEXT,
+            observed_time_text TEXT,
+
+            completeness_status TEXT NOT NULL,
+
+            global_lunium INTEGER,
+            claimable_baxs TEXT,
+
+            buff_active INTEGER,
+
+            source TEXT NOT NULL,
+            source_reference TEXT NOT NULL,
+
+            notes TEXT,
+
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            CHECK (
+                completeness_status IN (
+                    'COMPLETE',
+                    'PARTIAL',
+                    'UNRESOLVED'
+                )
+            ),
+
+            CHECK (
+                buff_active IN (0, 1)
+                OR buff_active IS NULL
+            ),
+
+            UNIQUE (
+                session_date,
+                player_id,
+                snapshot_type,
+                source_reference
+            )
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS terrarium_plot_evidence (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            terrarium_evidence_id INTEGER NOT NULL,
+
+            plot_type TEXT NOT NULL,
+            plot_number INTEGER NOT NULL,
+
+            flame INTEGER,
+            next_distribution TEXT,
+            total_acquired_baxs TEXT,
+
+            notes TEXT,
+
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (terrarium_evidence_id)
+                REFERENCES terrarium_snapshot_evidence(id),
+
+            UNIQUE (
+                terrarium_evidence_id,
+                plot_type,
+                plot_number
+            )
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS terrarium_group_ranking_evidence (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            terrarium_evidence_id INTEGER NOT NULL,
+
+            group_type TEXT NOT NULL,
+
+            rank INTEGER,
+            global_flame INTEGER,
+
+            notes TEXT,
+
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (terrarium_evidence_id)
+                REFERENCES terrarium_snapshot_evidence(id),
+
+            UNIQUE (
+                terrarium_evidence_id,
+                group_type
+            )
+        )
+        """
+    )
+
 
     conn.execute(
         """

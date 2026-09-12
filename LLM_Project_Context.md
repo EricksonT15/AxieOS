@@ -1,6 +1,6 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-09-03**
+Last updated: **2026-09-08**
 
 ---
 
@@ -23,23 +23,23 @@ The project is now organized into specialized workstreams coordinated through a 
 
 ### Current Operating Priorities
 
-1. Preserve and expand the canonical AxieOS data layer.
-2. Continue development of the Bounty Board optimizer using real daily data.
-3. Complete current transaction-accounting and cost-basis reconciliation.
-4. Establish a reusable Ronin CSV transaction-ingestion workflow.
-5. Preserve raw Ronin exports unchanged, even when exports overlap.
-6. Deduplicate and normalize blockchain records programmatically.
-7. Add owned-Axie inventory and bounty-qualification matching.
-8. Build better asset-level ROI tracking for Axies, land, consumables, staking, and Terrariums.
-9. Keep this file updated so a fresh LLM session can resume AxieOS without reconstructing the project from chat history.
+1. Complete the V0.11 Terrarium Analytics release closeout.
+2. Preserve and expand the canonical AxieOS data layer.
+3. Continue collecting real gameplay and marketplace evidence for Bounty and NFT decision support.
+4. Continue transaction-accounting and unresolved cost-basis reconciliation where defensible evidence exists.
+5. Preserve raw Ronin exports unchanged and normalize / deduplicate blockchain evidence programmatically.
+6. Improve asset-level economics for Axies, land, consumables, staking, and Terrariums without inventing missing values.
+7. Maintain the owned-Axie gameplay and qualification layer established in V0.8.
+8. Keep operational strategy separate from canonical accounting and historical evidence.
+9. Keep this file current enough that a fresh LLM session can resume AxieOS without reconstructing the project from chat history.
 
 ### Current Development Checkpoint
 
-The project has progressed significantly beyond the original August 8 blockchain-analytics baseline.
+AxieOS has completed the core engineering work through **V0.11 — Terrarium Analytics**.
 
-AxieOS has now completed the core engineering work through V0.10.
+The current release is in final documentation, regression, commit, and push closeout.
 
-Current production data includes:
+Current production foundation includes:
 
 ```text
 blockchain_transactions              565 rows
@@ -48,23 +48,23 @@ gameplay_owned_axies                  137 rows
 canonical marketplace inventory       171 Axies
 ```
 
-Current release status:
+Current engineering release status:
 
 ```text
-V0.1  Ronin API Sync                         COMPLETE
-V0.2  Transaction Classification             COMPLETE
-V0.3  Transaction Economics                  COMPLETE
-V0.4  Historical + Incremental Sync          COMPLETE
-V0.5  Asset & Wallet Intelligence            COMPLETE
-V0.6  Automated Accounting Pipeline          COMPLETE
-V0.7  Accounting Review & Reporting          COMPLETE
-V0.8  Gameplay Data Model + Owned Axies      COMPLETE
-V0.9  Bounty Optimizer Integration           COMPLETE
+V0.1   Ronin API Sync                         COMPLETE
+V0.2   Transaction Classification             COMPLETE
+V0.3   Transaction Economics                  COMPLETE
+V0.4   Historical + Incremental Sync          COMPLETE
+V0.5   Asset & Wallet Intelligence            COMPLETE
+V0.6   Automated Accounting Pipeline          COMPLETE
+V0.7   Accounting Review & Reporting          COMPLETE
+V0.8   Gameplay Data Model + Owned Axies      COMPLETE
+V0.9   Bounty Optimizer Integration           COMPLETE
 V0.10  Marketplace Strategy Analytics        COMPLETE
-V0.11  Terrarium Analytics                   ACTIVE
+V0.11  Terrarium Analytics                   CORE ENGINEERING COMPLETE
 ```
 
-V0.10 established the canonical marketplace inventory and strategy-analysis layer.
+V0.10 remains the validated canonical marketplace-strategy layer.
 
 Final V0.10 production checkpoint:
 
@@ -83,7 +83,7 @@ Production sign-off                   PASS
 Sign-off errors                           0
 ```
 
-Marketplace strategy output currently remains advisory and conservative:
+Marketplace strategy remains advisory:
 
 ```text
 STRATEGY_HOLD_PROTECTED                 65
@@ -95,16 +95,133 @@ Automatic SELL decisions                 0
 Automatic RELEASE decisions              0
 ```
 
-Current V0.10 closeout tasks:
+V0.11 established the Terrarium evidence, analytics, projection, and ROI layer.
+
+Canonical Terrarium production coverage:
 
 ```text
-Task 121   Update LLM_Project_Context.md        IN PROGRESS
-Task 122   Update CHANGELOG.md                  PENDING
-Task 123   Engineering Journal completion       PENDING
+Terrarium snapshots                      17
+Plot snapshot rows                       51
+Group-ranking rows                       34
 ```
 
-The immediate development objective is to complete V0.10 documentation, then commit and push the validated V0.10 implementation before beginning the next AxieOS release.
+Partial historical evidence:
 
+```text
+Evidence observations                    13
+Evidence plot rows                       29
+Evidence ranking rows                    12
+```
+
+Evidence-aware analytical coverage:
+
+```text
+Total observations                       30
+Represented calendar dates               18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+Observed cumulative bAXS increase:
+
+```text
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
+```
+
+Observed endpoint calendar-date span:
+
+```text
+20 days
+```
+
+Combined nominal accumulation pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+This is a **calendar-date-span average**, not a precise normalized 24-hour yield.
+
+V0.11 projection sensitivity assumptions are:
+
+```text
+Conservative          75% of observed pace
+Base                 100% of observed pace
+Upside               125% of observed pace
+```
+
+These are sensitivity scenarios, not probability forecasts.
+
+Forest ROI reference:
+
+```text
+Coordinates                      (-123, 9)
+Purchase date                    2025-11-18
+Purchase price                   0.06841 ETH
+Historical RON reference         871.81 RON
+bAXS → AXS conversion            70%
+Conversion haircut               30%
+```
+
+The historical `871.81` reference is **RON, not USD**.
+
+AXS market price is not hard-coded into Terrarium history. `scripts/terrarium_roi.py` requires the current AXS price in RON as a runtime assumption.
+
+Primary V0.11 scripts:
+
+```text
+scripts/add_terrarium_evidence.py
+scripts/terrarium_summary.py
+scripts/terrarium_projection.py
+scripts/terrarium_roi.py
+```
+
+Historical evidence safety rules established in V0.11 include:
+
+```text
+unknown buff state                    -> NULL
+unknown estimated_unbuffed_hours      -> NULL
+missing partial-observation metrics   -> NULL
+legacy historical zero values         -> preserved, not reinterpreted
+```
+
+V0.11 does not infer exact historical timestamps, buff states, unbuffed hours, or missing Terrarium metrics from neighboring observations.
+
+Current release-closeout status:
+
+```text
+Task 124   Terrarium foundation audit                    COMPLETE
+Task 125   Canonical summary and validation              COMPLETE
+Task 126   Trend / delta / accumulation analytics        COMPLETE
+Task 127   Next Distribution analytics                   COMPLETE
+Task 128   Historical evidence layer                     COMPLETE
+Task 129   Evidence-aware analytics                      COMPLETE
+Task 130A  Yield prerequisite audit                      COMPLETE
+Task 130B  NULL/default ingestion safety                 COMPLETE
+Task 130C  Projection and sensitivity scenarios          COMPLETE
+Task 130D  Financial ROI model and validation            COMPLETE
+Task 131   V0.11 release closeout                        COMPLETE
+```
+
+The immediate engineering sequence is:
+
+```text
+Finish V0.11 documentation
+        ->
+Remove temporary validation artifacts
+        ->
+Run final regression
+        ->
+Confirm production database remains untracked
+        ->
+Review Git changes
+        ->
+Commit V0.11
+        ->
+Push to main
+```
 
 ### August 22 Bounty Board Checkpoint
 
@@ -851,36 +968,60 @@ rank_push
 master_chase
 ```
 
-### Owned-Axie Inventory Requirement
+### Owned-Axie Inventory Foundation
 
-A major next capability is an owned-Axie inventory layer.
+The owned-Axie inventory and qualification layer was completed in V0.8 and is already integrated into the V0.9 Bounty Optimizer.
 
-Before recommending that an Axie be purchased, the optimizer should determine whether an existing owned Axie already satisfies the bounty.
+Current production checkpoint:
 
-Useful fields include:
+```text
+Owned Axies                         136
+Gameplay metadata                   136 / 136
+Named parts                         816 / 816
+Collectibles                        16
+Evolved Axies                       65
+Exact ownership provenance          124
+Legacy-history unresolved           12
+```
+
+Canonical Axie identity uses:
 
 ```text
 asset_id
+```
+
+Owned-Axie qualification supports:
+
+```text
 class
 level
 breed_count
-collectible_status
-evolved_status
-listing_status
-release_eligibility
-parts
-traits
-acquisition_cost
-current_status
+collectible status / collection
+evolved status
+required parts
+minimum ownership days
 ```
 
-Examples of questions this should answer:
+Qualification results use:
 
-* Do I already own a Beast Axie that satisfies the task?
-* Do I own an Axie eligible for release?
-* Is an eligible Axie currently listed for sale?
-* Does one Axie satisfy multiple simultaneous bounty requirements?
-* Would using an owned Axie create a larger economic loss than buying another one?
+```text
+QUALIFIED
+DISQUALIFIED
+UNKNOWN
+```
+
+`UNKNOWN` is retained when source evidence is insufficient for an exact determination.
+
+The Bounty Optimizer should use this existing inventory before recommending that another Axie be purchased.
+
+Typical questions include:
+
+- Do I already own an Axie that satisfies the requirement?
+- Which exact Axie IDs qualify?
+- Can one Axie satisfy multiple simultaneous tasks?
+- Is a qualifying Axie collectible or evolved and therefore economically protected?
+- Is ownership history sufficient for a minimum-holding requirement?
+- Would using or releasing an owned Axie create a larger economic cost than another execution path?
 
 ---
 
@@ -1066,62 +1207,162 @@ This allows analysis of:
 
 ## 21. Terrarium Analytics
 
-Terrarium information is currently recorded through manual snapshots.
+V0.11 established structured canonical and evidence-aware Terrarium analytics.
 
-### Global
+### Canonical Architecture
+
+```text
+gameplay_daily_sessions
+        ↓
+terrarium_snapshots
+        ↓
+terrarium_plot_snapshots
+        ↓
+terrarium_group_rankings
+```
+
+Canonical production coverage:
+
+```text
+Terrarium snapshots                      17
+Plot snapshot rows                       51
+Group-ranking rows                       34
+```
+
+### Historical Evidence Layer
+
+Incomplete historical observations are preserved separately through:
+
+```text
+terrarium_snapshot_evidence
+terrarium_plot_evidence
+terrarium_group_ranking_evidence
+```
+
+Current evidence coverage:
+
+```text
+Partial evidence observations             13
+Evidence plot rows                        29
+Evidence ranking rows                     12
+
+Evidence-aware observations               30
+Represented calendar dates                18
+Historical range              2026-08-07 → 2026-08-27
+```
+
+Partial evidence retains only metrics supported by the source.
+
+Missing metrics remain:
+
+```text
+NULL
+```
+
+AxieOS does not fill missing Terrarium observations from neighboring rows.
+
+### Current Metrics
+
+Terrarium analytics can use observed:
 
 ```text
 Global Lunium
 Claimable bAXS
+Plot Flame
+Next Distribution
+Total acquired bAXS
+Group rank
+Global group Flame
 ```
 
-### Forest
+Evidence-aware cumulative increase across the available Aug 7 → Aug 27 endpoint period:
 
 ```text
-Flame
-Next distribution
-Total acquired
-Rank
-Global Forest Flame
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
 ```
 
-### Savannah
-
-For each plot:
+Calendar-date span:
 
 ```text
-Flame
-Next distribution
-Total acquired
+20 days
 ```
 
-Combined Savannah:
+Combined nominal pace:
 
 ```text
-Rank
-Global Savannah Flame
+1.1615 bAXS / calendar day
 ```
 
-### Buff Tracking
+This is a calendar-date-span average and is not treated as precise normalized 24-hour yield.
 
-Future structured records should include:
+### Buff and Timing Safety
+
+Future unknown buff state stores:
 
 ```text
-buff_activation_time
-buff_duration
-buff_expiry_time
-fortune_slip_cost
-unbuffed_hours
-buff_active_at_snapshot
+buff_active = NULL
 ```
 
-Raw Terrarium morning/EOD snapshots belong in:
+Future omitted:
+
+```text
+estimated_unbuffed_hours
+```
+
+also stores:
+
+```text
+NULL
+```
+
+Existing legacy zero values are preserved as historical records but are not interpreted as independently observed zero unbuffed hours.
+
+Approximate historical times remain descriptive source evidence rather than being converted into invented exact timestamps.
+
+### Projection and ROI
+
+Primary scripts:
+
+```text
+scripts/terrarium_summary.py
+scripts/add_terrarium_evidence.py
+scripts/terrarium_projection.py
+scripts/terrarium_roi.py
+```
+
+Projection sensitivity scenarios are:
+
+```text
+Conservative          75% of observed pace
+Base                 100% of observed pace
+Upside               125% of observed pace
+```
+
+These are assumptions, not probability forecasts.
+
+Forest financial reference:
+
+```text
+Coordinates                      (-123, 9)
+Purchase date                    2025-11-18
+Purchase price                   0.06841 ETH
+Historical RON reference         871.81 RON
+bAXS → AXS conversion            70%
+Conversion haircut               30%
+```
+
+AXS market price is supplied at runtime rather than stored as a fixed historical Terrarium value.
+
+Raw operational Terrarium observations may originate in:
 
 ```text
 04 — AxieOS Wallet, Staking & Terrariums
 ```
 
-Finalized daily summaries belong in:
+Canonical and engineering records belong in the structured data layer and:
 
 ```text
 05 — AxieOS Data & Engineering Journal
@@ -1381,26 +1622,39 @@ AxieOS has progressed from blockchain ingestion and accounting into structured g
 ### Release Status
 
 ```text
-V0.1  Ronin API Sync                         COMPLETE
-V0.2  Transaction Classification             COMPLETE
-V0.3  Transaction Economics                  COMPLETE
-V0.4  Historical + Incremental Sync          COMPLETE
-V0.5  Asset & Wallet Intelligence            COMPLETE
-V0.6  Automated Accounting Pipeline          COMPLETE
-V0.7  Accounting Review & Reporting          COMPLETE
-V0.8  Gameplay Data Model + Owned Axies      COMPLETE
-V0.9  Bounty Optimizer Integration           COMPLETE
-V0.10 Marketplace Strategy Analytics         CORE ENGINEERING COMPLETE
+V0.1   Ronin API Sync                         COMPLETE
+V0.2   Transaction Classification             COMPLETE
+V0.3   Transaction Economics                  COMPLETE
+V0.4   Historical + Incremental Sync          COMPLETE
+V0.5   Asset & Wallet Intelligence            COMPLETE
+V0.6   Automated Accounting Pipeline          COMPLETE
+V0.7   Accounting Review & Reporting          COMPLETE
+V0.8   Gameplay Data Model + Owned Axies      COMPLETE
+V0.9   Bounty Optimizer Integration           COMPLETE
+V0.10  Marketplace Strategy Analytics        COMPLETE
+V0.11  Terrarium Analytics                   CORE ENGINEERING COMPLETE
 ```
 
-V0.10 core implementation and production validation are complete.
+V0.10 implementation, production validation, documentation, commit, and push are complete.
 
-Remaining V0.10 work is documentation closeout:
+V0.11 core engineering and production validation are complete.
+
+Current remaining work:
 
 ```text
-Task 121   LLM_Project_Context.md             IN PROGRESS
-Task 122   CHANGELOG.md                       PENDING
-Task 123   Engineering Journal                PENDING
+Task 131 — V0.11 release closeout
+```
+
+Task 131 includes:
+
+```text
+documentation closeout
+temporary validation-artifact cleanup
+final regression
+database integrity verification
+Git review
+V0.11 commit
+push to main
 ```
 
 ### V0.8 Gameplay Foundation
@@ -1693,18 +1947,25 @@ Because this fixture is historical, it must not be saved as a current `LIVE_OPTI
 ### Immediate Engineering Sequence
 
 ```text
-V0.10 core engineering COMPLETE
+Finish V0.11 documentation
     ->
-Update LLM_Project_Context.md
+Remove temporary task*.txt validation artifacts
     ->
-Update CHANGELOG.md
+Run final V0.11 regression
     ->
-Write V0.10 Engineering Journal completion record
+Verify production database integrity and row counts
     ->
-Commit and push V0.10
+Confirm production DB / backups remain untracked
     ->
-Begin next AxieOS release
+Review Git changes
+    ->
+Mark Task 131 COMPLETE
+    ->
+Commit V0.11
+    ->
+Push to main
 ```
+
 
 ## 29A. V0.10 Marketplace Strategy Analytics
 
@@ -2125,31 +2386,46 @@ Core V0.10 engineering tasks:
 120  Integration / production validation          COMPLETE
 ```
 
-Remaining V0.10 closeout:
+V0.10 documentation closeout:
 
 ```text
-121  LLM_Project_Context.md update
-122  CHANGELOG.md update
-123  Engineering Journal completion record
+121  LLM_Project_Context.md update                COMPLETE
+122  CHANGELOG.md update                          COMPLETE
+123  Engineering Journal completion record        COMPLETE
 ```
 
-Do not commit the V0.10 implementation until Tasks 121-123 are complete.
+V0.10 was subsequently committed and pushed successfully.
+
+The active engineering release is now V0.11 Terrarium Analytics.
 
 ---
 
 ## 29B. V0.11 Terrarium Analytics — Current Checkpoint
 
-V0.10 Marketplace Strategy Analytics is fully complete.
+V0.11 Terrarium Analytics core engineering is complete.
+
+Current release state:
 
 ```text
 Core engineering             COMPLETE
 Production validation        PASS
-Documentation                COMPLETE
-Commit                       COMPLETE
-Push to main                 COMPLETE
+Documentation closeout       COMPLETE
+Final regression             PASS
+Commit                       READY
+Push to main                 READY
 ```
 
-A follow-up historical acquisition-cost audit was also completed for the currently owned Nightmare Axies.
+The remaining work belongs to:
+
+```text
+Task 131 — V0.11 release closeout
+```
+
+---
+
+### Nightmare Historical Acquisition-Cost Audit
+
+Before V0.11 Terrarium implementation, a follow-up historical acquisition-cost audit was completed for the 11 currently owned Nightmare Axies.
 
 Primary script:
 
@@ -2183,7 +2459,7 @@ HISTORY_UNRESOLVED
 
 with neither a defensible acquisition cost nor ownership-start datetime in the current local evidence.
 
-The Nightmare audit checked:
+The audit checked:
 
 ```text
 gameplay_owned_axies
@@ -2206,122 +2482,524 @@ accessory purchases
 unrelated marketplace activity
 ```
 
-Further Nightmare cost recovery requires external historical Ronin / Sky Mavis transaction or marketplace evidence.
+Further acquisition-cost recovery requires external historical Ronin / Sky Mavis transaction or marketplace evidence.
 
 ---
 
-### V0.11 Terrarium Analytics
+### V0.11 Objective
 
-V0.11 has now started.
-
-Roadmap objective:
+V0.11 builds an evidence-preserving Terrarium analytics layer capable of:
 
 ```text
-Track land and Terrarium performance over time.
+historical observation recovery
+canonical Terrarium analytics
+evidence-aware analytics
+cumulative bAXS measurement
+competitive Flame / rank analysis
+calendar-span projections
+financial ROI scenarios
 ```
 
-Planned V0.11 components include:
+The implementation is intentionally conservative when historical source evidence is incomplete.
+
+Missing values remain missing rather than being fabricated.
+
+---
+
+### Canonical Terrarium Architecture
+
+The canonical Terrarium data flow is:
 
 ```text
-terrarium_summary.py
-terrarium_projection.py
-structured snapshot storage
-rank history
-flame history
-bAXS distribution history
-land-level yield tracking
-ROI tracking
+gameplay_daily_sessions
+        ↓
+terrarium_snapshots
+        ↓
+terrarium_plot_snapshots
+        ↓
+terrarium_group_rankings
 ```
 
-Planned metrics include:
+Canonical production coverage:
 
 ```text
-Global Lunium
+Terrarium snapshots                      17
+Plot snapshot rows                       51
+Group-ranking rows                       34
+```
+
+Canonical historical range:
+
+```text
+2026-08-07 → 2026-08-26
+```
+
+---
+
+### Historical Evidence Architecture
+
+V0.11 added dedicated tables for incomplete historical observations:
+
+```text
+terrarium_snapshot_evidence
+terrarium_plot_evidence
+terrarium_group_ranking_evidence
+```
+
+Evidence completeness states support:
+
+```text
+COMPLETE
+PARTIAL
+UNRESOLVED
+```
+
+Partial observations retain only the metrics actually supported by source evidence.
+
+Missing fields remain:
+
+```text
+NULL
+```
+
+Final evidence coverage:
+
+```text
+Partial evidence observations             13
+Evidence plot rows                        29
+Evidence ranking rows                     12
+```
+
+Evidence-aware analytical coverage:
+
+```text
+Total observations                        30
+Represented calendar dates                18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+---
+
+### Historical Evidence Safety
+
+V0.11 does not invent missing:
+
+```text
+snapshot time
 Flame
-Rank
-Total Flame
-Daily bAXS
-Claimable bAXS
-Total acquired bAXS
-Monthly yield
-Historical yield
-Land ROI
+rank
+global Flame
+Next Distribution
+total acquired bAXS
+buff state
+estimated unbuffed hours
 ```
 
-Existing Terrarium-related repository files already identified:
+from nearby observations.
 
-```text
-scripts/add_terrarium_snapshot.py
-docs/Game Mechanics/Terrariums.md
-```
+Historical metric gaps remain explicit.
 
-### Current V0.11 Engineering Task
-
-Current checkpoint:
-
-```text
-V0.11 — Task 124
-Audit Existing Terrarium Foundation
-```
-
-Task 124 is currently:
-
-```text
-PAUSED BEFORE AUDIT EXECUTION
-```
-
-The repository discovery step has already confirmed the existing Terrarium script and mechanics document.
-
-The next action is to inspect:
-
-```text
-scripts/add_terrarium_snapshot.py
-docs/Game Mechanics/Terrariums.md
-existing Terrarium / land / flame / Lunium database tables
-```
-
-before creating or modifying any V0.11 code.
-
-Do not begin `terrarium_summary.py`, `terrarium_projection.py`, or Task 125 until the existing Terrarium foundation has been audited.
-
-### Development Instruction
-
-When resuming V0.11:
-
-```text
-Resume Task 124
-    ->
-Audit existing Terrarium implementation
-    ->
-Audit existing database schema / rows
-    ->
-Identify what already exists
-    ->
-Define Task 125 from actual repo state
-```
-
-Continue using the AxieOS development workflow:
-
-```text
-Exact FILE
-Exact placement
-Complete replacement / insertion code
-Exact RUN command
-Expected output
-Validate before next task
-```
-
-Avoid guessed code placement.
+Approximate historical time descriptions remain descriptive evidence rather than being converted into invented exact timestamps.
 
 ---
 
+### Buff-State Safety
 
+Future unknown buff state stores:
 
+```text
+buff_active = NULL
+```
 
+rather than defaulting to an observed-looking value.
 
+Existing historical buff values were preserved instead of rewritten without source evidence.
 
+Historical buff state is not inferred solely from neighboring snapshots or from the July 24 Shrine Buff experiment.
 
+---
 
+### Unbuffed-Hours Safety
+
+The previous schema default for:
+
+```text
+estimated_unbuffed_hours
+```
+
+was removed.
+
+Future omission stores:
+
+```text
+NULL
+```
+
+instead of zero.
+
+All 17 existing legacy values of:
+
+```text
+'0'
+```
+
+were preserved as historical records.
+
+Those legacy zero values are not treated as independently observed zero-hour measurements.
+
+---
+
+### Primary V0.11 Scripts
+
+```text
+scripts/add_terrarium_evidence.py
+scripts/terrarium_summary.py
+scripts/terrarium_projection.py
+scripts/terrarium_roi.py
+```
+
+Supporting ingestion/schema changes were made in:
+
+```text
+scripts/add_gameplay_day.py
+scripts/add_terrarium_snapshot.py
+scripts/create_gameplay_schema.py
+```
+
+---
+
+### Terrarium Summary Analytics
+
+Primary implementation:
+
+```text
+scripts/terrarium_summary.py
+```
+
+Canonical data remains the default reporting mode.
+
+Evidence-aware analytics are enabled explicitly.
+
+Implemented capabilities include:
+
+```text
+canonical validation
+plot-level history
+observation-to-observation changes
+adjacent versus bridged metric changes
+cumulative bAXS accumulation
+accumulation composition
+Flame history
+competitive Flame share
+rank history
+Next Distribution composition
+distribution-mix comparison
+```
+
+Evidence-aware calculations evaluate metrics independently.
+
+A partial observation does not need to contain every Terrarium metric before the supported metrics can be used.
+
+---
+
+### Observed bAXS Accumulation
+
+Evidence-aware cumulative endpoints produce:
+
+```text
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
+```
+
+Observed endpoint period:
+
+```text
+2026-08-07 → 2026-08-27
+```
+
+Calendar-date difference:
+
+```text
+20 days
+```
+
+Combined nominal accumulation pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+This value is explicitly a:
+
+```text
+calendar-date-span average
+```
+
+and not a precise normalized 24-hour yield.
+
+---
+
+### Yield and Projection Model
+
+Primary implementation:
+
+```text
+scripts/terrarium_projection.py
+```
+
+Because exact historical observation timestamps are incomplete, the model does not calculate:
+
+```text
+exact hourly yield
+precise timestamp-normalized daily yield
+buff-adjusted yield
+unbuffed yield
+```
+
+The projection model instead uses the first-to-latest observed calendar-date span.
+
+Base combined pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+Nominal continuation:
+
+```text
+7 days        8.1305 bAXS
+30 days      34.8450 bAXS
+365 days    423.9475 bAXS
+```
+
+Sensitivity assumptions:
+
+```text
+Conservative          75% of observed pace
+Base                 100% of observed pace
+Upside               125% of observed pace
+```
+
+These scenarios are modeling assumptions.
+
+They are not confidence intervals or probability forecasts.
+
+---
+
+### Financial ROI Model
+
+Primary implementation:
+
+```text
+scripts/terrarium_roi.py
+```
+
+Historical Terrarium accumulation is kept separate from financial assumptions.
+
+Forest acquisition reference:
+
+```text
+Coordinates                      (-123, 9)
+Purchase date                    2025-11-18
+Purchase price                   0.06841 ETH
+Historical RON reference         871.81 RON
+```
+
+The previously recorded interpretation:
+
+```text
+$871.81
+```
+
+is incorrect.
+
+The supported historical reference is:
+
+```text
+871.81 RON
+```
+
+Current conversion assumption:
+
+```text
+bAXS → AXS                       70%
+Conversion haircut               30%
+```
+
+AXS market price is not hard-coded.
+
+The ROI script requires:
+
+```text
+--axs-price-ron
+```
+
+at runtime.
+
+---
+
+### ROI Scope
+
+The V0.11 ROI model uses:
+
+```text
+combined bAXS accumulation from all owned Terrarium plots
+```
+
+to evaluate recovery of the Forest acquisition reference.
+
+Current payback interpretation:
+
+```text
+full acquisition-cost payback from zero recovery
+```
+
+Prior realized Terrarium income is not deducted from the Forest acquisition reference.
+
+Current ROI modeling excludes:
+
+```text
+gas
+taxes
+transaction fees
+staking yield
+future changes to Terrarium economics
+future changes to bAXS conversion rules
+```
+
+These limitations remain explicit.
+
+---
+
+### Synthetic ROI Validation
+
+A synthetic price of:
+
+```text
+10 RON / AXS
+```
+
+was used only for formula validation.
+
+It is not a market-price fact.
+
+Synthetic validation result:
+
+```text
+Effective value per bAXS                7 RON
+
+AXS required for break-even       87.1810 AXS
+Gross bAXS required              124.5443 bAXS
+
+Conservative break-even          142.9695 days
+Base break-even                  107.2271 days
+Upside break-even                 85.7817 days
+```
+
+---
+
+### V0.11 Production and Regression Validation
+
+Validated V0.11 state:
+
+```text
+Canonical snapshots                      17
+Canonical plot rows                      51
+Canonical ranking rows                   34
+
+Evidence observations                    13
+Evidence plot rows                       29
+Evidence ranking rows                    12
+
+Evidence-aware observations              30
+Represented calendar dates               18
+```
+
+Core validation:
+
+```text
+Canonical analytics                     PASS
+Evidence-aware analytics                PASS
+Historical evidence integrity           PASS
+Metric-specific change analysis         PASS
+Projection regression                   PASS
+ROI formula validation                  PASS
+ROI input guardrails                    PASS
+Future NULL ingestion                   PASS
+Foreign-key validation                  PASS
+SQLite integrity                        PASS
+Python compile regression               PASS
+```
+
+The disposable future-ingestion test confirmed:
+
+```text
+omitted buff state                 -> NULL
+omitted unbuffed hours             -> NULL
+production historical rows         -> unchanged
+```
+
+The production database remains local / untracked and must not be committed to Git.
+
+---
+
+### V0.11 Task Status
+
+```text
+124   Terrarium foundation audit                     COMPLETE
+125   Canonical summary and validation               COMPLETE
+126   Trend / delta / accumulation analytics         COMPLETE
+127   Next Distribution analytics                    COMPLETE
+128   Historical coverage + evidence layer           COMPLETE
+129   Evidence-aware analytics                       COMPLETE
+130A  Yield prerequisite audit                       COMPLETE
+130B  NULL/default ingestion safety                  COMPLETE
+130C  Projection + sensitivity scenarios             COMPLETE
+130D  Financial ROI model + validation               COMPLETE
+131   Release closeout / final regression / commit   COMPLETE
+```
+
+---
+
+### Current Release Closeout
+
+Documentation being finalized:
+
+```text
+docs/Engineering/ROADMAP.md
+CHANGELOG.md
+docs/Engineering_Journal.md
+docs/Game Mechanics/Terrariums.md
+LLM_Project_Context.md
+```
+
+Next sequence:
+
+```text
+Finish documentation
+        ↓
+Remove temporary task*.txt validation artifacts
+        ↓
+Run final V0.11 regression
+        ↓
+Verify database integrity and production row counts
+        ↓
+Confirm production DB / backups remain untracked
+        ↓
+Run git diff --check
+        ↓
+Review intended Git changes
+        ↓
+Mark Task 131 COMPLETE
+        ↓
+Commit V0.11
+        ↓
+Push to main
+```
+
+---
 
 ## 30. LLM Context Maintenance Procedure
 
@@ -2358,5 +3036,3 @@ When an AxieOS chat becomes too long or a new project conversation must be start
 > Continue AxieOS from the Current Checkpoint. Treat `LLM_Project_Context.md` as the compact project-recovery context. Use the canonical datasets, transaction records, and EOD / Engineering Journal for detailed evidence. Preserve established wallet ownership, accounting, asset-identification, and strategy rules unless newer source evidence explicitly supersedes them.
 
 ---
-
-:::

@@ -79,7 +79,7 @@ def main():
     parser.add_argument("--player", default="primary")
     parser.add_argument("--streak", type=int)
     parser.add_argument("--starting-slips", type=int)
-    parser.add_argument("--claimed-slips", type=int, default=0)
+    parser.add_argument("--claimed-slips", type=int)
     parser.add_argument("--ending-slips", type=int)
     parser.add_argument("--notes", default="")
 

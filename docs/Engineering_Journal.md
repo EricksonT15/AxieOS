@@ -1127,3 +1127,473 @@ Begin next AxieOS roadmap release
 ### Version
 
 v0.10
+
+---
+
+## 2026-09-08 — V0.11 Terrarium Analytics
+
+### Objective
+
+V0.11 extended AxieOS into evidence-aware Terrarium analytics, historical reconstruction, accumulation measurement, scenario projection, and financial ROI analysis.
+
+The release was designed around one core constraint:
+
+> Missing historical Terrarium evidence must remain missing rather than being reconstructed from unsupported assumptions.
+
+---
+
+### Canonical Terrarium Architecture
+
+The canonical Terrarium data flow is:
+
+```text
+gameplay_daily_sessions
+        ↓
+terrarium_snapshots
+        ↓
+terrarium_plot_snapshots
+        ↓
+terrarium_group_rankings
+```
+
+Canonical production coverage:
+
+```text
+Terrarium snapshots                      17
+Plot snapshot rows                       51
+Group-ranking rows                       34
+```
+
+The canonical historical range is:
+
+```text
+2026-08-07 → 2026-08-26
+```
+
+---
+
+### Historical Evidence Layer
+
+V0.11 added dedicated evidence tables for incomplete historical observations:
+
+```text
+terrarium_snapshot_evidence
+terrarium_plot_evidence
+terrarium_group_ranking_evidence
+```
+
+Evidence observations support:
+
+```text
+COMPLETE
+PARTIAL
+UNRESOLVED
+```
+
+The evidence layer preserves:
+
+- observed date
+- observed or approximate time text when available
+- source
+- source reference
+- completeness status
+- only the metrics actually supported by the source
+
+Missing metrics remain `NULL`.
+
+No value is filled merely because a nearby observation exists.
+
+Final partial-evidence coverage:
+
+```text
+Partial evidence observations             13
+Evidence plot rows                        29
+Evidence ranking rows                     12
+```
+
+Combined evidence-aware coverage:
+
+```text
+Total observations                        30
+Represented calendar dates                18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+---
+
+### Buff-State Safety
+
+Historical Terrarium buff evidence was found to be incomplete.
+
+The previous ingestion model could store default values that looked more certain than the underlying source evidence justified.
+
+V0.11 changed future ingestion so:
+
+```text
+buff_active = NULL
+```
+
+when buff state is unknown.
+
+Existing historical values were preserved rather than rewritten without source evidence.
+
+The model does not infer historical buff state solely from surrounding observations.
+
+---
+
+### Unbuffed-Hours Safety
+
+The previous schema contained a default value for:
+
+```text
+estimated_unbuffed_hours
+```
+
+This default could incorrectly imply that zero unbuffed hours had been observed.
+
+V0.11 removed the default.
+
+Future omission now stores:
+
+```text
+NULL
+```
+
+All 17 existing legacy values of:
+
+```text
+'0'
+```
+
+were preserved as historical records rather than rewritten.
+
+Those legacy zero values are not treated as independently observed zero-hour measurements.
+
+---
+
+### Evidence-Aware Analytics
+
+Primary implementation:
+
+```text
+scripts/terrarium_summary.py
+```
+
+Canonical analytics remain the default report mode.
+
+Evidence-aware mode is optional and combines canonical and partial evidence while evaluating each metric independently.
+
+The model does not require a partial observation to contain every metric before using the metrics that are actually present.
+
+Implemented analytics include:
+
+- cumulative bAXS history
+- plot-level accumulation
+- observation-to-observation change
+- adjacent versus bridged metric change
+- Flame history
+- group-rank history
+- competitive Flame share
+- Next Distribution composition
+- distribution-mix comparison
+
+---
+
+### Observed Accumulation
+
+Evidence-aware cumulative bAXS endpoints produced:
+
+```text
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
+```
+
+Observed endpoint period:
+
+```text
+2026-08-07 → 2026-08-27
+```
+
+Calendar-date difference:
+
+```text
+20 days
+```
+
+Combined nominal accumulation pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+This value is explicitly treated as a:
+
+```text
+calendar-date-span average
+```
+
+and not as a precise normalized 24-hour yield.
+
+---
+
+### Yield and Projection Model
+
+Primary implementation:
+
+```text
+scripts/terrarium_projection.py
+```
+
+Because exact historical observation timestamps are incomplete, V0.11 does not calculate:
+
+```text
+exact hourly yield
+precise timestamp-normalized daily yield
+buff-adjusted yield
+unbuffed yield
+```
+
+Instead, the projection model uses the observed first-to-latest calendar-date span.
+
+Base combined pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+Nominal continuation examples:
+
+```text
+7 days        8.1305 bAXS
+30 days      34.8450 bAXS
+365 days    423.9475 bAXS
+```
+
+Sensitivity scenarios:
+
+```text
+Conservative          75% of observed pace
+Base                 100% of observed pace
+Upside               125% of observed pace
+```
+
+These scenarios are modeling assumptions.
+
+They are not confidence intervals or probability forecasts.
+
+---
+
+### Financial ROI Model
+
+Primary implementation:
+
+```text
+scripts/terrarium_roi.py
+```
+
+The ROI layer intentionally separates:
+
+```text
+historical Terrarium accumulation
+```
+
+from:
+
+```text
+financial assumptions
+```
+
+Forest acquisition reference:
+
+```text
+Plot coordinates                 (-123, 9)
+Purchase date                    2025-11-18
+Purchase price                   0.06841 ETH
+Historical RON reference         871.81 RON
+```
+
+The previously recorded interpretation of:
+
+```text
+$871.81
+```
+
+was rejected.
+
+The corrected historical reference is:
+
+```text
+871.81 RON
+```
+
+Current conversion assumption used by the model:
+
+```text
+bAXS → AXS                       70%
+Conversion haircut               30%
+```
+
+AXS market price is not hard-coded.
+
+The ROI script requires:
+
+```text
+--axs-price-ron
+```
+
+at runtime.
+
+This keeps current market-price assumptions separate from canonical Terrarium history.
+
+---
+
+### ROI Scope
+
+The current ROI model uses:
+
+```text
+combined income from all owned Terrarium plots
+```
+
+to evaluate recovery of the Forest acquisition reference.
+
+The calculation is:
+
+```text
+full acquisition-cost payback from zero recovery
+```
+
+Prior realized Terrarium earnings are not deducted from the historical Forest acquisition cost.
+
+The current model also excludes unsupported or separately modeled factors such as:
+
+- gas
+- taxes
+- transaction fees
+- staking yield
+- future changes to Terrarium economics
+- future changes to bAXS conversion rules
+
+---
+
+### Synthetic ROI Validation
+
+A synthetic AXS-price input of:
+
+```text
+10 RON / AXS
+```
+
+was used only to validate formulas.
+
+It was not recorded as a current market fact.
+
+Synthetic validation produced:
+
+```text
+Effective value per bAXS                7 RON
+
+AXS required for break-even       87.1810 AXS
+Gross bAXS required              124.5443 bAXS
+
+Conservative break-even          142.9695 days
+Base break-even                  107.2271 days
+Upside break-even                 85.7817 days
+```
+
+---
+
+### Schema and Ingestion Validation
+
+V0.11 validated:
+
+```text
+Future unknown buff state              NULL
+Future unknown unbuffed hours          NULL
+Historical canonical rows              preserved
+Historical evidence rows               preserved
+Foreign-key validation                 PASS
+SQLite integrity check                 PASS
+```
+
+Disposable database-copy testing confirmed that omitted future fields do not silently recreate false zero/default values.
+
+The production database remained untouched by the synthetic ingestion test.
+
+---
+
+### V0.11 Task Completion
+
+```text
+124  Terrarium foundation audit                      COMPLETE
+125  Canonical Terrarium summary and validation      COMPLETE
+126  Trend / delta / accumulation analytics          COMPLETE
+127  Next Distribution analytics                     COMPLETE
+128  Historical coverage + evidence layer            COMPLETE
+129  Evidence-aware analytics                        COMPLETE
+130A Yield prerequisite audit                        COMPLETE
+130B NULL/default ingestion safety                   COMPLETE
+130C Projection + sensitivity scenarios              COMPLETE
+130D Financial ROI model + validation                COMPLETE
+131  Release closeout / regression / commit          COMPLETE
+```
+
+---
+
+### Validation
+
+V0.11 core engineering validation passed:
+
+```text
+Canonical analytics                     PASS
+Evidence-aware analytics                PASS
+Historical evidence integrity           PASS
+Metric-specific change analysis         PASS
+Projection regression                   PASS
+ROI formula validation                  PASS
+ROI input guardrails                    PASS
+Future NULL ingestion                    PASS
+Foreign-key validation                  PASS
+SQLite integrity                        PASS
+Python compile regression               PASS
+```
+
+---
+
+### Documentation
+
+V0.11 release documentation is being finalized in:
+
+- `docs/Engineering/ROADMAP.md`
+- `CHANGELOG.md`
+- `docs/Engineering_Journal.md`
+- `docs/Game Mechanics/Terrariums.md`
+- `LLM_Project_Context.md`
+
+---
+
+### Next Step
+
+```text
+Complete remaining V0.11 documentation
+        ↓
+Remove temporary validation artifacts
+        ↓
+Run final regression
+        ↓
+Confirm production database remains untracked
+        ↓
+Review Git changes
+        ↓
+Commit V0.11
+        ↓
+Push to main
+```
+
+---
+
+### Version
+
+v0.11

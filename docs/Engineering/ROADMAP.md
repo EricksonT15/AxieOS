@@ -3,8 +3,8 @@
 # AxieOS Engineering Roadmap
 
 **Version:** 1.2  
-**Last Updated:** 2026-08-30  
-**Current Engineering Release: V0.10 — Marketplace Strategy Analytics**
+**Last Updated:** 2026-09-08
+**Current Engineering Release: V0.11 — Terrarium Analytics**
 
 ---
 
@@ -57,8 +57,8 @@ The long-term objective is to build a reusable GameFi operating system that can:
 | Gameplay Data Model | ✅ Complete |
 | Owned Axie Inventory | ✅ Complete |
 | Bounty Optimizer Integration | ✅ Complete |
-| Marketplace Strategy Analytics | 🚧 Active |
-| Terrarium Analytics | ⏳ Planned |
+| Marketplace Strategy Analytics | ✅ Complete |
+| Terrarium Analytics | ✅ Complete |
 | Staking Analytics | ⏳ Planned |
 | Unified Finance Reporting | ⏳ Planned |
 | Dashboards | ⏳ Planned |
@@ -806,7 +806,7 @@ V0.9 provides an integrated Bounty Board decision-support system capable of comb
 
 Go beyond transaction accounting and support marketplace decision-making.
 
-## Planned
+## Completed
 
 - inventory_report.py
 - capital_management.py
@@ -836,35 +836,78 @@ Go beyond transaction accounting and support marketplace decision-making.
 
 ---
 
-# V0.11 — Terrarium Analytics
+# V0.11 — Terrarium Analytics ✅
 
 ## Objective
 
-Track land and Terrarium performance over time.
+Build an evidence-preserving Terrarium analytics layer that reconstructs historical observations, measures cumulative bAXS accumulation, analyzes competitive position, and supports transparent projection and financial ROI analysis without inventing missing data.
 
-## Planned
+## Completed
 
-- terrarium_summary.py
-- terrarium_projection.py
-- structured snapshot storage
-- rank history
-- flame history
-- bAXS distribution history
-- land-level yield tracking
-- ROI tracking
+- Added canonical Terrarium summary, validation, trend, change, accumulation, Flame-share, and Next Distribution analytics.
+- Added dedicated Terrarium snapshot, plot, and ranking evidence tables.
+- Added `scripts/add_terrarium_evidence.py`.
+- Recovered canonical and partial historical observations without filling missing fields.
+- Added evidence-aware metric-level analytics.
+- Added adjacent-versus-bridged change analysis.
+- Changed unknown Terrarium buff state to remain `NULL`.
+- Removed the false default from `estimated_unbuffed_hours`.
+- Preserved all 17 historical legacy zero values without rewriting historical evidence.
+- Added `scripts/terrarium_projection.py`.
+- Added calendar-date-span projections using Decimal arithmetic.
+- Added conservative / base / upside sensitivity scenarios at 75%, 100%, and 125% of observed pace.
+- Added `scripts/terrarium_roi.py`.
+- Kept financial assumptions separate from historical Terrarium yield.
+- Added required runtime AXS-price input.
+- Applied the repo-confirmed 70% bAXS → AXS conversion assumption.
+- Applied the corrected Forest acquisition reference of 871.81 RON.
+- Added ROI input guardrails and regression validation.
 
-## Metrics
+## Final Data Coverage
 
-- Global Lunium
-- Flame
-- Rank
-- Total Flame
-- Daily bAXS
-- Claimable bAXS
-- Total acquired bAXS
-- Monthly yield
-- Historical yield
-- Land ROI
+```text
+Canonical Terrarium snapshots              17
+Canonical plot rows                        51
+Canonical ranking rows                     34
+
+Partial evidence observations              13
+Evidence plot rows                         29
+Evidence ranking rows                      12
+
+Evidence-aware observations                30
+Represented calendar dates                 18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+## Accumulation Basis
+
+```text
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
+
+Calendar-date span                  20 days
+Combined nominal pace         1.1615 bAXS/day
+```
+
+The nominal pace is a **calendar-date-span average**, not a precise 24-hour normalized yield.
+
+## Financial ROI References
+
+```text
+Forest plot                    (-123, 9)
+Purchase price                 0.06841 ETH
+Historical RON reference       871.81 RON
+bAXS → AXS conversion          70%
+Conversion haircut             30%
+```
+
+AXS market price is supplied at runtime rather than stored as a fixed historical value.
+
+## Result
+
+V0.11 provides an evidence-aware Terrarium analytics, projection, and ROI layer while preserving the distinction between historical observations and financial assumptions.
 
 ---
 
@@ -1052,107 +1095,45 @@ Recommendations should include:
 
 ## Sprint Goal
 
-Begin **V0.10 — Marketplace Strategy Analytics**.
+Complete **V0.11 — Terrarium Analytics** and prepare the validated release for commit and push.
 
-Build on the completed accounting, owned-Axie, and Bounty infrastructure to help AxieOS evaluate marketplace inventory and capital decisions.
+## Completed
 
-The objective is to move from:
+- [x] Task 124 — Terrarium foundation audit
+- [x] Task 125 — Canonical Terrarium summary and validation
+- [x] Task 126 — Trend, delta, accumulation, and competitive analytics
+- [x] Task 127 — Next Distribution composition analytics
+- [x] Task 128 — Historical coverage recovery and evidence layer
+- [x] Task 129 — Evidence-aware Terrarium analytics
+- [x] Task 130A — Yield prerequisite audit
+- [x] Task 130B — NULL/default ingestion safety
+- [x] Task 130C — Yield and projection scenarios
+- [x] Task 130D — Financial ROI modeling and validation
+
+## Current Task
+
+- [x] Task 131 — Final V0.11 release closeout, regression, documentation, commit, and push
+
+## Immediate Next Step
 
 ```text
-What happened?
+Complete documentation
+        ->
+Remove temporary validation artifacts
+        ->
+Run final regression
+        ->
+Confirm production database remains untracked
+        ->
+Review Git diff
+        ->
+Commit V0.11
+        ->
+Push to main
 ```
-
-toward:
-
-```text
-What do I own?
-What did it cost?
-What is its current status?
-What should I sell, hold, release, or acquire?
-How efficiently is marketplace capital being used?
-```
-
-## Completed Before This Sprint
-
-- [x] Development foundation
-- [x] SQLite database foundation
-- [x] Ronin API Sync V0.1
-- [x] Transaction Classification V0.2
-- [x] Transaction Economics V0.3
-- [x] Historical + Incremental Sync V0.4
-- [x] Asset & Wallet Intelligence V0.5
-- [x] Automated Accounting Pipeline V0.6
-- [x] Accounting Review & Reporting V0.7
-- [x] Gameplay Data Model & Owned-Axie Inventory V0.8
-- [x] Bounty Optimizer Integration V0.9
-- [x] 25 / 25 V0.9 integration tests
-- [x] V0.9 production safety validation
-- [x] V0.9 documentation
-- [x] V0.9 commit and push
-
-## Current Tasks
-
-- [ ] Task 110 — Define Marketplace Inventory Report
-- [ ] Task 111 — Build current marketplace inventory model
-- [ ] Task 112 — Link acquisition cost and ownership state
-- [ ] Task 113 — Add listing / sale status
-- [ ] Task 114 — Compute realized and unrealized marketplace metrics
-- [ ] Task 115 — Add holding-period analytics
-- [ ] Task 116 — Add resale and break-even analysis
-- [ ] Task 117 — Add release-candidate economics
-- [ ] Task 118 — Add capital-utilization metrics
-- [ ] Task 119 — Build marketplace strategy scoring
-- [ ] Task 120 — V0.10 integration and production validation
-- [ ] Update `LLM_Project_Context.md`
-- [ ] Update `CHANGELOG.md`
-- [ ] Update `Engineering_Journal.md`
 
 ---
 
-# Immediate Next Step
-
-Begin **V0.10 Task 110 — Marketplace Inventory Report Definition**.
-
-The first V0.10 engineering task is to define the canonical marketplace inventory view before building strategy recommendations.
-
-The model should determine which fields can already be sourced reliably from existing AxieOS data.
-
-Initial fields should include:
-
-```text
-asset_id
-asset_type
-ownership_status
-acquisition_date
-acquisition_cost
-acquisition_currency
-current_listing_status
-listing_price
-sale_date
-gross_sale
-marketplace_fee
-net_proceeds
-realized_pl
-realized_roi
-holding_period
-bounty_link
-release_economics
-data_quality
-```
-
-The first step should be a **data-source audit**, not new marketplace recommendation logic.
-
-AxieOS should first determine which of these fields are already provable from:
-
-- accounting records,
-- marketplace events,
-- owned-Axie state,
-- blockchain transactions,
-- gameplay records.
-
-Missing fields must remain explicitly unresolved rather than being estimated without evidence.
-
----
 
 # Long-Term Vision
 

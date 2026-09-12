@@ -191,3 +191,264 @@ Evaluation metrics will include:
 - Global Lunium changes
 - Fortune Slips spent
 - Competitive positioning
+
+---
+
+# V0.11 Terrarium Analytics Notes
+
+## Evidence Policy
+
+V0.11 separates canonical Terrarium observations from incomplete historical evidence.
+
+Canonical observations are stored through:
+
+```text
+gameplay_daily_sessions
+        ↓
+terrarium_snapshots
+        ↓
+terrarium_plot_snapshots
+        ↓
+terrarium_group_rankings
+```
+
+Incomplete historical observations are preserved separately through:
+
+```text
+terrarium_snapshot_evidence
+terrarium_plot_evidence
+terrarium_group_ranking_evidence
+```
+
+Partial observations retain only the metrics actually supported by the source.
+
+Missing values remain `NULL`.
+
+AxieOS does not infer missing:
+
+- snapshot times
+- Flame values
+- ranks
+- global Flame
+- Next Distribution
+- acquired bAXS
+- buff state
+- unbuffed hours
+
+from neighboring observations.
+
+---
+
+## V0.11 Historical Coverage
+
+Canonical production coverage:
+
+```text
+Terrarium snapshots                      17
+Plot snapshot rows                       51
+Group-ranking rows                       34
+```
+
+Partial historical evidence:
+
+```text
+Evidence observations                    13
+Evidence plot rows                       29
+Evidence ranking rows                    12
+```
+
+Evidence-aware analytics therefore use:
+
+```text
+Total observations                       30
+Represented calendar dates               18
+Historical range             2026-08-07 → 2026-08-27
+```
+
+---
+
+## Observed bAXS Accumulation
+
+Evidence-aware cumulative endpoints produce:
+
+```text
+Forest #1                    +19.6300 bAXS
+Savannah #1                   +1.6200 bAXS
+Savannah #2                   +1.9800 bAXS
+Combined                     +23.2300 bAXS
+```
+
+Endpoint period:
+
+```text
+2026-08-07 → 2026-08-27
+```
+
+Calendar-date difference:
+
+```text
+20 days
+```
+
+Combined nominal pace:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+This is a **calendar-date-span average**.
+
+It must not be described as:
+
+```text
+exact hourly yield
+precise 24-hour normalized daily yield
+buff-adjusted yield
+unbuffed yield
+```
+
+because the historical observation times and buff-state evidence are not complete enough to support those calculations.
+
+---
+
+## Projection Scenarios
+
+V0.11 uses three explicit sensitivity assumptions:
+
+```text
+Conservative          75% of observed pace
+Base                 100% of observed pace
+Upside               125% of observed pace
+```
+
+The base observed calendar-span pace is:
+
+```text
+1.1615 bAXS / calendar day
+```
+
+Nominal base continuation:
+
+```text
+7 days        8.1305 bAXS
+30 days      34.8450 bAXS
+365 days    423.9475 bAXS
+```
+
+These scenarios are sensitivity assumptions.
+
+They are not confidence intervals or probability forecasts.
+
+---
+
+## Buff-State Interpretation
+
+The July 24 Shrine Buff experiment remains useful evidence that the documented +10% Flame mechanic behaved approximately as expected under the observed experimental conditions.
+
+However, V0.11 does not use that experiment to infer historical buff state for unrelated Terrarium snapshots.
+
+When historical buff state is unknown:
+
+```text
+buff_active = NULL
+```
+
+Future omitted buff state also stores `NULL`.
+
+Likewise, omitted:
+
+```text
+estimated_unbuffed_hours
+```
+
+stores `NULL`.
+
+Existing legacy zero values are preserved as historical records but are not treated as independently observed zero-hour measurements.
+
+---
+
+## Financial ROI References
+
+Forest acquisition reference:
+
+```text
+Plot coordinates                 (-123, 9)
+Purchase date                    2025-11-18
+Purchase price                   0.06841 ETH
+Historical RON reference         871.81 RON
+```
+
+The historical reference is:
+
+```text
+871.81 RON
+```
+
+not USD.
+
+Current bAXS conversion assumption:
+
+```text
+bAXS → AXS                       70%
+Conversion haircut               30%
+```
+
+AXS market price is not stored as a fixed Terrarium historical value.
+
+`scripts/terrarium_roi.py` requires the AXS price in RON at runtime.
+
+---
+
+## Current ROI Scope
+
+The V0.11 ROI model uses:
+
+```text
+combined bAXS accumulation from all owned Terrarium plots
+```
+
+to evaluate recovery of the Forest acquisition reference.
+
+The calculation currently represents:
+
+```text
+full acquisition-cost payback from zero recovery
+```
+
+Prior realized Terrarium income is not deducted from the Forest acquisition reference.
+
+The model does not currently include:
+
+- gas
+- taxes
+- transaction fees
+- staking yield
+- future Terrarium economy changes
+- future bAXS conversion-rule changes
+
+These limitations are reported explicitly rather than estimated without evidence.
+
+---
+
+## V0.11 Implementation
+
+Primary scripts:
+
+```text
+scripts/terrarium_summary.py
+scripts/add_terrarium_evidence.py
+scripts/terrarium_projection.py
+scripts/terrarium_roi.py
+```
+
+V0.11 preserves the distinction between:
+
+```text
+observed historical evidence
+        vs
+projection assumptions
+        vs
+financial assumptions
+```
+
+This distinction is required for all future Terrarium analytics.
