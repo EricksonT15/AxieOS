@@ -3,8 +3,8 @@
 # AxieOS Engineering Roadmap
 
 **Version:** 1.2  
-**Last Updated:** 2026-09-08
-**Current Engineering Release: V0.11 — Terrarium Analytics**
+**Last Updated:** 2026-10-26
+**Current Engineering Release: V0.12 — Staking & Reward Analytics (validated; release pending)**
 
 ---
 
@@ -911,37 +911,127 @@ V0.11 provides an evidence-aware Terrarium analytics, projection, and ROI layer 
 
 ---
 
-# V0.12 — Staking & Reward Analytics
+# V0.12 — Staking & Reward Analytics ✅ VALIDATED
 
 ## Objective
 
-Track Axie ecosystem staking positions and reward flows.
+Build an evidence-preserving analytics layer for AXS and bAXS staking operations, reward claims, immediate restaking, historical reward trends, and reward-source attribution.
 
-## Planned
+## Completed
 
-- staking_summary.py
-- reward_history.py
-- staking yield history
-- bAXS staking
-- AXS staking
-- reward claims
-- restaking activity
-- APR history
-- reward-source attribution
+- Added `scripts/staking_event_resolver.py`.
+- Added `scripts/staking_summary.py`.
+- Added `scripts/reward_history.py`.
+- Reused blockchain transactions, accounting records, and wallet-registry evidence.
+- Normalized staking activity by transaction hash and accounting event.
+- Identified CLAIM, STAKE, UNSTAKE, and RESTAKE_REWARD operations.
+- Reconstructed older transactions with missing methods using conservative token-flow inference.
+- Preserved explicit-method HIGH confidence and inferred MEDIUM confidence.
+- Attributed bAXS rewards to Bounty Board and Terrariums using corroborated contract addresses.
+- Separated AXS staking rewards from principal movements.
+- Implemented daily, ISO-weekly, and monthly reward-history reporting.
+- Used Decimal arithmetic for financial quantities.
+- Kept analytics read-only without modifying production records.
 
-## Metrics
+## Validated Coverage
 
-- AXS staked
-- bAXS staked
-- Rewards claimed
-- Rewards restaked
-- Effective yield
-- APR trend
-- Total staking income
+- Normalized staking events: **34**
+- HIGH-confidence events: **12**
+- MEDIUM-confidence events: **22**
+- Unresolved events: **0**
+- Multi-leg staking transaction hashes: **4**
+- Reward events: **18**
+- Reward events HIGH / MEDIUM: **6 / 12**
+
+## Validated Historical Reward Totals
+
+- Bounty Board: **60.310335038216979400 bAXS**
+- Terrariums: **42.624047319087398186 bAXS**
+- Combined bAXS rewards: **102.934382357304377586 bAXS**
+- Claimed AXS rewards: **0.646876807361839655 AXS**
+- Immediately restaked AXS rewards: **0.597635044539543860 AXS**
+- Combined AXS rewards: **1.244511851901383515 AXS**
+
+Historical reward coverage: July 20 through August 19, 2026, using stored timestamps.
+
+## Validation
+
+- Python syntax compilation: PASS
+- Staking event normalization: PASS
+- Reward-source attribution: PASS
+- Multi-leg transaction deduplication: PASS
+- Decimal aggregation: PASS
+- Daily reward totals: PASS
+- Weekly reward reconciliation: PASS
+- Monthly reward reconciliation: PASS
+- Read-only operation: PASS
+
+## Limitations and Deferred Work
+
+- Imported blockchain and accounting data currently extend through August 22, 2026.
+- Reports are historical, not live balances or lifetime earnings.
+- Historical staked-principal snapshots have not been established.
+- Reliable historical APR calculations are deferred until principal and time-weighted balance evidence become available.
+- Older method-null transactions retain MEDIUM confidence.
+- AXS and bAXS are not combined using an assumed conversion rate.
+- Stored timestamps are not converted to another timezone.
+- Immediate reward restakes are counted as one economic operation, not as separate claim and stake rewards.
+
+## Release Status
+
+Implementation and analytical regression validation complete.
+
+Final documentation, selective Git staging, commit, and push remain pending.
 
 ---
+# V0.13 — Inventory Optimization & ForRel Farming Analytics (PLANNED)
 
-# V0.13 — Unified Finance
+## Objective
+
+Optimize owned-Axie utilization across Terrariums, Origins, marketplace recovery, collectible evolution, and Release Farming (`ForRel`).
+
+## Planning Baseline — October 26, 2026
+
+- Reported Axies not listed for sale: **132**
+- Terrarium operating requirement: **120**
+- Potential flexible inventory: **12**
+
+The 12-Axie difference is not an automatic sale or release target. Individual Axie productivity, strategic value, acquisition economics, and evolution potential must be evaluated.
+
+## Planned Development Tasks
+
+- **Task 135A — Feasibility and Data-Quality Audit:** Inspect schemas, `inventory_report.py`, gameplay integration, live-data limitations, and acquisition/cost-basis coverage. Reconcile the reported 132 unlisted Axies.
+- **Task 135B — Canonical Inventory:** Combine IDs, classes, levels, genes, evolution stages, collectible status, AXP, Flame, Terrarium assignment, acquisition history, marketplace evidence, Origins value, and ForRel eligibility.
+- **Task 135C — Terrarium Roster Optimization:** Recommend a 120-Axie roster while preserving productive collectibles, competitive Origins Axies, and strategically useful farming candidates.
+- **Task 135D — Surplus Classification:** Recommend RETAIN, ORIGINS, FORREL, SELL, RELEASE, or REVIEW.
+- **Task 135E — ForRel Farming Analytics:** Track acquisition costs, AXP, ascension readiness, part classes, release materials, and effective Memento costs.
+- **Task 135F — Buy-versus-Breed Economics:** Compare high-breed marketplace purchases against internal breeding, including SLP, bAXS, gas, and marketplace expenses.
+- **Task 135G — Reporting:** Generate five read-only outputs covering inventory, Terrarium allocation, surplus ranking, ForRel pipeline, and Memento acquisition economics.
+
+## ForRel Naming Convention
+
+`ForRel_YYYYMMDD_B##_PRICE`
+
+The date represents actual acquisition date, `B##` represents breed count out of seven, and the price represents WETH acquisition cost in the established naming format.
+
+## Engineering Safeguards
+
+- Start with schema and data-quality audits before coding.
+- Reuse existing database architecture and gameplay scripts.
+- Treat current marketplace listing status as unverified until refreshed.
+- Do not infer missing cost basis, acquisition dates, or live status.
+- Do not automatically list, sell, breed, ascend, or release Axies.
+- Keep recommendations separate from operational and accounting records.
+
+## First Deliverable
+
+**AxieOS Inventory Optimization V1.0 — Feasibility Assessment, Database Coverage Review, and Phased Implementation Plan.**
+
+## Prerequisites
+
+V0.11 completed. Begin implementation planning after V0.12 release closeout.
+
+# V0.14 — Unified Finance
 
 ## Objective
 
@@ -980,7 +1070,7 @@ Separate:
 
 ---
 
-# V0.14 — Dashboards
+# V0.15 — Dashboards
 
 ## Objective
 
@@ -1095,42 +1185,30 @@ Recommendations should include:
 
 ## Sprint Goal
 
-Complete **V0.11 — Terrarium Analytics** and prepare the validated release for commit and push.
+Complete the V0.12 Staking & Reward Analytics release documentation, validate the final repository state, commit, and push to main.
 
 ## Completed
 
-- [x] Task 124 — Terrarium foundation audit
-- [x] Task 125 — Canonical Terrarium summary and validation
-- [x] Task 126 — Trend, delta, accumulation, and competitive analytics
-- [x] Task 127 — Next Distribution composition analytics
-- [x] Task 128 — Historical coverage recovery and evidence layer
-- [x] Task 129 — Evidence-aware Terrarium analytics
-- [x] Task 130A — Yield prerequisite audit
-- [x] Task 130B — NULL/default ingestion safety
-- [x] Task 130C — Yield and projection scenarios
-- [x] Task 130D — Financial ROI modeling and validation
+- [x] Task 132 — Staking and reward foundation audit
+- [x] Task 133 — Normalized staking event resolver and reward-source attribution
+- [x] Task 134A — Staking summary
+- [x] Task 134B — Historical reward analytics and daily/weekly/monthly validation
+- [x] Task 134C1 — Repository audit and Python compilation
 
 ## Current Task
 
-- [x] Task 131 — Final V0.11 release closeout, regression, documentation, commit, and push
+- [ ] Task 134C2 — Release documentation
+- [ ] Task 134C3 — Final regression and selective Git staging
+- [ ] Task 134C4 — V0.12 commit and push
 
 ## Immediate Next Step
 
-```text
-Complete documentation
-        ->
-Remove temporary validation artifacts
-        ->
-Run final regression
-        ->
-Confirm production database remains untracked
-        ->
-Review Git diff
-        ->
-Commit V0.11
-        ->
-Push to main
-```
+Complete documentation updates, review the repository diff, verify production database and unrelated capital-recovery files remain excluded, selectively stage V0.12 release files, then commit and push.
+
+## Upcoming Work
+
+Task 135A — V0.13 Inventory Optimization & ForRel Farming Analytics feasibility and database coverage audit.
+
 
 ---
 

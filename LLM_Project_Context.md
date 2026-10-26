@@ -1,6 +1,6 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-09-08**
+Last updated: **2026-10-26**
 
 ---
 
@@ -23,32 +23,22 @@ The project is now organized into specialized workstreams coordinated through a 
 
 ### Current Operating Priorities
 
-1. Complete the V0.11 Terrarium Analytics release closeout.
-2. Preserve and expand the canonical AxieOS data layer.
-3. Continue collecting real gameplay and marketplace evidence for Bounty and NFT decision support.
-4. Continue transaction-accounting and unresolved cost-basis reconciliation where defensible evidence exists.
-5. Preserve raw Ronin exports unchanged and normalize / deduplicate blockchain evidence programmatically.
-6. Improve asset-level economics for Axies, land, consumables, staking, and Terrariums without inventing missing values.
-7. Maintain the owned-Axie gameplay and qualification layer established in V0.8.
-8. Keep operational strategy separate from canonical accounting and historical evidence.
-9. Keep this file current enough that a fresh LLM session can resume AxieOS without reconstructing the project from chat history.
+1. Complete V0.12 Staking & Reward Analytics release documentation, final validation, commit, and push.
+2. Begin V0.13 Inventory Optimization & ForRel Farming Analytics planning after V0.12 release.
+3. Preserve canonical blockchain, marketplace, gameplay, staking, and Terrarium evidence.
+4. Continue reconciling acquisition history, cost basis, and capital recovery without double-counting internal transfers.
+5. Preserve original Ronin data and distinguish user-owned wallets from external counterparties.
+6. Keep operational recommendations separate from accounting evidence and realized financial outcomes.
+7. Do not invent missing timestamps, transactions, balances, acquisition costs, listing status, or gameplay metrics.
+8. Keep this project context synchronized with the engineering roadmap and validated release status.
 
 ### Current Development Checkpoint
 
-AxieOS has completed the core engineering work through **V0.11 — Terrarium Analytics**.
+AxieOS has completed and released **V0.11 — Terrarium Analytics**.
 
-The current release is in final documentation, regression, commit, and push closeout.
+**V0.12 — Staking & Reward Analytics** has completed implementation and analytical regression validation. Documentation closeout, selective Git staging, commit, and push remain pending.
 
-Current production foundation includes:
-
-```text
-blockchain_transactions              565 rows
-blockchain_accounting_records         405 rows
-gameplay_owned_axies                  137 rows
-canonical marketplace inventory       171 Axies
-```
-
-Current engineering release status:
+#### Engineering Release Status
 
 ```text
 V0.1   Ronin API Sync                         COMPLETE
@@ -61,8 +51,49 @@ V0.7   Accounting Review & Reporting          COMPLETE
 V0.8   Gameplay Data Model + Owned Axies      COMPLETE
 V0.9   Bounty Optimizer Integration           COMPLETE
 V0.10  Marketplace Strategy Analytics        COMPLETE
-V0.11  Terrarium Analytics                   CORE ENGINEERING COMPLETE
+V0.11  Terrarium Analytics                    RELEASED
+V0.12  Staking & Reward Analytics             VALIDATED / RELEASE PENDING
+V0.13  Inventory Optimization & ForRel        PLANNED
+V0.14  Unified Finance                        PLANNED
+V0.15  Dashboards                             PLANNED
 ```
+
+#### Historical Database Reference
+
+Previously recorded production foundation:
+
+```text
+blockchain_transactions              565 rows
+blockchain_accounting_records        405 rows
+gameplay_owned_axies                 137 rows
+canonical marketplace inventory      171 Axies
+```
+
+These figures are historical engineering checkpoints, not verified current database totals. They must be refreshed before use in current inventory, accounting, or wallet reports.
+
+The latest independently audited blockchain/accounting timestamps during V0.12 development were:
+
+```text
+blockchain_transactions         2026-08-22 11:10:29
+blockchain_accounting_records   2026-08-22 11:10:29
+staking_reward_events           2026-08-14 11:53:17
+```
+
+The normalized V0.12 staking reward data currently extends through August 19, 2026. The reports are historical rather than live.
+
+#### Upcoming Inventory Optimization
+
+V0.13 planning baseline as reported October 26, 2026:
+
+```text
+Axies not currently listed for sale       132
+Terrarium operating requirement           120
+Potential flexible inventory               12
+```
+
+These figures require database and current-listing reconciliation. The potential 12-Axie flexibility is not an automatic sale, release, or liquidation target.
+
+V0.13 begins with Task 135A: feasibility assessment, schema and data-quality audit, database coverage review, and a phased implementation plan before coding.
 
 V0.10 remains the validated canonical marketplace-strategy layer.
 
@@ -189,39 +220,26 @@ legacy historical zero values         -> preserved, not reinterpreted
 
 V0.11 does not infer exact historical timestamps, buff states, unbuffed hours, or missing Terrarium metrics from neighboring observations.
 
-Current release-closeout status:
+### Current Release Closeout Status — October 26, 2026
 
-```text
-Task 124   Terrarium foundation audit                    COMPLETE
-Task 125   Canonical summary and validation              COMPLETE
-Task 126   Trend / delta / accumulation analytics        COMPLETE
-Task 127   Next Distribution analytics                   COMPLETE
-Task 128   Historical evidence layer                     COMPLETE
-Task 129   Evidence-aware analytics                      COMPLETE
-Task 130A  Yield prerequisite audit                      COMPLETE
-Task 130B  NULL/default ingestion safety                 COMPLETE
-Task 130C  Projection and sensitivity scenarios          COMPLETE
-Task 130D  Financial ROI model and validation            COMPLETE
-Task 131   V0.11 release closeout                        COMPLETE
-```
+V0.11 — Terrarium Analytics was committed and pushed successfully.
 
-The immediate engineering sequence is:
+V0.12 — Staking & Reward Analytics has completed implementation and analytical validation.
 
-```text
-Finish V0.11 documentation
-        ->
-Remove temporary validation artifacts
-        ->
-Run final regression
-        ->
-Confirm production database remains untracked
-        ->
-Review Git changes
-        ->
-Commit V0.11
-        ->
-Push to main
-```
+Current engineering progress:
+
+- Task 132 — Staking and reward foundation audit: COMPLETE
+- Task 133 — Normalized staking event resolver and source attribution: COMPLETE
+- Task 134A — Staking summary: COMPLETE
+- Task 134B — Historical reward reporting and aggregation regression: COMPLETE
+- Task 134C1 — Repository and compilation validation: COMPLETE
+- Task 134C2 — Documentation closeout: IN PROGRESS
+- Task 134C3 — Final regression and selective staging: PENDING
+- Task 134C4 — Commit and push: PENDING
+
+V0.12 reports 34 normalized staking events, including 18 reward events. Historical APR remains unavailable without verified staking-principal history.
+
+The next planned engineering release is V0.13 — Inventory Optimization & ForRel Farming Analytics, beginning with Task 135A.
 
 ### August 22 Bounty Board Checkpoint
 
@@ -1396,48 +1414,180 @@ A weekly multi-day activation strategy is preferable when it:
 
 ## 23. Reward and Staking Analytics
 
-AxieOS should track:
+### V0.12 Implementation Status
+
+V0.12 provides a validated read-only analytics layer for historical AXS and bAXS staking activity.
+
+Primary scripts:
 
 ```text
-reward_source
-claim_date
-claim_amount
-token
-staking_date
-amount_staked
-amount_unstaked
-yield
-APR
-claim_delay
-idle_period
-transaction_hash
-gas
+scripts/staking_event_resolver.py
+scripts/staking_summary.py
+scripts/reward_history.py
 ```
 
-Relevant reward sources include:
+### Data Architecture
+
+V0.12 reuses existing evidence rather than introducing a separate authoritative staking transaction ledger.
 
 ```text
-Bounty Board
-Terrariums
-AXS staking
-bAXS staking
+blockchain_transactions
+    |
+    +-- transaction hashes
+    +-- blockchain methods
+    +-- transfer directions and addresses
+
+blockchain_accounting_records
+    |
+    +-- exact token quantities
+    +-- accounting classifications
+    +-- asset and direction evidence
+
+ronin_wallet_registry
+    |
+    +-- USER_OWNED wallet identification
+    +-- STAKING contract-role evidence
+
+staking_reward_events
+    |
+    +-- manual operational records
+    +-- historical source attribution evidence
+
+            |
+            v
+
+staking_event_resolver.py
+            |
+            +-- event type
+            +-- token
+            +-- exact quantity
+            +-- economic source
+            +-- confidence
+            +-- evidence provenance
+
+            |
+            +--> staking_summary.py
+            |
+            +--> reward_history.py
 ```
 
-The objective is to measure:
+No V0.12 production schema migration was required.
 
-* reward accumulation
-* idle capital
-* claiming frequency
-* compounding frequency
-* staking yield
-* opportunity cost
-* transaction costs
+### Event Resolution
 
-Operational staking and claiming belong in:
+Recognized event types:
+
+```text
+CLAIM
+STAKE
+UNSTAKE
+RESTAKE_REWARD
+UNRESOLVED
+```
+
+Resolution precedence:
+
+1. Recognized explicit blockchain method: `HIGH / EXPLICIT_METHOD`.
+2. Conservative token-flow pattern using wallet-registry evidence: `MEDIUM / FLOW_PATTERN`.
+3. Insufficient evidence: `UNRESOLVED`.
+
+Transactions with multiple blockchain transfer legs are not automatically counted as multiple economic events.
+
+`TOKEN_BURN` accounting events remain outside the staking/reward candidate universe.
+
+### Reward-Source Attribution
+
+Known sources:
+
+```text
+BOUNTY
+TERRARIUMS
+AXS_STAKING
+BAXS_STAKING
+```
+
+Bounty and Terrarium reward-source assignments are supported by known contract addresses and independently corroborated historical claims.
+
+AXS staking uses generic staking-contract role evidence where a more specific economic source is not proven.
+
+The general `ronin_wallet_registry` remains authoritative for wallet ownership and broad contract roles. Its automatically discovered contract labels must not be manually changed for reward attribution because subsequent discovery can overwrite those labels.
+
+### Validated Normalized Activity
+
+```text
+Candidate accounting events             34
+Explicit-method HIGH                    12
+Flow-pattern MEDIUM                     22
+Unresolved                               0
+Multi-leg transaction hashes             4
+
+CLAIM                                   14
+RESTAKE_REWARD                           4
+STAKE                                    6
+UNSTAKE                                 10
+```
+
+### Validated Historical Rewards
+
+Reward events: **18**, including 6 HIGH-confidence and 12 MEDIUM-confidence events.
+
+```text
+Bounty Board           60.310335038216979400 bAXS
+Terrariums             42.624047319087398186 bAXS
+Total bAXS            102.934382357304377586 bAXS
+
+AXS claims              0.646876807361839655 AXS
+AXS immediate restakes  0.597635044539543860 AXS
+Total AXS rewards       1.244511851901383515 AXS
+```
+
+Reward coverage: July 20 through August 19, 2026, using stored database timestamps.
+
+### Available Reports
+
+`staking_summary.py` provides event counts, staking flows, reward totals, source attribution, and evidence-quality summaries.
+
+`reward_history.py` supports:
+
+```text
+Daily aggregation
+ISO-weekly aggregation
+Monthly aggregation
+Transaction-level details
+```
+
+All three calendar aggregations reconcile to the same reward totals.
+
+Immediate reward restakes are counted once for reward recognition, not as separate CLAIM and STAKE reward events.
+
+All token aggregation uses `Decimal` arithmetic.
+
+### APR and Balance Limitations
+
+The current database does not contain a validated historical staked-principal snapshot series.
+
+Therefore:
+
+- Reliable historical APR is not available.
+- Staking flows are not equivalent to opening or closing staking balances.
+- No annualized yield is reported without defensible principal and elapsed-time evidence.
+- AXS and bAXS are reported separately without an assumed exchange rate.
+- Missing dates are not interpreted as zero rewards.
+- Older method-null transaction interpretations retain MEDIUM confidence.
+- Reports are historical, not live balances or lifetime earnings.
+- Stored timestamps are used without timezone normalization.
+
+Historical principal reconstruction, APR calculations, claiming-frequency analysis, and idle-capital optimization remain potential future enhancements.
+
+### Operational Ownership
+
+Operational staking and reward claims belong in:
 
 ```text
 04 — AxieOS Wallet, Staking & Terrariums
 ```
+
+Engineering implementation and canonical analytics belong in the AxieOS development and data workstreams.
 
 ---
 
@@ -1639,23 +1789,26 @@ V0.10 implementation, production validation, documentation, commit, and push are
 
 V0.11 core engineering and production validation are complete.
 
-Current remaining work:
+### Release Status — October 26, 2026
+
+V0.11 — Terrarium Analytics was completed, committed, and pushed to main. Task 131 is COMPLETE.
+
+V0.12 — Staking & Reward Analytics has completed implementation and analytical validation.
+
+Current development status:
 
 ```text
-Task 131 — V0.11 release closeout
+Task 132    Foundation audit                     COMPLETE
+Task 133    Event resolver and source attribution COMPLETE
+Task 134A   Staking summary                      COMPLETE
+Task 134B   Historical reward analytics          COMPLETE
+Task 134C1  Code and repository validation       COMPLETE
+Task 134C2  Release documentation                IN PROGRESS
+Task 134C3  Final regression / selective staging PENDING
+Task 134C4  Commit and push                      PENDING
 ```
 
-Task 131 includes:
-
-```text
-documentation closeout
-temporary validation-artifact cleanup
-final regression
-database integrity verification
-Git review
-V0.11 commit
-push to main
-```
+The next planned engineering release is V0.13 — Inventory Optimization & ForRel Farming Analytics, beginning with Task 135A.
 
 ### V0.8 Gameplay Foundation
 
@@ -1944,27 +2097,27 @@ Because this fixture is historical, it must not be saved as a current `LIVE_OPTI
 
 
 
-### Immediate Engineering Sequence
+### Immediate Engineering Sequence — October 26, 2026
 
 ```text
-Finish V0.11 documentation
-    ->
-Remove temporary task*.txt validation artifacts
-    ->
-Run final V0.11 regression
-    ->
-Verify production database integrity and row counts
-    ->
-Confirm production DB / backups remain untracked
-    ->
-Review Git changes
-    ->
-Mark Task 131 COMPLETE
-    ->
-Commit V0.11
-    ->
+Complete V0.12 documentation
+    ↓
+Run final V0.12 regression
+    ↓
+Review intended Git changes
+    ↓
+Exclude database backups and unrelated capital-recovery files
+    ↓
+Selectively stage V0.12 scripts and documentation
+    ↓
+Commit V0.12
+    ↓
 Push to main
+    ↓
+Begin V0.13 Task 135A feasibility audit
 ```
+
+V0.11 Task 131 is already complete and must not be repeated.
 
 
 ## 29A. V0.10 Marketplace Strategy Analytics
@@ -2396,30 +2549,29 @@ V0.10 documentation closeout:
 
 V0.10 was subsequently committed and pushed successfully.
 
-The active engineering release is now V0.11 Terrarium Analytics.
+Following V0.10, V0.11 Terrarium Analytics was completed, committed, and pushed. As of October 26, 2026, V0.12 Staking & Reward Analytics is validated and awaiting release closeout.
 
 ---
 
-## 29B. V0.11 Terrarium Analytics — Current Checkpoint
+## 29B. V0.11 Terrarium Analytics — Released
 
-V0.11 Terrarium Analytics core engineering is complete.
+V0.11 Terrarium Analytics was completed, validated, committed, and pushed to main.
 
-Current release state:
+Final release status:
 
 ```text
 Core engineering             COMPLETE
 Production validation        PASS
 Documentation closeout       COMPLETE
 Final regression             PASS
-Commit                       READY
-Push to main                 READY
+Commit                       COMPLETE
+Push to main                 COMPLETE
+Task 131                     COMPLETE
 ```
 
-The remaining work belongs to:
+V0.11 remains the canonical historical Terrarium analytics, projection, and ROI foundation.
 
-```text
-Task 131 — V0.11 release closeout
-```
+V0.12 — Staking & Reward Analytics is the current validated release awaiting final documentation and Git closeout.
 
 ---
 
@@ -2963,41 +3115,22 @@ The production database remains local / untracked and must not be committed to G
 
 ---
 
-### Current Release Closeout
+### V0.11 Release Closeout — Historical Record
 
-Documentation being finalized:
+V0.11 completed its release process, including:
 
-```text
-docs/Engineering/ROADMAP.md
-CHANGELOG.md
-docs/Engineering_Journal.md
-docs/Game Mechanics/Terrariums.md
-LLM_Project_Context.md
-```
+- Documentation updates
+- Final regression and validation
+- Database integrity verification
+- Historical evidence preservation
+- Git review
+- Commit and push to main
 
-Next sequence:
+Task 131 is COMPLETE.
 
-```text
-Finish documentation
-        ↓
-Remove temporary task*.txt validation artifacts
-        ↓
-Run final V0.11 regression
-        ↓
-Verify database integrity and production row counts
-        ↓
-Confirm production DB / backups remain untracked
-        ↓
-Run git diff --check
-        ↓
-Review intended Git changes
-        ↓
-Mark Task 131 COMPLETE
-        ↓
-Commit V0.11
-        ↓
-Push to main
-```
+This section is retained as a historical engineering record. Its release procedures do not need to be repeated for V0.12.
+
+Current engineering work continues under Task 134C — V0.12 release closeout.
 
 ---
 

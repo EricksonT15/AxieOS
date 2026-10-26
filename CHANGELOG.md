@@ -1,3 +1,75 @@
+## 2026-10-26 — V0.12 Staking & Reward Analytics
+
+### Added
+
+- Added `scripts/staking_event_resolver.py` for normalized AXS and bAXS staking events.
+- Added `scripts/staking_summary.py` for staking activity, reward totals, and net staking-flow reporting.
+- Added `scripts/reward_history.py` for daily, ISO-weekly, and monthly historical reward reporting.
+- Added evidence-based identification of CLAIM, STAKE, UNSTAKE, and RESTAKE_REWARD events.
+- Added reward-source attribution for Bounty Board, Terrariums, and AXS staking.
+- Added explicit-method and inferred-flow confidence classification.
+- Added multi-leg transaction handling to prevent reward double-counting.
+
+### Architecture and Methodology
+
+- Reused existing blockchain transactions, accounting records, and wallet-registry intelligence.
+- Preserved the generic STAKING contract role in `ronin_wallet_registry`.
+- Applied HIGH confidence to recognized explicit blockchain methods.
+- Applied MEDIUM confidence to conservative transaction-flow inferences.
+- Used `Decimal` arithmetic for token quantities and reward aggregation.
+- Kept AXS and bAXS rewards separate without assuming a conversion rate.
+- Counted immediate reward restaking as one economic operation.
+- Preserved stored blockchain timestamps without timezone conversion.
+- Implemented read-only reporting without modifying production records.
+
+### Validated Historical Coverage
+
+- Normalized staking events: **34**
+- Explicit-method HIGH-confidence events: **12**
+- Inferred MEDIUM-confidence events: **22**
+- Unresolved events: **0**
+- Multi-leg staking transaction hashes: **4**
+- Reward events: **18**
+- Reward events HIGH / MEDIUM: **6 / 12**
+- Reward coverage: **July 20–August 19, 2026**
+
+### Validated Reward Totals
+
+- Bounty Board rewards: **60.310335038216979400 bAXS**
+- Terrarium rewards: **42.624047319087398186 bAXS**
+- Combined bAXS rewards: **102.934382357304377586 bAXS**
+- Claimed AXS rewards: **0.646876807361839655 AXS**
+- Immediately restaked AXS rewards: **0.597635044539543860 AXS**
+- Combined AXS staking rewards: **1.244511851901383515 AXS**
+
+### Validation
+
+- Python compilation: PASS
+- Normalized event classification: PASS
+- Reward-source attribution: PASS
+- Multi-leg transaction handling: PASS
+- Staking summary reconciliation: PASS
+- Daily reward reporting: PASS
+- Weekly reward reconciliation: PASS
+- Monthly reward reconciliation: PASS
+- Repository whitespace check: PASS
+
+### Known Limitations
+
+- Imported blockchain and accounting records currently extend through August 22, 2026.
+- Historical staking principal snapshots are not yet established.
+- Historical APR calculations remain deferred until suitable principal and time-weighted balance evidence are available.
+- Older transactions without explicit methods remain MEDIUM-confidence inferences.
+- Reports do not represent live staking balances or lifetime rewards.
+- Missing dates are not interpreted as zero rewards.
+- Net staking flows are not equivalent to opening or closing staked balances.
+
+### Release Status
+
+Implementation and analytics validation completed. Final documentation review, selective Git staging, commit, and push pending.
+
+---
+
 ## 2026-09-08 — V0.11 Terrarium Analytics
 
 ### Added

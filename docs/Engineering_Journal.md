@@ -1597,3 +1597,193 @@ Push to main
 ### Version
 
 v0.11
+
+---
+
+## 2026-10-26 — V0.12 Staking & Reward Analytics
+
+### Objective
+
+V0.12 extended AxieOS with evidence-based analytics for AXS and bAXS staking, claims, immediate reward restaking, historical reward accumulation, and reward-source attribution.
+
+The engineering objective was to reconstruct historical staking activity without inventing missing transaction methods, principal balances, or APR values.
+
+### Primary Implementation
+
+Three read-only Python scripts were developed:
+
+- `scripts/staking_event_resolver.py` — normalized staking operations and evidence attribution.
+- `scripts/staking_summary.py` — reward totals, staking activity, and net staking flows.
+- `scripts/reward_history.py` — daily, ISO-weekly, monthly, and transaction-detail reports.
+
+Production database: `data/blockchain/database/axieos.db`
+
+No production schema migration was required.
+
+### Task 132 — Foundation Audit
+
+Existing data sources were inspected:
+
+- `blockchain_transactions`
+- `blockchain_accounting_records`
+- `ronin_wallet_registry`
+- `staking_reward_events`
+
+The audit established that manual staking events contain valuable operational context but are incomplete and sometimes rounded.
+
+Blockchain and accounting records provide more precise quantities and transaction evidence.
+
+Multiple blockchain transfer rows can represent one economic transaction. Consequently, staking analytics must not simply count blockchain rows as independent events.
+
+### Task 133 — Normalized Staking Event Resolver
+
+Implemented recognition of:
+
+- CLAIM
+- STAKE
+- UNSTAKE
+- RESTAKE_REWARD
+- UNRESOLVED
+
+Resolution priorities:
+
+1. Recognized explicit blockchain methods receive HIGH confidence.
+2. Supported transaction-flow patterns receive MEDIUM confidence.
+3. Insufficient evidence remains UNRESOLVED.
+
+The resolver groups related blockchain evidence by transaction hash while retaining accounting-event identity and exact quantities.
+
+Token burns remain excluded from the staking/reward candidate set.
+
+### Reward-Source Attribution
+
+Historical evidence established two identifiable bAXS reward contracts:
+
+**Bounty Board**
+
+`0x21d18ae443f86a755ba47d6241c49c5bcf070bbf`
+
+**Terrariums**
+
+`0x8a79d5d29208605426cabb43a4dfc4ca31baebd0`
+
+These address assignments were supported by matching manual reward records and blockchain/accounting evidence.
+
+AXS staking activity remains attributed to the generic AXS_STAKING source unless more specific evidence is established.
+
+The generic wallet registry was preserved because automated counterpart discovery can overwrite manually changed contract labels.
+
+### Validated Normalized Activity
+
+| Metric | Result |
+|---|---:|
+| Normalized staking events | 34 |
+| HIGH-confidence explicit events | 12 |
+| MEDIUM-confidence inferred events | 22 |
+| Unresolved events | 0 |
+| Multi-leg staking transaction hashes | 4 |
+| CLAIM events | 14 |
+| RESTAKE_REWARD events | 4 |
+| STAKE events | 6 |
+| UNSTAKE events | 10 |
+
+### Task 134A — Staking Summary
+
+The staking summary was validated against the production database.
+
+**bAXS rewards**
+
+- Bounty Board: 60.310335038216979400 bAXS
+- Terrariums: 42.624047319087398186 bAXS
+- Combined: 102.934382357304377586 bAXS
+
+**AXS rewards**
+
+- Claimed: 0.646876807361839655 AXS
+- Immediately restaked: 0.597635044539543860 AXS
+- Combined: 1.244511851901383515 AXS
+
+Immediate restaking is recognized as one economic operation, not two independent reward events.
+
+All financial quantities are aggregated using Decimal arithmetic.
+
+### Task 134B — Historical Reward Reporting
+
+The historical reward report reconstructs 18 reward events:
+
+- HIGH confidence: 6
+- MEDIUM confidence: 12
+- Unresolved: 0
+
+Reward coverage extends from July 20 through August 19, 2026.
+
+Daily, ISO-weekly, and monthly aggregation produced identical cumulative reward totals.
+
+July and August reward-event counts were 8 and 10, respectively.
+
+No missing calendar dates are interpreted as zero rewards.
+
+### Staking Balance and APR Audit
+
+A database audit did not identify a dedicated, validated historical staking-principal snapshot series.
+
+Therefore, historical APR calculations were intentionally deferred.
+
+The following distinctions remain mandatory:
+
+- Reward amount is not equivalent to staking principal.
+- Net staking flows are not equivalent to total staked balances.
+- AXS and bAXS cannot be combined without an explicit conversion assumption.
+- Annualized yields require defensible principal and elapsed-time evidence.
+
+The latest imported blockchain and accounting records examined during V0.12 development were dated August 22, 2026.
+
+Consequently, V0.12 reports are historical, not live portfolio analytics.
+
+### Validation Results
+
+- Python syntax compilation: PASS
+- Transaction-method recognition: PASS
+- Historical flow-pattern inference: PASS
+- Reward-source attribution: PASS
+- Multi-leg transaction deduplication: PASS
+- Decimal reward aggregation: PASS
+- Staking summary regression: PASS
+- Daily reward reporting: PASS
+- Weekly reward reconciliation: PASS
+- Monthly reward reconciliation: PASS
+- Git tracked-file whitespace check: PASS
+
+Production records remained unchanged by the read-only reporting scripts.
+
+### Engineering Decisions
+
+V0.12 established several reusable rules:
+
+1. Existing blockchain and accounting evidence should be reused before creating new ledgers.
+2. Transaction identity and economic-event identity must remain distinguishable.
+3. Confidence and evidence provenance must accompany inferred historical events.
+4. Reward-source attribution should be based on verifiable contracts rather than overwritten wallet labels.
+5. Missing historical staking principal must not be replaced with hypothetical APR assumptions.
+6. Operational staking data, accounting records, and analytical reports remain separate.
+
+### Task Completion
+
+- Task 132 — Foundation audit: COMPLETE
+- Task 133 — Event resolver and attribution: COMPLETE
+- Task 134A — Staking summary: COMPLETE
+- Task 134B — Historical reward analytics: COMPLETE
+- Task 134C1 — Code and repository validation: COMPLETE
+- Task 134C2 — Release documentation: IN PROGRESS
+- Task 134C3 — Final regression and selective staging: PENDING
+- Task 134C4 — Commit and push: PENDING
+
+### Next Engineering Release
+
+V0.13 — Inventory Optimization & ForRel Farming Analytics.
+
+Initial task: 135A — Feasibility Assessment, Schema and Data-Quality Audit, Database Coverage Review, and Phased Implementation Plan.
+
+### Version
+
+v0.12 — Validated; Git release pending
