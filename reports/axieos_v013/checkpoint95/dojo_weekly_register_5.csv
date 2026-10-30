@@ -1,0 +1,6 @@
+﻿axie_id,name,last_observed_level,evolved_parts,observation_date,training_status,specific_plot_verified,role,recommendation,next_review_level,levels_until_review,current_level_verified_this_week,ascension_approved,release_approved,reassignment_approved
+12148372,Jinx2,18,0,2026-10-27,TRAINING,NO,GENERAL_TRAINING,REVIEW_SOON,19,1,YES,NO,NO,NO
+7140614,,17,0,2026-10-27,TRAINING,NO,GENERAL_TRAINING,CONTINUE,19,2,YES,NO,NO,NO
+12213537,ForRel,15,1,2026-10-27,TRAINING,NO,FORREL_PAUSED,CONTINUE_AXP,19,4,YES,NO,NO,NO
+12198498,Beecher1,14,1,2026-10-27,TRAINING,NO,ORIGINS_PROTECTED,PROTECT,19,5,YES,NO,NO,NO
+3212156,ForRel Pilot,5,0,2026-10-27,TRAINING,NO,FORREL_ACTIVE_PILOT,CONTINUE_PILOT,9,4,YES,NO,NO,NO

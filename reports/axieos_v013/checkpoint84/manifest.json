@@ -1,0 +1,22 @@
+{
+  "checkpoint": 84,
+  "portfolio_records": 160,
+  "forrel_research": 29,
+  "marketplace_first_research": 3,
+  "remaining_forrel_research": 26,
+  "confirmed_reserve_exceptions": [
+    "11707178",
+    "4700296"
+  ],
+  "research_does_not_authorize_trades": true,
+  "candidate_specific_bids_verified": 0,
+  "release_proceeds_verified": 0,
+  "transaction_authorizations": 0,
+  "production_database_writes": 0,
+  "source_sha256": {
+    "portfolio": "c237fda61f5146824657c14437993a3f5453734ed86300b90031bc328f15bf56",
+    "market_triage": "4391ebdf64df09a1e7835ef348d2b33d7acad3176b727a1061a1932b075da8f9",
+    "listings": "dcdb08f02765259b02aafacef998f2bf41e8c8bcdcc2d61649f0da77a735268d",
+    "membership": "d4c848dd43de2eefb3653dfd56c4f28a29e919a0715cab1f53ca46c491ab2a6d"
+  }
+}

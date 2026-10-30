@@ -1,0 +1,27 @@
+{
+  "checkpoint": 78,
+  "records": 29,
+  "allocation_rule": "BODY_2_OF_8_PLUS_SIX_PART_CLASSES_1_OF_8_EACH",
+  "material_price_usd_assumptions": {
+    "aquatic": "0.01000",
+    "beast": "0.01000",
+    "bird": "0.01000",
+    "bug": "0.02000",
+    "dawn": "0.00587",
+    "dusk": "0.00128",
+    "mech": "0.00301",
+    "plant": "0.00882",
+    "reptile": "0.02000"
+  },
+  "source": "C:\\Users\\ERICKS~1\\AppData\\Local\\Temp\\axieos_v013_forrel_economics_inputs_v1.csv",
+  "source_sha256": "b7e426a3cf34f80150f5804b2de3e4d09fccb3b8bea2f4e46756554ceffd6b47",
+  "reference_model_not_verified_payout": true,
+  "prices_not_executable_bids": true,
+  "material_sale_fee_assumed": "0.0425",
+  "release_gas_ron_observed_on_different_axie": "0.421",
+  "ron_usd_reference": "0.05335",
+  "withdrawal_gas_modeled_as_zero_unverified": true,
+  "forfeiture_modeled_as_zero_unverified": true,
+  "transaction_authorizations": 0,
+  "production_database_writes": 0
+}

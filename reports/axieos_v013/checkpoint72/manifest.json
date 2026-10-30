@@ -1,0 +1,25 @@
+{
+  "checkpoint": 72,
+  "source_checkpoint": 71,
+  "source_sha256": {
+    "portfolio": "a765a4a5be369e5e974cd9101218b650c6dd54c89205182fdd79981993a849cd",
+    "membership": "d4c848dd43de2eefb3653dfd56c4f28a29e919a0715cab1f53ca46c491ab2a6d",
+    "research": "d3186189b31f45f588b275545496d0d08effeeec93fbaca775842b6dd0f1f044"
+  },
+  "poison_candidate_original_lane": "ORIGINS",
+  "poison_candidate_final_lane": "ORIGINS",
+  "lane_counts": {
+    "RETAIN": 91,
+    "FORREL": 29,
+    "SELL": 15,
+    "ORIGINS": 23,
+    "REVIEW": 2
+  },
+  "forrel_locations": {
+    "TERRARIUM_RESERVE_UNASSIGNED": 23,
+    "FREE_PLOT_TRAINING": 6
+  },
+  "release_cleared": 0,
+  "transactions_authorized": 0,
+  "production_database_writes": 0
+}

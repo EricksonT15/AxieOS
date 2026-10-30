@@ -6,22 +6,22 @@ Last updated: **2026-10-30**
 
 ## 0. Current Checkpoint — October 30, 2026
 
-**V0.13 is active: Task 135H, Checkpoint 96 — OPEN.** Current offline capital register: **96BN**. Reporting helper **96BO passed on the user's Windows machine**. **96BP** prepares this context update; applying it to the repository and committing it remain pending.
+**V0.13 scoped analytical release validated on October 30, 2026.** Five selected historical reports passed row-count, ID-crosswalk and approval checks; five selected scripts passed syntax checks. Task 135H Checkpoint 96 remains an open evidence archive through 96CL. Complete finance remains in V0.14.
 
 This section governs resumption. Older release tables, counts and next-task instructions below are historical. Do not restart Task 135A or V0.12 closeout solely because older sections call them next. Preserve the roadmap's release numbering until separately reviewed.
 
 ### Repository and documentation
 
 - Canonical file: **`LLM_Project_Context.md` at the repository root**, not `docs/LLM_Context.md`.
-- Last user-confirmed context commit: **`8c7c5e8` — Update V0.13 capital recovery context through 96BH**. The user confirmed pushing through GitHub Desktop. No fresh remote inspection was performed here.
+- The user confirmed committing and pushing the earlier offline capital, reward, marketplace and purchase helpers. `gas_evidence_offline.py` is included in this selected V0.13 package. No fresh remote check is asserted here.
 - Prior release commit: **`c5b49f7` — Complete V0.12 staking and reward analytics**.
-- The earlier Git status showed many untracked scripts, reports and database backups. It is not a current clean-tree claim. Stage only the intended documentation for this update; do not use `git add .`.
-- The supplied roadmap is stale: it omits Task135H and lists `capital_management.py`, which the user reports does not exist. Do not assume a module exists from a roadmap entry.
+- The selected release contains documentation, five scripts, five historical report CSVs, supporting provenance and the Checkpoint 95 bundle. Other untracked reports and database backups remain outside the release; this is not a clean-tree claim.
+- The roadmap records the scoped V0.13 analytical release and defers incomplete Unified Finance to V0.14. Historical 160-Axie reports remain distinct from the later 161-Axie ownership snapshot.
 
 ### Scope and safeguards
 
 - Continue **one focused task at a time**. Accounting work remains read only, with new report files and separately scoped offline helpers. No production accounting changes, database writes, sync or wallet operations are authorized by this context update.
-- 96BM–96BO did not open the production database or contact blockchain/exchange networks. Earlier authorized SQLite extraction used `mode=ro` and `PRAGMA query_only=ON`.
+- Offline helpers through 96CL did not open the production database or use the network. The user's SQLite source extractions used `mode=ro` and `PRAGMA query_only=ON`; they wrote new reports only. No production accounting changes or wallet operations are reported.
 - Preserve original reports, exact IDs, Decimal amounts, fees and refunds. Missing evidence stays unknown/NULL, not zero. A validation PASS applies only to its stated scope.
 - Do not run old scripts automatically. In particular, `scripts/capital_recovery_audit.py` exports provisional candidates and overwrites named outputs; it is not a harmless viewer.
 
@@ -73,6 +73,18 @@ January8 emails support PHP500+PHP10,000 cash-ins already counted. Trade debits 
 
 Do not repeat unchanged empty legacy history queries or broad failed archive searches.111 owned IDs still lack acquisition evidence. Reopen specific gaps only with materially new evidence. Missing acquisition records do not erase the known funding subtotal.
 
+### Task 135H scoped reporting and V0.13 boundary
+
+- **96BR capital flow:** 108 included contributions totaling **PHP281,630.26**; PHP1,500 of other-game funding excluded. Historical reported PHP cash received remains **PHP83,782.50**, user-attested and not bank-matched. Complete recovery and unrecovered principal remain unknown.
+- **96CB reward income:** 18 scoped reward events, including four reward restakes counted once; 16 staking movements excluded. AXS **1.244511851901383515** and bAXS **102.934382357304377586** are separate historical token subtotals, including inferred classifications. PHP income and full history remain unknown.
+- **96CD marketplace proceeds:** 75 stored sale rows counted once. Twenty-four consumable cost/profit field differences remain unresolved; neither source establishes accepted profit. Economic-event rows are comparisons, not additional sales.
+- **96CF purchase outlays:** 53 stored purchases counted once: 27 Axie NFT purchases with **0.014017141550925926 WETH** gross and 26 consumable purchases with **0.006384001 WETH** gross. These are a historical database slice, not complete asset costs or new capital contributions.
+- **96CL gas evidence:** the user-run helper passed. It joins 227 unique raw API rows to the 405 accounting hashes; 178 hashes lack raw rows, including all 75 stored marketplace sales. The 565 transfer-ledger rows contain repeated hashes and `0.0` fee placeholders. The candidate **1.018016748142010707 RON** from `fee_raw / 10^18` is conditional on the unverified raw unit and is not an accepted expense. Verified user-paid gas, all-time gas and PHP gas cost remain unknown. The uploaded JSON and Markdown match the independently regenerated output.
+
+**Closeout boundary:** Keep Task 135H as provisional evidence and offline views. Defer receipt-level gas corroboration, complete income/expense and profit accounting, PHP conversion, historical gaps and integrated Unified Finance reporting to V0.14. Unknown amounts must not become zero. No further broad legacy searches are required to close V0.13.
+
+**Release validation:** The five selected report CSVs passed row-count, unique-ID, crosswalk and no-approval checks; the Checkpoint 95 roster matched its manifest; five selected scripts passed syntax checks; staged whitespace passed. These are historical analytical outputs, not live-market or complete-finance validation. Git publication is confirmed separately by the commit and push results.
+
 ### Resumption files and next work
 
 Checkpoint reports reside in `reports/axieos_v013/checkpoint96/` in the user's repository.
@@ -85,7 +97,7 @@ Checkpoint reports reside in `reports/axieos_v013/checkpoint96/` in the user's r
 - Old `AxieOS_Checkpoint96BJ_Capital_Register_Report.py` supports96BI/schema1.0 only; do not use it for current figures.
 - Funding overlap/land source:96AZ.96AX records scoped PHP recovery confirmation;96BD/96BE retain the paused January evidence.96BH personal-money confirmation remains valid subject to96BK purpose exclusions.
 
-**Next single task:** apply this96BP documentation copy to root `LLM_Project_Context.md`, inspect its diff, then selectively commit and push through GitHub Desktop. Historical sections from0A onward are preserved unchanged. Do not close Checkpoint96 or declare V0.13 complete. After documentation is saved, review the remaining implementation scope against the roadmap before starting another accounting feature; unavailable legacy evidence must remain visible rather than forcing repeated searches.
+**Next single task:** After confirming the V0.13 Git push, plan V0.14 Unified Finance around the preserved acquisition, gas, cost-basis, PHP valuation and recovery gaps. Do not repeat unchanged legacy evidence searches.
 
 ---
 

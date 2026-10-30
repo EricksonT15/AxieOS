@@ -1,0 +1,13 @@
+{
+  "checkpoint": 95,
+  "task": "135G",
+  "roster_date": "2026-10-27",
+  "trainees": 5,
+  "active_forrel_pilots": 1,
+  "paused_forrel_experiments_in_dojo": 1,
+  "plot_assignments_verified": false,
+  "ascensions_authorized": 0,
+  "releases_authorized": 0,
+  "reassignments_authorized": 0,
+  "production_database_writes": 0
+}

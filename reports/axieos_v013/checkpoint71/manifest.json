@@ -1,0 +1,53 @@
+{
+  "checkpoint": 71,
+  "observation_date": "2026-10-27",
+  "source_checkpoint": 70,
+  "source_manifest_checkpoint": 70,
+  "counts": {
+    "PAID_PLOT_ASSIGNED": 90,
+    "TERRARIUM_RESERVE_UNASSIGNED": 34,
+    "OUTSIDE_CAPTURED_TERRARIUM_REGISTRY": 26,
+    "FREE_PLOT_TRAINING": 10
+  },
+  "registered_terrariums": 134,
+  "outside_captured_registry": 26,
+  "existing_price_displayed_listings": 24,
+  "unlisted_outside_registry_excluding_egg": [
+    "12265705"
+  ],
+  "forrel_research_total": 29,
+  "forrel_research_registered": 29,
+  "forrel_research_not_shown_in_registry": [],
+  "resolved_reserve_locations": [
+    "11707178",
+    "4700296"
+  ],
+  "release_cleared": 0,
+  "sales_approved": 0,
+  "releases_approved": 0,
+  "unregistrations_approved": 0,
+  "source_sha256": {
+    "reports\\axieos_v013\\checkpoint70\\portfolio_decisions_160.csv": "fa2dd3aa515102ea8677cc7ef021c02d6147cd70f345afcf25e80d6d2fdcbca3",
+    "reports\\axieos_v013\\checkpoint70\\inputs\\axieos_v013_terrarium_90_confirmed.csv": "19f983374392fe1efaa180d3258d219a404bac31021e803b9421c3c79831f135",
+    "reports\\axieos_v013\\checkpoint70\\inputs\\axieos_v013_checkpoint64_marketplace_evidence.csv": "6c97c14a952515c5caecb2f477f6e55b4a99e8dce9d095fcda93dbc8e53fb811",
+    "reports\\axieos_v013\\checkpoint70\\manifest.json": "2e8c8dd4755f3a2baae62a9bc77ab5b2571a1e7d00451a0562aa1879e3a2f9d1"
+  },
+  "screenshot_evidence_names": {
+    "FREE_PLOT_TRAINING": [
+      "image(20261027-022129).png"
+    ],
+    "TERRARIUM_RESERVE_UNASSIGNED": [
+      "image(20261027-022207).png",
+      "image(20261027-022225).png",
+      "image(20261027-022242).png",
+      "image(20261027-022304).png"
+    ]
+  },
+  "notes": [
+    "Paid plot assignment evidence predates 2026-10-27 screenshot capture.",
+    "Registration membership is a safety gate, not proof of ForRel reward or unregistration consequences.",
+    "Absence from registry screenshots does not prove release eligibility.",
+    "Previously unexplained Terrarium lock reports correspond to reserve registrations.",
+    "Original Checkpoint 70 baseline preserved without edits."
+  ]
+}

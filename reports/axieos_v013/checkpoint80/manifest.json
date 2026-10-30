@@ -1,0 +1,41 @@
+{
+  "checkpoint": 80,
+  "purpose": "ADVISORY_CAPITAL_RECOVERY_EVIDENCE_TRIAGE",
+  "portfolio_lanes": {
+    "RETAIN": 91,
+    "FORREL": 29,
+    "SELL": 15,
+    "ORIGINS": 23,
+    "REVIEW": 2
+  },
+  "registered_forrel_groups": {
+    "TERRARIUM_RESERVE_UNASSIGNED": 23,
+    "FREE_PLOT_TRAINING": 6
+  },
+  "stress_positive_counts": {
+    "ZERO_EXTRA_COST": 29,
+    "EXTRA_COST_005_USD": 19,
+    "EXTRA_COST_015_USD": 3
+  },
+  "research_tiers": {
+    "A_RESEARCH_FIRST_POSITIVE_AT_015": 3,
+    "B_LOW_MARGIN_AT_015": 16,
+    "C_FRAGILE_AT_005": 10
+  },
+  "gross_listing_asks_weth": "0.01249",
+  "net_at_full_asks_weth": "0.011959175",
+  "net_90_percent_asks_weth": "0.01076325750",
+  "sell_lane_net_90_weth": "0.00723008250",
+  "market_quotes_executable": false,
+  "release_proceeds_verified": false,
+  "costs_verified": false,
+  "transaction_authorizations": 0,
+  "production_db_writes": 0,
+  "sources_sha256": {
+    "portfolio": "c237fda61f5146824657c14437993a3f5453734ed86300b90031bc328f15bf56",
+    "membership": "d4c848dd43de2eefb3653dfd56c4f28a29e919a0715cab1f53ca46c491ab2a6d",
+    "release": "4d924dce6c6633d688840bbc29aafd5cb851174aeb03bc1bd1f166a79af29752",
+    "comparisons": "28ca4e3768149e57bcd8db1e7907821b765778fe2f85d85507f1d43a04da7d02",
+    "assumptions": "fe40d4a66a633aabbebe13be51adf75011cae06decfc8003a6124c938840a6ac"
+  }
+}

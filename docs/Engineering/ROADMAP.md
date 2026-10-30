@@ -2,9 +2,9 @@
 
 # AxieOS Engineering Roadmap
 
-**Version:** 1.2  
-**Last Updated:** 2026-10-26
-**Current Engineering Release: V0.12 — Staking & Reward Analytics (validated; release pending)**
+**Version:** 1.3
+**Last Updated:** 2026-10-30
+**Current Engineering Release: V0.13 - Inventory Optimization and ForRel Farming Analytics (scoped analytical release validated)**
 
 ---
 
@@ -59,7 +59,9 @@ The long-term objective is to build a reusable GameFi operating system that can:
 | Bounty Optimizer Integration | ✅ Complete |
 | Marketplace Strategy Analytics | ✅ Complete |
 | Terrarium Analytics | ✅ Complete |
-| Staking Analytics | ⏳ Planned |
+| Staking Analytics | ✅ V0.12 committed per user; remote state not independently verified |
+| V0.13 Inventory / ForRel Reporting | PASS - Five historical report areas and Checkpoint 95 Dojo register validated |
+| Task 135H Provisional Finance Evidence | 🔄 Offline views through 96CL; incomplete metrics remain unknown |
 | Unified Finance Reporting | ⏳ Planned |
 | Dashboards | ⏳ Planned |
 | AI Recommendation Engine | ⏳ Planned |
@@ -809,7 +811,7 @@ Go beyond transaction accounting and support marketplace decision-making.
 ## Completed
 
 - inventory_report.py
-- capital_management.py
+- capital recovery reporting (historical roadmap label; `capital_management.py` does not exist in the user-provided script inventory)
 - marketplace_strategy.py
 - holding-period analysis
 - realized ROI
@@ -981,10 +983,10 @@ Historical reward coverage: July 20 through August 19, 2026, using stored timest
 
 Implementation and analytical regression validation complete.
 
-Final documentation, selective Git staging, commit, and push remain pending.
+The user confirmed committing and pushing the V0.12 release. Commit `c5b49f7` is recorded in the project context; a fresh remote check has not been performed for this roadmap update.
 
 ---
-# V0.13 — Inventory Optimization & ForRel Farming Analytics (PLANNED)
+# V0.13 - Inventory Optimization and ForRel Farming Analytics (SCOPED ANALYTICAL RELEASE VALIDATED)
 
 ## Objective
 
@@ -998,7 +1000,7 @@ Optimize owned-Axie utilization across Terrariums, Origins, marketplace recovery
 
 The 12-Axie difference is not an automatic sale or release target. Individual Axie productivity, strategic value, acquisition economics, and evolution potential must be evaluated.
 
-## Planned Development Tasks
+## Development Tasks (original plan; scoped analytical delivery)
 
 - **Task 135A — Feasibility and Data-Quality Audit:** Inspect schemas, `inventory_report.py`, gameplay integration, live-data limitations, and acquisition/cost-basis coverage. Reconcile the reported 132 unlisted Axies.
 - **Task 135B — Canonical Inventory:** Combine IDs, classes, levels, genes, evolution stages, collectible status, AXP, Flame, Terrarium assignment, acquisition history, marketplace evidence, Origins value, and ForRel eligibility.
@@ -1006,7 +1008,8 @@ The 12-Axie difference is not an automatic sale or release target. Individual Ax
 - **Task 135D — Surplus Classification:** Recommend RETAIN, ORIGINS, FORREL, SELL, RELEASE, or REVIEW.
 - **Task 135E — ForRel Farming Analytics:** Track acquisition costs, AXP, ascension readiness, part classes, release materials, and effective Memento costs.
 - **Task 135F — Buy-versus-Breed Economics:** Compare high-breed marketplace purchases against internal breeding, including SLP, bAXS, gas, and marketplace expenses.
-- **Task 135G — Reporting:** Generate five read-only outputs covering inventory, Terrarium allocation, surplus ranking, ForRel pipeline, and Memento acquisition economics.
+- **Task 135G - Reporting:** Five selected historical CSVs cover inventory, Terrarium membership, portfolio decisions, ForRel priorities and class-weighted Memento sensitivity. Their row counts, ID crosswalks and no-approval safeguards passed; Checkpoint 95 records five Dojo trainees. These are dated analytical snapshots, not live executable recommendations.
+- **Task 135H — Provisional Capital and Finance Evidence:** Checkpoint 96 assembled a partial capital register and scoped offline views for contributions, reward quantities, marketplace proceeds, purchase outlays and candidate raw gas. Through 96CL, the user-run helpers and report checks passed within their stated limits. Complete capital recovery, realized profit, PHP income/expenses and all-time gas remain unknown. These views are not the V0.14 Unified Finance implementation.
 
 ## ForRel Naming Convention
 
@@ -1027,9 +1030,16 @@ The date represents actual acquisition date, `B##` represents breed count out of
 
 **AxieOS Inventory Optimization V1.0 — Feasibility Assessment, Database Coverage Review, and Phased Implementation Plan.**
 
+## Release Closeout
+
+- The selected package contains five historical report CSVs, supporting provenance, the Checkpoint 95 bundle, five scripts and two documentation files. Database backups and Checkpoint 96 evidence remain outside the selected release.
+- Validation passed for report row counts, unique IDs, crosswalks, no approvals or automatic execution, Dojo roster/manifest consistency, script syntax and staged whitespace. Full buy-versus-breed and Unified Finance economics remain unresolved.
+- Git publication is identified by its release commit. Remaining untracked historical evidence does not imply a clean working tree.
+- Carry incomplete acquisition evidence, capital/recovery, cost basis, gas units and PHP valuation to V0.14 without replacing unknown values with zero.
+
 ## Prerequisites
 
-V0.11 completed. Begin implementation planning after V0.12 release closeout.
+V0.12 release was user-confirmed committed and pushed. This section's earlier planned state is superseded by the current V0.13 closeout status.
 
 # V0.14 — Unified Finance
 
