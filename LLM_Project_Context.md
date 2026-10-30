@@ -1,69 +1,91 @@
 # AxieOS — LLM Project Context
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 ---
 
-## 0. Current Checkpoint — October 29, 2026
+## 0. Current Checkpoint — October 30, 2026
 
-**V0.13 is active: Task 135H, Checkpoint 96 — OPEN.** Latest consolidated evidence review: **96BF**, updated by the **96BH personal-capital confirmation**. This context incorporates the 96BH funding clarification and the subsequent user-supplied repository status check.
+**V0.13 is active: Task 135H, Checkpoint 96 — OPEN.** Current offline capital register: **96BN**. Reporting helper **96BO passed on the user's Windows machine**. **96BP** prepares this context update; applying it to the repository and committing it remain pending.
 
-This section governs current resumption. Older release tables, counts and next-task instructions below are dated historical records. Do not restart Task 135A or V0.12 closeout solely because those older sections call them next.
+This section governs resumption. Older release tables, counts and next-task instructions below are historical. Do not restart Task 135A or V0.12 closeout solely because older sections call them next. Preserve the roadmap's release numbering until separately reviewed.
 
-### Repository checkpoint — user-supplied Git output, October 29
+### Repository and documentation
 
-- Canonical context path: **`LLM_Project_Context.md` at the repository root**.
-- Local HEAD/main: **`c5b49f7` — Complete V0.12 staking and reward analytics**. V0.12 is committed in the supplied history.
-- The locally recorded `origin/main` and `origin/HEAD` point to the same commit. No fresh fetch or independent remote inspection was performed for this review.
-- The supplied `git status --short` shows untracked files only; no tracked-file changes were reported at that moment. V0.13 reports and many helper scripts remain untracked; V0.13 release completion is not established.
-- Keep database backups, raw reports, helper scripts and unrelated files out of a documentation-only staging operation. Do not use `git add .` for this update.
+- Canonical file: **`LLM_Project_Context.md` at the repository root**, not `docs/LLM_Context.md`.
+- Last user-confirmed context commit: **`8c7c5e8` — Update V0.13 capital recovery context through 96BH**. The user confirmed pushing through GitHub Desktop. No fresh remote inspection was performed here.
+- Prior release commit: **`c5b49f7` — Complete V0.12 staking and reward analytics**.
+- The earlier Git status showed many untracked scripts, reports and database backups. It is not a current clean-tree claim. Stage only the intended documentation for this update; do not use `git add .`.
+- The supplied roadmap is stale: it omits Task135H and lists `capital_management.py`, which the user reports does not exist. Do not assume a module exists from a roadmap entry.
 
 ### Scope and safeguards
 
-- Continue **one task at a time**. Task 135H accounting work remains **read only, new reports only**; no production code changes, database writes, sync, wallet operations or automatic execution of old scripts. This context documentation update does not authorize production accounting changes.
-- No production database was opened for 96BF or this context preparation. Earlier authorized SQLite extraction used `mode=ro` and `PRAGMA query_only=ON`; do not treat historical database counts as current.
-- Preserve raw evidence, exact asset IDs, Decimal amounts, fees and refunds. Missing cost, source or balance stays unknown/NULL, not zero. A source check passing does not establish complete accounting coverage.
+- Continue **one focused task at a time**. Accounting work remains read only, with new report files and separately scoped offline helpers. No production accounting changes, database writes, sync or wallet operations are authorized by this context update.
+- 96BM–96BO did not open the production database or contact blockchain/exchange networks. Earlier authorized SQLite extraction used `mode=ro` and `PRAGMA query_only=ON`.
+- Preserve original reports, exact IDs, Decimal amounts, fees and refunds. Missing evidence stays unknown/NULL, not zero. A validation PASS applies only to its stated scope.
+- Do not run old scripts automatically. In particular, `scripts/capital_recovery_audit.py` exports provisional candidates and overwrites named outputs; it is not a harmless viewer.
 
-### Acquisition and ownership evidence
+### Current acquisition evidence
 
-| Saved evidence | Current reviewed scope |
+| Measure | Reviewed scope |
 |---|---|
-| Historical marketplace purchases | **166**: 108 paid in WETH, 58 in RON |
-| Purchase payments excluding gas | **0.081498214262946763 WETH** and **1990.061323907432125047 RON** |
-| Evidence grades | 138 full route/direct-WETH reconciliations; 27 cached-log/CSV-supported; one screenshot-supported |
-| Purchase-level PHP fresh-capital allocations | All **166 NULL** |
-| Reviewed breeding events | **11**; inputs 5.5 bAXS + 21,150 SLP; separate gas 0.119589483995539891 RON for those events only |
-| Saved two-wallet ownership | **161 = 38 reviewed purchases + 11 reviewed breeding events + 112 unresolved acquisition IDs** |
-| Separate historical outgoing-only acquisition gaps | **6** |
+| Historical purchase evidence records | **167**: earlier166 plus Summer screenshot evidence |
+| Earlier166 payment records | 108WETH and58RON; unchanged |
+| Earlier payment subtotals excluding gas | **0.081498214262946763 WETH** and **1990.061323907432125047 RON** |
+| Earlier166 evidence grades | 138 full route/direct-WETH reconciliations,27 cached-log/CSV-supported,1 screenshot-supported |
+| Additional Summer evidence | **#11404905**, Summer_0076; displayed price **0.00757ETH**, separate from verified-payment subtotals |
+| Purchase-level PHP fresh-capital allocations | All **167 NULL**; Summer links to its existing funding record without another contribution |
+| Reviewed breeding events | **11**;5.5bAXS +21,150SLP; separate gas0.119589483995539891RON for those events only |
+| Saved ownership partition | **161 =39 purchase-evidenced +11 bred +111 without acquisition evidence** |
+| Separate historical outgoing acquisition gaps | **6** |
 
-Ownership was verified at block `0x3bf0e0c`, **October 28, 2026, 15:53:47 Philippine time**. It is a historical snapshot, not live or continuous ownership. The 128 purchase IDs absent from it are not automatically sold, released or lost. The older 137-row saved database inventory is not the snapshot count. Complete historical purchases and all-time gas remain unresolved. Contract-funded AXS breeding settlement is not a second wallet debit; parent and breeding PHP bases remain unknown.
+Ownership is the historical96AK snapshot at block `0x3bf0e0c`, **October28,2026 at15:53:47 Philippine time**. It is not live or continuous ownership. The128 historical purchase IDs absent from that snapshot are not automatically sold, released or lost. The old137-row database inventory is not the snapshot count.
 
-### Funding and recovery
+**Summer #11404905:** the user supplied marketplace activity showing **kichilove sold to You**, May7,2025 at10:27AM as displayed, price0.00757 with the ETH icon. The screenshot's timezone, transaction hash, exact settlement token, net wallet payment reconciliation and gas remain unknown. The user reports the transaction link errors for this pre-migration event. Saved last-transfer date `2025-05-07 02:27:43` agrees by date but is not independent payment proof. Do not repeat the unchanged failing lookup. Summer now has purchase evidence, but its blockchain reconciliation remains incomplete;111 is the count lacking acquisition evidence, not the total count of incomplete blockchain records.
 
-- **Current provisional identified investment: PHP282,130.26 = original 2021 teams PHP156,000 + recorded Coins.ph cash-ins PHP115,690 + approved Savannah #1 external-crypto allocation PHP10,440.26.** This replaces the older PHP225,487.66 partial allocation view. It is based on saved records and user confirmation; complete all-time coverage and independent bank verification remain open.
-- **96BH user confirmation:** all Coins.ph cash-ins were new personal money invested in AxieOS; no crypto proceeds went into Coins.ph. Apply that purpose/source classification to the existing **106 records** (21/PHP66,240 in 2025 and 85/PHP49,450 in 2026). The earlier “no new money” wording was corrected. Do not repeat this general funding question without conflicting new evidence. Records outside the saved export have not been established.
-- **Do not add PHP37,047.40 of RON-buy expenditure, PHP22,000 of Coins.ph-funded land or the January PHP10,500 again.** These are uses or subsets of the PHP115,690 contribution total. Count each external contribution once; withdrawals, wallet receipts, swaps, purchases and gas paid from those funds do not create further contributions.
-- The 83 RON withdrawal batches total **7,417.30 RON**; 56 amount/time-linked receipt candidates and 27 unmatched batches retain their existing chain-link status. User confirmation of personal funding does not provide exchange-side blockchain hashes or exact purchase-consumption links. The user reports withdrawals usually follow cash-ins within about five minutes; this is a timing clue, not a validated matching rule.
-- Count Savannah #1 (-139,-107) **PHP10,440.26 once**, preserving the approved Crypto.com → Binance → Ronin route and user-reported CRO origin. Do not add the 300 USDC route reference or reallocate the same funding. Savannah #2 **PHP9,500** and Forest **PHP12,500** are inside the Coins.ph cash-in total. Forest's historical 871.81 reference is **RON, not USD**. Original CRO execution/cost tracing remains unresolved.
-- Historical PHP cash received remains **PHP83,782.50**, user-attested and not independently bank-matched. The user reported **no additional PHP cash for personal use** after those receipts; that zero applies to the question answered. Token proceeds and retained/staked crypto are not PHP cash recovery. Complete current unrecovered principal and recovery percentage remain unresolved; do not label an arithmetic subtraction from the partial contribution view as a final all-time recovery figure.
-- The 112 unresolved owned acquisitions concern missing acquisition evidence. They do not prevent recording the known contribution subtotal. Purchase-level PHP allocations remain NULL. Preserve the notebook's PHP5 discrepancy; the PHP72,217.50 original-team difference is historical arithmetic only.
+Complete historical purchase coverage and all-time gas remain unknown. Contract-funded AXS breeding settlement is not another wallet debit; parent and breeding PHP bases remain unknown.
 
-### Unavailable evidence and January USDC
+### Current funding and recovery
 
-The January 8 cash-in emails corroborate **PHP500 + PHP10,000 = PHP10,500**, already included in the cash-in dataset. Saved trade debits **PHP99.59** and **PHP10,399.51** do not identify purchased assets. The withdrawal email shows **176.87 USDC**, while the saved wallet receipt CSV shows **176.86 USDC**. The user confirms the cash-ins were new personal AxieOS funding, considers the exact USDC trade link probable, and suggests a 0.01 USDC transfer fee. The exact trade allocation and fee remain unverified; Axie #20013 remains unresolved.
+**Provisional identified AxieOS investment: PHP281,630.26.** It is a partial evidence-based register, not complete all-time capital.
 
-The user reports the trade record is not retrievable. Pause repeated requests for it and unchanged legacy/history searches. Reopen a gap only when materially new evidence becomes available; do not convert unavailable evidence into zero cost or complete coverage.
+| Included component | PHP |
+|---|---:|
+| Original2021 teams |156,000.00|
+|104 provisionally AxieOS-attributed Coins.ph cash-ins |114,190.00|
+|Approved Savannah#1 external-crypto allocation |10,440.26|
+|May7,2025 Summer Axie user-confirmed new capital |1,000.00|
+|**Total**|**281,630.26**|
 
-### Resumption sources and next work
+- **108 active contribution entries**. Preserve the2 excluded other-game entries as evidence;110 source records in total.
+- All106 original Coins.ph cash-in rows totalPHP115,690. The user confirms these were new personal money; no crypto proceeds went into Coins.ph. **Purpose has two explicit exceptions:** May29,2025 PHP400 for Zeeverse Egg and May30,2025 PHP1,100 for Ronen Dolls. These are other games on the same blockchain and are excluded from AxieOS capital. Remaining104 rows totalPHP114,190; their purpose remains provisional under the user's general confirmation, subject to specific contrary evidence.
+- Summer's PHP1,000 was explicitly confirmed as new capital and already added in96BL. Its later identity and price evidence in96BM/96BN add **PHP0** further capital. Funding platform and transfer hash remain unknown.
+- Do not add PHP37,047.40 of recorded RON-buy expenditure, PHP22,000 of Coins.ph-funded land, January's PHP10,500 cash-ins, withdrawals, swaps or NFT payments as further contributions.
+- The83 RON withdrawal batches/7,417.30RON and56 amount/time-linked candidates versus27 unmatched are **whole-export measures**, not yet repartitioned by game after the exclusions. Exchange-side hashes and exact purchase-consumption links remain incomplete. The user's usual under-five-minute timing is a clue, not a validated matching rule.
+- Savannah#1 (-139,-107): preserve approved PHP10,440.26 once, Crypto.com→Binance→Ronin route and user-reported CRO origin. Do not add its300USDC route reference or reallocate the same funding. Original CRO execution/cost tracing remains unresolved. Savannah#2 PHP9,500 and Forest PHP12,500 are already inside Coins.ph funding. Forest's871.81 reference is **RON, not USD**.
+- Funding before May27,2025 remains uncertain apart from identified records such as Summer. The user clarified **no new October1–29,2026 Coins.ph cash-ins**: the sole October transaction was an October1 PHP99.96 spot trade from an existing balance, not new capital.
+- Historical reported PHP cash received: **PHP83,782.50**, user-attested, not bank-matched. The user reported no additional PHP received for personal use after those receipts; this scoped zero is not proof of all-currency net extraction. Token proceeds, staking and retained crypto are not PHP recovery.
+- **Complete all-time capital, current unrecovered principal, recovery percentage, realized profit and live portfolio value remain unknown.** Do not present partial subtraction as final recovery. Preserve the notebook's PHP5 discrepancy and the historical-only PHP72,217.50 original-team arithmetic difference.
 
-All checkpoint reports are saved under `reports/axieos_v013/checkpoint96/` in the user's repository.
+### Paused evidence branches
 
-- Acquisition ledger and active gap registers: `AxieOS_Checkpoint96AO_Acquisition_Breeding_Reconciliation.json`. Active 96AO registers govern; older 96AC/96AE gap snapshots remain historical.
-- Consolidated statement: `AxieOS_Checkpoint96BF_Consolidated_Provisional_Accounting_Statement.md`. Its earlier Coins.ph purpose/source uncertainty and provisional funding subtotal are superseded by `AxieOS_Checkpoint96BH_CoinsPh_Personal_Capital_Confirmation.md` for the 106 recorded cash-ins.
-- Funding overlap and prior land decision: `AxieOS_Checkpoint96AZ_CoinsPh_CashIn_Land_Overlap_Review.json`.
-- January withdrawal and provisional explanation: 96BD and 96BE reports. 96AX records the scoped PHP-receipt statement; 96AY's subtotal is interpreted as narrowed by 96AZ.
+January8 emails support PHP500+PHP10,000 cash-ins already counted. Trade debits PHP99.59 andPHP10,399.51 do not identify purchased assets. Withdrawal email176.87USDC versus saved wallet receipt176.86USDC leaves0.01USDC unexplained; the user's fee explanation is a hypothesis, not verified. Exact trade allocation and Axie#20013 purchase linkage remain unresolved. The trade record is unavailable; do not ask again without a new source.
 
-**Resumption:** continue Task 135H from the 96BF evidence statement and 96BH confirmed funding classification. The provisional contribution subtotal is usable while the acquisition gaps remain visible; no new purchase allocations are created by this documentation update. Review the current source and define a separate implementation scope before adding a reporting feature. Do not run `scripts/capital_recovery_audit.py` as a harmless viewer: the saved source exports provisional candidates and overwrites named CSV/summary outputs when executed.
+Do not repeat unchanged empty legacy history queries or broad failed archive searches.111 owned IDs still lack acquisition evidence. Reopen specific gaps only with materially new evidence. Missing acquisition records do not erase the known funding subtotal.
+
+### Resumption files and next work
+
+Checkpoint reports reside in `reports/axieos_v013/checkpoint96/` in the user's repository.
+
+- **Current register:** `AxieOS_Checkpoint96BN_Capital_Register_Summer_Integration.json` (schema1.3). Its111-ID owned gap list supersedes96AO's112-ID list;96AO remains the detailed source for earlier166 purchases, breeding evidence and prior history.
+- Summer evidence: `AxieOS_Checkpoint96BM_Summer_Axie_Purchase_Evidence.json`.
+- Funding progression:96BK excludes other-game funding;96BL adds confirmed Summer capital;96BN links Summer identity.96BI/96BJ's PHP282,130.26 and96BK's PHP280,630.26 are historical, not current totals.
+- **Current offline helper:** `scripts/AxieOS_Checkpoint96BO_Capital_Register_Report.py`. It supports reviewed96BN/schema1.3, validates totals and writes an exclusive timestamped Markdown report. No database/project imports or network operations.
+- User execution **PASS**: `AxieOS_Checkpoint96BO_Capital_Report_20261030T011452_346177Z.md`. Output:PHP281,630.26;167 purchases;11 breeding events;111 acquisition gaps; complete capital/current unrecovered principal UNKNOWN; database openedNO/writes0/network0.
+- Old `AxieOS_Checkpoint96BJ_Capital_Register_Report.py` supports96BI/schema1.0 only; do not use it for current figures.
+- Funding overlap/land source:96AZ.96AX records scoped PHP recovery confirmation;96BD/96BE retain the paused January evidence.96BH personal-money confirmation remains valid subject to96BK purpose exclusions.
+
+**Next single task:** apply this96BP documentation copy to root `LLM_Project_Context.md`, inspect its diff, then selectively commit and push through GitHub Desktop. Historical sections from0A onward are preserved unchanged. Do not close Checkpoint96 or declare V0.13 complete. After documentation is saved, review the remaining implementation scope against the roadmap before starting another accounting feature; unavailable legacy evidence must remain visible rather than forcing repeated searches.
 
 ---
 
