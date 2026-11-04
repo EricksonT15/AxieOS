@@ -1,0 +1,64 @@
+{
+  "project": "AxieOS",
+  "version": "0.14",
+  "task": "136BK",
+  "mode": "APPLIED",
+  "sources": {
+    "136BJ": {
+      "filename": "AxieOS_V014_Task136BJ_Detail_Raw_Clone_20261104T025547_494418Z_46f40d.json",
+      "sha256": "ebf9e076e4b7b7604f42b52ca2520894e61822957dccf736beaba5b23c8f5bdb"
+    },
+    "136BI": {
+      "filename": "AxieOS_V014_Task136BI_Transaction_Detail_Crosswalk_20261104T025007_921713Z_098f87.json",
+      "sha256": "3dca1d2e78ed50a232289a88daa194dbe39320164b351b818aa117db6123e164"
+    },
+    "136BH": {
+      "filename": "AxieOS_V014_Task136BH_Transaction_Detail_Evidence_20261104T024627_927327Z_1270a5.json",
+      "sha256": "f218c95c5c041badd7a0a03c3bb1296df518b535d24e6f9ef40f6448f73bc241"
+    },
+    "136BF": {
+      "filename": "AxieOS_V014_Task136BF_Recent_Combined_Registry_20261104T023929_259004Z_eeafb6.json",
+      "sha256": "85e4f2c52ee73a4effdcb7c1b75e7aebfe468db8f192fc35905089eabd9491e9"
+    },
+    "136BC": {
+      "filename": "AxieOS_V014_Task136BC_Recent_Classification_Shadow_20261102T112954_186060Z_326f77.json",
+      "sha256": "d00eea59b7ba29b1d703a36bb8187d89d2cc865b631e0770ab9f924e4dc10127"
+    },
+    "136AY": {
+      "filename": "AxieOS_V014_Task136AY_Recent_Ledger_Clone_20261102T111711_516854Z_b692bc.json",
+      "sha256": "9cbbea7e84320567788220feea2e93db1be17f248bb36f83e46c25c63436af29"
+    },
+    "136AU": {
+      "filename": "AxieOS_V014_Task136AU_Explorer_Snapshot_Crosswalk_20261102T103405_495549Z_e17daa.json",
+      "sha256": "7f9b3d7f2a85553de4763f2b8201ec18d8dd8fa1cbd02e2e5d029b121b28eb2a"
+    },
+    "136BB": {
+      "filename": "AxieOS_V014_Task136BB_Recent_Ledger_Reconciliation_20261102T112700_292555Z_4f5831.json",
+      "sha256": "5ee8c9979108b4fe707f2afbf3e0f776d931f461d6278b547279e309d97f3226"
+    }
+  },
+  "plan": {
+    "plan_sha256": "4a19b7186a0ccfabc15a336b10282e85b8884953396097e07aca8f265a9c4a85",
+    "task136bj_sha256": "ebf9e076e4b7b7604f42b52ca2520894e61822957dccf736beaba5b23c8f5bdb",
+    "transaction_rows": 22,
+    "raw_before": 1171,
+    "raw_after_if_applied": 1193,
+    "ledger_unchanged": 1532
+  },
+  "result": {
+    "inserted_rows": 22,
+    "raw_before": 1171,
+    "raw_after": 1193,
+    "ledger_unchanged": 1532,
+    "backup_path": "C:\\Users\\Erickson Tan\\AxieOSBackups\\axieos_before_task136bk_20261104T031515_806513Z_310357.db",
+    "watched_tables_unchanged": 8,
+    "integrity_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "accepted_financial_totals": null,
+  "production_database_opened_read_only": false,
+  "production_database_writes": 22,
+  "network_calls": 0,
+  "checkpoint96": "OPEN",
+  "created_at_utc": "2026-11-04T03:15:16.010131+00:00"
+}

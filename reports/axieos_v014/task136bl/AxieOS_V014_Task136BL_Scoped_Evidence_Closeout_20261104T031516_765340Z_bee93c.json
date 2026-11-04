@@ -1,0 +1,99 @@
+{
+  "project": "AxieOS",
+  "version": "0.14",
+  "task": "136BL",
+  "release_state": "SCOPED_EVIDENCE_READY_FOR_REVIEW",
+  "full_finance_closeout": false,
+  "sources": {
+    "136BK": {
+      "filename": "AxieOS_V014_Task136BK_Detail_Raw_Applied_20261104T031516_010487Z_3f98a6.json",
+      "sha256": "c3feb5e41d23fe953d710931e8210fa7d24a754ad4e152996d5b7476c9406e0a"
+    },
+    "136BJ": {
+      "filename": "AxieOS_V014_Task136BJ_Detail_Raw_Clone_20261104T025547_494418Z_46f40d.json",
+      "sha256": "ebf9e076e4b7b7604f42b52ca2520894e61822957dccf736beaba5b23c8f5bdb"
+    },
+    "136BI": {
+      "filename": "AxieOS_V014_Task136BI_Transaction_Detail_Crosswalk_20261104T025007_921713Z_098f87.json",
+      "sha256": "3dca1d2e78ed50a232289a88daa194dbe39320164b351b818aa117db6123e164"
+    },
+    "136BF": {
+      "filename": "AxieOS_V014_Task136BF_Recent_Combined_Registry_20261104T023929_259004Z_eeafb6.json",
+      "sha256": "85e4f2c52ee73a4effdcb7c1b75e7aebfe468db8f192fc35905089eabd9491e9"
+    }
+  },
+  "view_sources": {
+    "capital": {
+      "filename": "AxieOS_V014_Task136BG_Capital_Recent_Evidence_8c9f1d8522871361.json",
+      "sha256": "efc029d588e10c4ca159e8002532db15a08e6a1d7bf49a53bd0b412809eefaf5"
+    },
+    "expense": {
+      "filename": "AxieOS_V014_Task136BG_Expense_Recent_Evidence_f9772c6fb47cb5ee.json",
+      "sha256": "9d8bb63a1a0bd7c5e693e3e17af12a5e25c1fcdf63ac507725ccdbeb38151915"
+    },
+    "income": {
+      "filename": "AxieOS_V014_Task136BG_Income_Recent_Evidence_b9ba750a1c1d5cd9.json",
+      "sha256": "5e72492e551833c90447fb7461cc5e7967b3f345887f1dfd2364cdae46ac3e32"
+    },
+    "portfolio": {
+      "filename": "AxieOS_V014_Task136BG_Portfolio_Recent_Evidence_e29faa964d2d702d.json",
+      "sha256": "d35ab9f3e28762be338396b5ea65f2fb391380b71839049e9d7c762ef938a918"
+    }
+  },
+  "backup_path": "C:\\Users\\Erickson Tan\\AxieOSBackups\\axieos_before_task136bk_20261104T031515_806513Z_310357.db",
+  "coverage": {
+    "raw_transactions_before": 1171,
+    "raw_transactions_after": 1193,
+    "exact_inserted_raw_rows": 22,
+    "prior_raw_rows_preserved": 1171,
+    "ledger_rows_unchanged": 1532,
+    "raw_transfers_unchanged": true,
+    "protected_tables_unchanged": 6,
+    "historical_references": 517,
+    "prior_cached_references": 707,
+    "recent_raw_hash_references": 115,
+    "combined_source_references": 1339,
+    "four_views": {
+      "capital": {
+        "historical_primary": 112,
+        "prior_cached_context": 707,
+        "recent_unaccepted": 115,
+        "recent_relevant_candidates": 115
+      },
+      "expense": {
+        "historical_primary": 53,
+        "prior_cached_context": 163,
+        "recent_unaccepted": 115,
+        "recent_relevant_candidates": 34
+      },
+      "income": {
+        "historical_primary": 93,
+        "prior_cached_context": 214,
+        "recent_unaccepted": 115,
+        "recent_relevant_candidates": 33
+      },
+      "portfolio": {
+        "historical_primary": 517,
+        "prior_cached_context": 707,
+        "recent_unaccepted": 115,
+        "recent_relevant_candidates": 115
+      }
+    },
+    "sqlite_integrity": "ok",
+    "foreign_key_violations": 0
+  },
+  "remaining_boundaries": [
+    "Verified income, expense, profit, portfolio value and PHP recovery are UNKNOWN",
+    "Checkpoint 96 remains OPEN",
+    "Stored fees and raw fees do not establish who paid gas or accepted expense",
+    "Historical cost basis conflicts and unhashed capital references remain unresolved",
+    "Candidate marketplace routes do not establish verified trades"
+  ],
+  "accepted_financial_totals": null,
+  "production_database_opened_read_only": true,
+  "backup_database_opened_read_only": true,
+  "database_writes": 0,
+  "network_calls": 0,
+  "checkpoint96": "OPEN",
+  "created_at_utc": "2026-11-04T03:15:16.764136+00:00"
+}
