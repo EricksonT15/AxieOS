@@ -1,5 +1,17 @@
 # AxieOS Roadmap
 
+<!-- AXIEOS_V014_SCOPED_EVIDENCE_START -->
+## V0.14 scoped finance evidence — 2026-11-04
+
+**Scoped evidence milestone: READY FOR RELEASE REVIEW. Unified Finance objective: HOLD. Checkpoint 96: OPEN.**
+
+Task136BP PASS: 1339 source references, four linked views, 26 Axie sale pairs, 26 CocoChoco purchases and 24 conditional FIFO bases. Verified finance totals remain UNKNOWN; Checkpoint 96 OPEN.
+
+The 24 stored CocoChoco FIFO candidates match confirmed paid purchase lots under the stored model, but opening inventory and cost remain unknown. No verified profit, cash recovery or PHP conversion has been accepted.
+
+Release boundary and follow-on gates: `docs/Engineering/AxieOS_V014_Scoped_Finance_Evidence_Closeout.md`.
+<!-- AXIEOS_V014_SCOPED_EVIDENCE_END -->
+
 # AxieOS Engineering Roadmap
 
 **Version:** 1.3

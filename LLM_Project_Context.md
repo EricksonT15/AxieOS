@@ -1,5 +1,15 @@
 # AxieOS — LLM Project Context
 
+<!-- AXIEOS_V014_SCOPED_EVIDENCE_START -->
+## Current scoped checkpoint — 2026-11-04
+
+**V0.14 scoped finance evidence is ready for repository release review. The planned Unified Finance release remains HOLD.**
+
+Task136BP PASS: 1339 source references, four linked views, 26 Axie sale pairs, 26 CocoChoco purchases and 24 conditional FIFO bases. Verified finance totals remain UNKNOWN; Checkpoint 96 OPEN.
+
+See `docs/Engineering/AxieOS_V014_Scoped_Finance_Evidence_Closeout.md` for exact source scope and remaining gates.
+<!-- AXIEOS_V014_SCOPED_EVIDENCE_END -->
+
 Last updated: **2026-10-30**
 
 ---
