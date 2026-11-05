@@ -1,0 +1,21 @@
+{
+  "version": "0.15",
+  "task": "GUARDED_RAW_IMPORT",
+  "created_at_utc": "2026-11-05T03:40:38.489604+00:00",
+  "status": "APPLIED_AND_RECONCILED",
+  "source_catchup_sha256": "32260f4e5b7472a3b2c5c8d3c07ebe5664cf051cd70d8126d8fdd893551550fa",
+  "source_reconciliation_sha256": "ea75a98e63e3a908f2f86be0c8038ba3381441edf07fc272694ef19e05bf47ce",
+  "plan_sha256": "9a0ba7940629b0b3dac7a63cbbfc9dca16c83f716e3b2975b295fd1639c8f057",
+  "raw_rows_inserted": 3,
+  "raw_before": 1193,
+  "raw_after": 1196,
+  "backup": "C:\\Users\\Erickson Tan\\AxieOSBackups\\axieos_before_v015_raw_20261105T034038_281015Z_cc0d91.db",
+  "network_calls": 3,
+  "database_writes": 3,
+  "axie_roster_writes": 0,
+  "ledger_writes": 0,
+  "finance_writes": 0,
+  "verified_financial_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN"
+}

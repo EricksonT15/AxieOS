@@ -1,0 +1,394 @@
+{
+  "version": "0.15",
+  "task": "ONCHAIN_CORE_ENRICHMENT",
+  "status": "PARTIAL_APPLIED_AND_RECONCILED",
+  "created_at_utc": "2026-11-05T06:06:03.172271+00:00",
+  "source_roster_report": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v015\\source_catchup\\AxieOS_V015_Guarded_Roster_Refresh_20261105T051153_489967Z.json",
+  "source_sha256": "f09f4ad564f15505e56f11bd271e86c2c7171217364fb1ca0b414a7b600cb1f0",
+  "fresh_block": "0x3c4475b",
+  "fresh_block_timestamp_utc": "2026-11-05T06:05:29+00:00",
+  "target_axies": 29,
+  "breed_count_validated": 29,
+  "level_validated": 0,
+  "control_axies": 8,
+  "control_breed_matches": 8,
+  "control_level_matches": 1,
+  "class_still_unknown": 29,
+  "core_evidence": {
+    "1110058": {
+      "breed_count": 4,
+      "contract_level": 40,
+      "raw_breed_word": "4",
+      "raw_level_word": "40",
+      "response_sha256": "824e378655c322bd548ef62f31ee87b21696a8ec31b9230de7353914e5030ae6"
+    },
+    "2072470": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "1d7916a354f58165428d82b386fc9dcfa9e02799daf9c778d4873d6380183032"
+    },
+    "3212156": {
+      "breed_count": 3,
+      "contract_level": null,
+      "raw_breed_word": "3",
+      "raw_level_word": "0",
+      "response_sha256": "a794dbb9d39f0fd51e34a396a8dc21e06690f2628b60a632e2a95e31142b8d65"
+    },
+    "3510808": {
+      "breed_count": 1,
+      "contract_level": 10,
+      "raw_breed_word": "1",
+      "raw_level_word": "10",
+      "response_sha256": "666cbc70cb123e30b010feaea1ad97486e909faff1455e628c08e73dae7cba3b"
+    },
+    "4269065": {
+      "breed_count": 0,
+      "contract_level": 10,
+      "raw_breed_word": "0",
+      "raw_level_word": "10",
+      "response_sha256": "301af1acc7ecb2d0c13b854c44379d3080e9bde9dbbe8f5f45452d9cee564c28"
+    },
+    "4505379": {
+      "breed_count": 1,
+      "contract_level": null,
+      "raw_breed_word": "1",
+      "raw_level_word": "0",
+      "response_sha256": "2dd88d5f5c21527b97a0af00929721960a4cc5408c4edb8e3d4e74779946da90"
+    },
+    "5471342": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "323fdcb2035590b4a8a7a2b914264e1c6c44c151e3e7828ddbd09cff78c7e71f"
+    },
+    "6678762": {
+      "breed_count": 0,
+      "contract_level": 10,
+      "raw_breed_word": "0",
+      "raw_level_word": "10",
+      "response_sha256": "ba02ba252f06e70a01005012a0ef5cb4c85ccf68a88f61166b877c392d7eb177"
+    },
+    "6709319": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "186f12b5c3bfab91567eb3656aaa5799b5dd98a021c7c5c14b041f3bf077f74a"
+    },
+    "6853681": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "9bee4ddb18335fe73083a7873cff8b772ec2f89f7f3bb4d8e850e589dbbc0255"
+    },
+    "7229551": {
+      "breed_count": 0,
+      "contract_level": 10,
+      "raw_breed_word": "0",
+      "raw_level_word": "10",
+      "response_sha256": "dad2f44ff01bbf1fed33f2d8d02b27e71cb5e05cadeff92ee97c772d865b290c"
+    },
+    "8640076": {
+      "breed_count": 1,
+      "contract_level": null,
+      "raw_breed_word": "1",
+      "raw_level_word": "0",
+      "response_sha256": "7bca14ab0f4a78e7e5951fc9e77e4f0d4b8e711b6e897f8cb8edf76813dd3984"
+    },
+    "9771328": {
+      "breed_count": 1,
+      "contract_level": null,
+      "raw_breed_word": "1",
+      "raw_level_word": "0",
+      "response_sha256": "e987b52bc2948ba86134a74ab3fa6994c2c2c5f7baf196af083da62ecbcdc79b"
+    },
+    "11299415": {
+      "breed_count": 1,
+      "contract_level": 10,
+      "raw_breed_word": "1",
+      "raw_level_word": "10",
+      "response_sha256": "f4a4aaac4975380d6fcac61ea2f24437f1d641d363a504b8d5e24fe4a58811d3"
+    },
+    "11309255": {
+      "breed_count": 2,
+      "contract_level": null,
+      "raw_breed_word": "2",
+      "raw_level_word": "0",
+      "response_sha256": "bcad53c9a94201cab0be71b675c789373b46149e8679e020c4e9f4b15e51eaec"
+    },
+    "11619123": {
+      "breed_count": 0,
+      "contract_level": 10,
+      "raw_breed_word": "0",
+      "raw_level_word": "10",
+      "response_sha256": "7fa91d30a532a2b17dc486332074be93170f4e5395de75c46e9faccd75876552"
+    },
+    "11707178": {
+      "breed_count": 3,
+      "contract_level": 10,
+      "raw_breed_word": "3",
+      "raw_level_word": "10",
+      "response_sha256": "ed5ac902178e66eda0fb8b21dff107a0c71716df6b2834569cb88ee26c2f3e6f"
+    },
+    "12168528": {
+      "breed_count": 1,
+      "contract_level": null,
+      "raw_breed_word": "1",
+      "raw_level_word": "0",
+      "response_sha256": "d8d8e8fe067348a7e2df0d02bf6675b948f501ac7c1112c32afef34e7667f861"
+    },
+    "12258233": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "f7e66e32354929dfeb8028885cd1fa0d0d61636c7428b3aff58464e904d58ad2"
+    },
+    "12258831": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "c47271a25b210a254cdd77690250d3ad9aea8b437e0c49fd92cbce9e65dcf743"
+    },
+    "12261102": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "008d1e1c98d508abdd7b641031e472ccf29f032f2b2038326ebcf59a9521803c"
+    },
+    "12261909": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "34dd2b1aca833d75cfa8217f9bdca74cf38cee831b043aac89646d161938dafe"
+    },
+    "12262509": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "b54db6eb872f3c979815c1ab0a19c86de4211097816a819fb0a7467a6b6ddeb0"
+    },
+    "12264249": {
+      "breed_count": 1,
+      "contract_level": null,
+      "raw_breed_word": "1",
+      "raw_level_word": "0",
+      "response_sha256": "fa01c3a4013a43071ca209361fea02616c25cec08c38b7a45106a4e8d6af6c7e"
+    },
+    "12264396": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "732fbd69c3cfbedf202b2e73b0102bd7f884a406ecef221d08dfd40fee69b40e"
+    },
+    "12265423": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "16d149799c8e4de733c54b3dc972c146cdd7facb77c0a97681bac2a41c1ef140"
+    },
+    "12265705": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "2f4f29e5915b0e06c471747ef48117b31d38caebc7a68065dc463ec0ab207ba5"
+    },
+    "12266445": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "99e9779133b3f4444ab69ae2b0df7ad40d94d42a201705c1cdf829d27af11ffd"
+    },
+    "12267585": {
+      "breed_count": 0,
+      "contract_level": null,
+      "raw_breed_word": "0",
+      "raw_level_word": "0",
+      "response_sha256": "68c4ebac0789fd6ad425934eb622ca09c814e6e934e3a2d41484db735795bfb7"
+    },
+    "20013": {
+      "breed_count": 7,
+      "contract_level": 40,
+      "raw_breed_word": "7",
+      "raw_level_word": "40",
+      "response_sha256": "b9401ffb88679ad9c454df5bef2820dea429e2b3275fe858e473bfb3cc8447da"
+    },
+    "22995": {
+      "breed_count": 4,
+      "contract_level": 30,
+      "raw_breed_word": "4",
+      "raw_level_word": "30",
+      "response_sha256": "00c9fbcbb98c5d696248148ceb9fc7f71c892c0ad177f6643cc1f587e71f3282"
+    },
+    "51471": {
+      "breed_count": 4,
+      "contract_level": 30,
+      "raw_breed_word": "4",
+      "raw_level_word": "30",
+      "response_sha256": "49c58d0112a40478c2990e317fd27ccdd155d754d14bca62fb23b99eb51a4b6f"
+    },
+    "533611": {
+      "breed_count": 0,
+      "contract_level": 20,
+      "raw_breed_word": "0",
+      "raw_level_word": "20",
+      "response_sha256": "d443554a646ab99ffc688815eb07aee1558ae1cfe37984122103ced603f4eaec"
+    },
+    "916706": {
+      "breed_count": 2,
+      "contract_level": 10,
+      "raw_breed_word": "2",
+      "raw_level_word": "10",
+      "response_sha256": "9633da5fbeea00fcfbdf5cf8da911e9a1c7266044fe4e53773c9db273b86fd82"
+    },
+    "1032716": {
+      "breed_count": 0,
+      "contract_level": 20,
+      "raw_breed_word": "0",
+      "raw_level_word": "20",
+      "response_sha256": "098b8db3b081c7fb8efebccd18521d5c044d28aa9f9db0a1425ef1c2c5b1d7a3"
+    },
+    "1032889": {
+      "breed_count": 0,
+      "contract_level": 40,
+      "raw_breed_word": "0",
+      "raw_level_word": "40",
+      "response_sha256": "57048e14ed2ca4a9d1dcb0ca47d2a38a42036f3c97b10440f5ec67cf65f7b1ec"
+    },
+    "1033103": {
+      "breed_count": 0,
+      "contract_level": 40,
+      "raw_breed_word": "0",
+      "raw_level_word": "40",
+      "response_sha256": "f0e1004f71ec6aceef29c2c1e7fe8bf4d6a1e2cb6233cddeaf4d1380984b8756"
+    }
+  },
+  "invalid_core_targets": [
+    {
+      "axie_id": "2072470",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "3212156",
+      "raw_breed_word": "3",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "4505379",
+      "raw_breed_word": "1",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "5471342",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "6709319",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "6853681",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "8640076",
+      "raw_breed_word": "1",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "9771328",
+      "raw_breed_word": "1",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "11309255",
+      "raw_breed_word": "2",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12168528",
+      "raw_breed_word": "1",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12258233",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12258831",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12261102",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12261909",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12262509",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12264249",
+      "raw_breed_word": "1",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12264396",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12265423",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12265705",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12266445",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    },
+    {
+      "axie_id": "12267585",
+      "raw_breed_word": "0",
+      "raw_level_word": "0"
+    }
+  ],
+  "held_ids": [],
+  "roster_updates": 29,
+  "backup": "C:\\Users\\Erickson Tan\\AxieOSBackups\\axieos_before_v015_core_20261105T060602_990799Z_85cc73.db",
+  "rpc_calls": 54,
+  "database_writes": 29,
+  "finance_writes": 0,
+  "verified_financial_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN"
+}

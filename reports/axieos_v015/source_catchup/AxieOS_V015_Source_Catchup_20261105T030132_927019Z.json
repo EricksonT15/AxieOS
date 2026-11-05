@@ -1,0 +1,177 @@
+{
+  "version": "0.15",
+  "task": "SOURCE_CATCHUP",
+  "created_at_utc": "2026-11-05T03:01:32.922729+00:00",
+  "owned_inventory": {
+    "status": "COMPLETE_AT_PINNED_BLOCK",
+    "error": null,
+    "block": "0x3c43185",
+    "block_timestamp_utc": "2026-11-05T02:59:09+00:00",
+    "wallet_balances": {
+      "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8": 162,
+      "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610": 0
+    },
+    "saved_owned_rows": 136,
+    "chain_owned_count": 162,
+    "chain_only_ids": [
+      "1110058",
+      "2072470",
+      "3212156",
+      "3510808",
+      "4269065",
+      "4505379",
+      "5471342",
+      "6678762",
+      "6709319",
+      "6853681",
+      "7229551",
+      "8640076",
+      "9771328",
+      "11299415",
+      "11309255",
+      "11619123",
+      "11707178",
+      "12168528",
+      "12258233",
+      "12258831",
+      "12261102",
+      "12261909",
+      "12262509",
+      "12264249",
+      "12264396",
+      "12265423",
+      "12265705",
+      "12266445",
+      "12267585"
+    ],
+    "saved_only_ids": [
+      "1430861",
+      "11755608",
+      "12218377"
+    ]
+  },
+  "wallet_coverage": {
+    "routes": [
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "transactions",
+        "cutoff_utc": "2026-11-02T03:31:13+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [
+          "0x8b1d1b1fbcd557705885be3b516462258d19d0aa01c1943ad3e6a91647a5abeb",
+          "0x90051e7e03ca13258121b30405054ad41ec235813d77a192a71de88a1911b139",
+          "0x9d450e7b567ec558411189051ae7f639c3fd951d1cac2f2677ea9aee9c029c33",
+          "0xe54562c33524025d83d70fd03cbf5a6a7d051826e7f1b614e3777c7bced8f58a"
+        ],
+        "latest_utc": "2026-11-05T02:06:35+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "token-transfers",
+        "cutoff_utc": "2026-11-01T05:31:41+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [
+          "0xfb13f58c11c22e7cb3894047f5ce50c23ae748ae97b6bfbc3fd9f33b6bde4344"
+        ],
+        "latest_utc": "2026-11-01T05:31:41+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "transactions",
+        "cutoff_utc": "2026-11-02T03:31:13+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [],
+        "latest_utc": "2026-07-26T11:01:59+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "token-transfers",
+        "cutoff_utc": "2026-11-01T05:31:41+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [],
+        "latest_utc": "2026-07-26T11:01:59+00:00",
+        "error": null
+      }
+    ],
+    "all_routes_reached_cutoff_or_end": true,
+    "transaction_hashes_at_or_after_cutoff_absent_from_raw": [
+      "0x8b1d1b1fbcd557705885be3b516462258d19d0aa01c1943ad3e6a91647a5abeb",
+      "0x9d450e7b567ec558411189051ae7f639c3fd951d1cac2f2677ea9aee9c029c33",
+      "0xe54562c33524025d83d70fd03cbf5a6a7d051826e7f1b614e3777c7bced8f58a"
+    ],
+    "transfer_hashes_at_or_after_cutoff_absent_from_raw": [],
+    "raw_transaction_cutoff_utc": "2026-11-02T03:31:13+00:00",
+    "raw_transfer_cutoff_utc": "2026-11-01T05:31:41+00:00",
+    "transaction_gap_details": [
+      {
+        "txhash": "0x8b1d1b1fbcd557705885be3b516462258d19d0aa01c1943ad3e6a91647a5abeb",
+        "status": "CORROBORATED_DETAIL",
+        "error": null,
+        "timestamp": "2026-11-03T03:02:53+00:00",
+        "block_number": 63103093,
+        "method": "activateStreak",
+        "chain_status": "ok",
+        "fee_raw": {
+          "type": "actual",
+          "value": "1389549323202541"
+        },
+        "gas_used": "66169"
+      },
+      {
+        "txhash": "0x9d450e7b567ec558411189051ae7f639c3fd951d1cac2f2677ea9aee9c029c33",
+        "status": "CORROBORATED_DETAIL",
+        "error": null,
+        "timestamp": "2026-11-04T03:47:11+00:00",
+        "block_number": 63147622,
+        "method": "activateStreak",
+        "chain_status": "ok",
+        "fee_raw": {
+          "type": "actual",
+          "value": "1389549224320100"
+        },
+        "gas_used": "66169"
+      },
+      {
+        "txhash": "0xe54562c33524025d83d70fd03cbf5a6a7d051826e7f1b614e3777c7bced8f58a",
+        "status": "CORROBORATED_DETAIL",
+        "error": null,
+        "timestamp": "2026-11-05T02:06:35+00:00",
+        "block_number": 63187804,
+        "method": "completePartEvolution",
+        "chain_status": "ok",
+        "fee_raw": {
+          "type": "actual",
+          "value": "2567901275283931"
+        },
+        "gas_used": "122281"
+      }
+    ]
+  },
+  "gameplay_restart": {
+    "suggested_new_observation_date_philippines": "2026-11-05",
+    "latest_saved_dates": {
+      "gameplay_daily_sessions": "2026-08-26",
+      "terrarium_snapshots": "2026-08-26",
+      "marketplace_events": "2026-08-14 20:20:37",
+      "inventory_events": "2026-08-14 11:57:05",
+      "staking_reward_events": "2026-08-14 11:53:17"
+    },
+    "instruction": "Begin new manual gameplay and Terrarium observations at the stated date. Earlier missing days remain unobserved; do not backfill by assumption."
+  },
+  "finance": {
+    "verified_totals": "UNKNOWN",
+    "unified_finance": "HOLD",
+    "checkpoint96": "OPEN"
+  },
+  "production_database": "READ_ONLY",
+  "database_writes": 0,
+  "rpc_batch_400_fallbacks": 96,
+  "network_calls_attempted": 236
+}
