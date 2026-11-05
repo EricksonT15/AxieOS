@@ -1,0 +1,2058 @@
+{
+  "project": "AxieOS",
+  "version": "0.14",
+  "task": "136BS",
+  "sources": {
+    "legacy": {
+      "name": "Ronin_Gamer_Transactions(1).csv",
+      "sha256": "f22c342cdf5a3c8425f84d346ec3f9ae6b8285793c6843bf7d7ccf453b4d5975"
+    },
+    "136BO": {
+      "name": "AxieOS_V014_Task136BO_Consumable_Purchase_History_20261104T080009_820432Z_6b4ff0.json",
+      "sha256": "83426a88d1081b744d95f4999fc8af1eb980b811d761afbf9761512155001772"
+    },
+    "136BM": {
+      "name": "AxieOS_V014_Task136BM_Finance_Resolution_Batch_20261104T053256_758175Z_506d83.json",
+      "sha256": "44125805b6f98992e33588c7dfbb3fe42bff2fd9b3a2d735c557bef810caf0e9"
+    },
+    "refresh": {
+      "name": "Ronin_Gamer_2026_Refresh.csv(1).csv",
+      "sha256": "94b33dea6354e03c8789e6c8b4a551d58941d9dc14e63351037cf36368cba949"
+    }
+  },
+  "summary": {
+    "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+    "raw_rows": 9526,
+    "unique_hashes": 7935,
+    "first_utc": "2021-06-29T11:23:12+00:00",
+    "last_utc": "2026-03-03T04:54:29+00:00",
+    "unique_hashes_by_year": {
+      "2021": 35,
+      "2022": 25,
+      "2023": 10,
+      "2024": 2347,
+      "2025": 4642,
+      "2026": 876
+    },
+    "consumable_shapes_by_hash": {
+      "ACI_IN_NO_WETH": 303,
+      "ACI_IN_WETH_OUT": 116,
+      "ACI_OUT_NO_WETH": 408,
+      "ACI_OUT_WETH_IN": 201
+    },
+    "candidate_purchase_hashes": 116,
+    "candidate_hashes_with_identical_rows": 0,
+    "legacy_vs_136bo_purchase_hash_overlap": 0,
+    "136bo_purchase_checks": 26,
+    "136bm_sale_basis_conflicts": 24,
+    "legacy_vs_136bm_basis_sale_hash_overlap": 0,
+    "candidates": [
+      {
+        "txhash": "0xd87a11f88d6ce5207951726fb330e205330ee0eb67cb5918ee6d1156d5be51a6",
+        "date_utc": "2025-08-19T03:31:02+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00028943",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2b4ebab284bd5c6c9006d64efc81147d98c2b0374e29f394b9daa5fa9d2c2e5a",
+        "date_utc": "2025-08-22T13:01:57+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.001116399",
+        "weth_in_observed": "0.000279099",
+        "aci_rows": 1,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xdba0ac9f46e3709534848e6d7f262d67cfca502eca793de9b07180154c53bcbc",
+        "date_utc": "2025-08-22T13:07:42+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0002793",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa7d99291615b722d46ca4c7205c331c46abc4bc39db7bce5d23c6a4d57f8ae98",
+        "date_utc": "2025-08-24T01:24:59+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00026787",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa6cf4d147bd4c1460630df67f47f61789ad623ec6bcff02aa447582d1f513226",
+        "date_utc": "2025-08-25T00:38:14+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00083871",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x158a05c89398766e768e7487f561eb7589c014801e95020caac0a7182cd4d9a8",
+        "date_utc": "2025-08-26T01:40:58+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000794994",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x881025879bf51b5f5112d5ee1c56078ab8e6690139002153a8e9b89f08b49f82",
+        "date_utc": "2025-08-26T01:43:13+00:00",
+        "aci_in_observed": "12",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00010776",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe04a9c97359d2bd3a51c53f7a7cdc2c4fa4809a95889fb53fdc044e225dcb181",
+        "date_utc": "2025-08-26T07:22:00+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000133125",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xfeea4b8a5bf18344cbff9e6384e77bdf6808cc0c993fb161d7b3f35a6f3b5b50",
+        "date_utc": "2025-08-27T23:11:59+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000009599",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x9d19ce2418be3ea18fcb7a7da975627468ec9dfa158260f56111856b7774c372",
+        "date_utc": "2025-08-31T14:33:04+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001482",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xd195bb226ca1b3acaa69ba8a5f841ccfacb66d0c50457291f484653732eccf7e",
+        "date_utc": "2025-08-31T14:36:52+00:00",
+        "aci_in_observed": "2",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000573994",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0211ed3e581edfbfff8e622bf99c10c71263ef356f38e74cb71f50b3a7a0096a",
+        "date_utc": "2025-08-31T15:09:10+00:00",
+        "aci_in_observed": "2",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000573994",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xbe0d2556c91d362e280e3f2579102cfd19de5865bf176a9fd74b1bd535b9ca02",
+        "date_utc": "2025-08-31T15:20:59+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000286998",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x384fc6bcdc2d14f69f3ecbfdbde0e261ea296933a1b25645f848676e9aadaca4",
+        "date_utc": "2025-09-08T15:05:39+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00026",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x362dd7a88c357a17e03234b9a975a385b92aa9c0b169952517f6f8034ce9f9a6",
+        "date_utc": "2025-09-09T06:44:42+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00026834",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x6c8b8b3fc7af34f6fcb5ee08e601865eb33867d501b20e183ebf5d83c7e969a4",
+        "date_utc": "2025-09-12T04:37:37+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000252466",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0b59c6c2c56537c1e20affec08438b72beb8340dda18eb229815a52f42d6d20b",
+        "date_utc": "2025-09-14T05:18:23+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000252",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x23d0b0d681a736d02471cf2528ff7f0e26f164e5657b8c2930b33b1ec0712f14",
+        "date_utc": "2025-09-15T05:20:11+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000135045",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x26d8cfaca519eee6bd83d029f8a67db27fdcb0d5778c1782014ebe224c7965d3",
+        "date_utc": "2025-09-16T06:29:10+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013332",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x6146b785ee42594fa34e4f3d2cb095f15bb973482f9294bd0644443ed014b054",
+        "date_utc": "2025-09-17T05:24:55+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0002498",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x39971ef2bac872438c1ebe016f2592c773861af3cc84024721b2f1edb60cd7a6",
+        "date_utc": "2025-09-17T11:23:19+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013443",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x854d03b3ad84efea513196cacab650c69e75c8c66f6d65cdaf05a0dea9cf6dd4",
+        "date_utc": "2025-09-19T10:51:19+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000237896",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xdd386d0c1eeef76e49db2e3035e26e9a39976aee02d0dc408efdec5411ee5585",
+        "date_utc": "2025-09-20T11:40:26+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0002288",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xf27236785b55ffa4c5c97aebc00da174a11a63317d4535934ed1a48d9503c880",
+        "date_utc": "2025-10-20T10:12:08+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00020959",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x939c267d0e06b04bb28c8e7c0636e273ccdaec42078441fc4ac4702581a7419b",
+        "date_utc": "2025-10-27T06:42:43+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000149969",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2a6fbaed1ead38aed8940dda5d7dd15dc642ee3bd7f0caf5303794405d60e319",
+        "date_utc": "2025-10-27T07:29:49+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00002667",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe07fff1a25b76a04e7cf9ad584337682b800849b8ba4a128a24ebc93f9d889cc",
+        "date_utc": "2025-10-28T22:16:41+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00002643",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xba4feaa481d2f19022ab8025c212d37bf2d384c639ef38f9438adcbec3f0de13",
+        "date_utc": "2025-10-30T14:21:39+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00012186",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x85857563a23fbf0afdf27865a76858ec949c958c3f86262b88b73a5d88bd6125",
+        "date_utc": "2025-10-31T12:58:23+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000121275",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xb1a081788a8335e4454c55e9e10fb4259ffd2ce7c0022716636218608a92d4a0",
+        "date_utc": "2025-10-31T13:00:56+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00014699",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe67fb1877b618ba4b03e08f988925850323f6efedb3bfb62ebc18d628f0d9c9e",
+        "date_utc": "2025-11-01T07:15:42+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00014",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xae8b839a6c9793bf5ceb43dd82554f65f8c6b6b7c5590a6b6583fef8efff62bd",
+        "date_utc": "2025-11-01T07:18:06+00:00",
+        "aci_in_observed": "11",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001185",
+        "weth_in_observed": "0.0000316",
+        "aci_rows": 1,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0cb8dcd394a2b26e3eca5d6ff19c40aae469a2fa4a58476c5e6a48546fa058f4",
+        "date_utc": "2025-11-01T07:19:21+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0000237",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x64085633919095c06e0594798242df4575dca2699f90ae9a632907714fec6264",
+        "date_utc": "2025-11-02T03:08:41+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000729799",
+        "weth_in_observed": "0.0005798",
+        "aci_rows": 1,
+        "weth_rows": 6,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x97548b3308e154e103df0e21f01721e7165b63a712beb62f7cc9472ef9359ef8",
+        "date_utc": "2025-11-02T03:11:14+00:00",
+        "aci_in_observed": "4",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0006",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0493f80a070db20b003f9c793f07703842cb52d1863d6dd1c82af3df03d3a172",
+        "date_utc": "2025-11-02T03:17:08+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013266",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x28ed9a28a0b26645d0a8591fa4b7544450c43669f1dc74d11f3cc1125bb5add5",
+        "date_utc": "2025-11-03T03:07:39+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001251",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x246208768f58311b2b1973dc15f7d5ea260a990cad8d886144459b212a5db26a",
+        "date_utc": "2025-11-10T02:34:29+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00014998",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2ef0a5fbaac3146820820bcd4e237e3a90b5d5f78ae9ba385fc3452d5257971a",
+        "date_utc": "2025-11-11T03:12:40+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001275",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xf2e0b81b4f813d326af91f051ff89723a9475b86de6464e67cfdcec5979d0f43",
+        "date_utc": "2025-11-13T00:09:41+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000026337",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe628e24f67a7d86937aa27fccebe6880024464cf5d0be2bd90fb1af4452e3403",
+        "date_utc": "2025-11-13T10:24:28+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000128235",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x57c014e42ac214e9b81ff4b5837e7dcc550a9181c696627cac75413258db55e3",
+        "date_utc": "2025-11-14T06:50:05+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013485",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xccc65a0f34c9491e811c56f76712584814bc3d37fb24afdaebd14f25f5f37b09",
+        "date_utc": "2025-11-23T05:44:43+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000149996",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x89159f553a209bc9ff1856bb518e4dce64b14c6c219172062ed439ade0aa3ceb",
+        "date_utc": "2025-11-23T09:08:01+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00044997",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa5e79e3692286cc5b8023f7e2e570150b0e3009534c4d910f7c89f8b124bcbda",
+        "date_utc": "2025-11-25T04:53:26+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001898",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xd2d08cf2d2f1ef645698d4128fb8509768d50da37502ac5cae408b7087c0ae59",
+        "date_utc": "2025-11-26T03:36:11+00:00",
+        "aci_in_observed": "2",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000379998",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xdab819cdb9c8038d256628fa2074e3c17ae76fefedcc96178b92a018e2cea7a3",
+        "date_utc": "2025-11-26T03:38:44+00:00",
+        "aci_in_observed": "5",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000052495",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xb886734633ce22d57c44e979d81fb6ab6cacdff5c50c345ae9cac3a5c5e4b16a",
+        "date_utc": "2025-11-27T05:16:53+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000192",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4379ad7a07cacc3bb4cbabbc3fc815380a086dfea5ce5a70c020edbfe77cd127",
+        "date_utc": "2025-11-29T03:49:47+00:00",
+        "aci_in_observed": "5",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0008915",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x5eb04ccd7a7b5c6b24d351e6b204a72dc95d98ede7d66755ea406846d34a2d77",
+        "date_utc": "2025-12-02T09:45:06+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000189998",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x67b3189728b24ea722302ed838bdb7dce47e106926815078d3d6d13af1216b7a",
+        "date_utc": "2025-12-03T01:47:42+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000144405",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x23826ad3e22360020b888bf09fb362855fa75d951e4d965f6879b16bf7d82e95",
+        "date_utc": "2025-12-03T08:54:00+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000187896",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4166bd433d483cb2af0b6b0a6e6880a3dcbe633fa3b350a0d04bd703b08e24ad",
+        "date_utc": "2025-12-04T03:42:49+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00018",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2c5e112a1579f6dd38c7ae9a6531cfd0944266c4dcf02ad2d7c6be684dfad732",
+        "date_utc": "2025-12-05T07:37:01+00:00",
+        "aci_in_observed": "5",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00093445",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xb083820607ff745433a139bccaaaf2d9e7098ece1ca8a262a71f1a12cc2b96b4",
+        "date_utc": "2025-12-06T04:20:43+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00018988",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x682cc7c18236c42b7bd21211affa5a5658c0d9700d089b4200af0f63fa76e146",
+        "date_utc": "2025-12-07T03:32:14+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000564",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xc3454e18e799de4f47ff53f98287d0b97eb1425a7a397902259f6e9699a35ac7",
+        "date_utc": "2025-12-10T01:41:45+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00019233",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xbd8dc145642c284a5591e38f845c680eb3a64f5d64cce6d7ce5ba658274b3882",
+        "date_utc": "2025-12-10T04:45:54+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000577071",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x6b6d78e523f3e0dc8d5a170409071dc60dba4919afa2c261ba6f48528ae6eccf",
+        "date_utc": "2025-12-11T22:06:52+00:00",
+        "aci_in_observed": "4",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0007339",
+        "weth_in_observed": "0.0000179",
+        "aci_rows": 2,
+        "weth_rows": 6,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0442a2a96fd3382084cc58043dfb332b75210d00d0972a964b1d9c3af3d33b7d",
+        "date_utc": "2025-12-11T22:07:43+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00017977",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x890931f41ebca3af3edf5d9988ed3e2678355f492dad72d9fb5b2270d70a5462",
+        "date_utc": "2025-12-13T00:40:07+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00018094",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x3b69d43b620c159b8578822155c5e7ad72ea3d05b84a7f9ef3d8dcb232e8b2a2",
+        "date_utc": "2025-12-13T12:53:57+00:00",
+        "aci_in_observed": "5",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000903495",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x791b4f2e72b12b99300c09a91e96b97e1077377c664c6b04f4d13e94449859b2",
+        "date_utc": "2025-12-15T01:49:00+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000022566",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x11c6aa0fa37422e3b0dd18f273cec6a7b350ba71d395b0354718e19e0eff40f7",
+        "date_utc": "2025-12-16T01:23:46+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00011106",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe24c10bf807cca5540d9e59372791604b80acf5b77a50a6b18796039c3d5e9b9",
+        "date_utc": "2025-12-17T02:11:47+00:00",
+        "aci_in_observed": "7",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00005096",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x94905a1a90db6d1744bba0ef940ad9e9d2d52558a774288e2fb2d3a63b63ffc2",
+        "date_utc": "2025-12-18T12:58:41+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000007696",
+        "weth_in_observed": "0.000000699",
+        "aci_rows": 1,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x573da670c102384769102cbf04ffba0f425490cf3f0fa762068d7d1b823fcbda",
+        "date_utc": "2025-12-18T15:13:08+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000006982",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x8f842a90196cfa1026fa7cdcfb8fbee4d39c41701f79372daf740c03366b8092",
+        "date_utc": "2025-12-19T07:58:53+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000158706",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x9a1f2a974dc6b57ffe25cf6ec7d53c8a0796dddff9dfa7dbb239f52a2b9a471b",
+        "date_utc": "2025-12-20T03:18:52+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00015677",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2dc7fa23112b4906ba0c1f6f84b8e7e5ab1ce68f8ac6503d9458bdd8a2b5077c",
+        "date_utc": "2025-12-27T05:13:48+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0000615",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xd9fa1ebee0f9c057a42594d91c394caae661f63daf9eef78d137f4f24ce3aaa4",
+        "date_utc": "2025-12-28T12:01:14+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00046029",
+        "weth_in_observed": "0",
+        "aci_rows": 2,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa351e79285e4094fd287fe3ef5f0374125198564e13316b32b037f986731c99f",
+        "date_utc": "2025-12-28T14:15:53+00:00",
+        "aci_in_observed": "2",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000306929",
+        "weth_in_observed": "0",
+        "aci_rows": 2,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xe22751a93c0f48cd2a37475d2bbd6509ba064d657fb30f3cb495e8b6f29308a1",
+        "date_utc": "2025-12-31T08:23:23+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013746",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x04ffa0382373fd2002d51f84a9dc09b83a9fada55b261902ca24791a54d8993b",
+        "date_utc": "2025-12-31T08:45:44+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000060495",
+        "weth_in_observed": "0",
+        "aci_rows": 2,
+        "weth_rows": 4,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x92a80bf47ee8d683185b92e2316d8ec86fef3070dafffbdbbfc0486b55e618f9",
+        "date_utc": "2026-01-01T06:59:54+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0001362",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x58e5c7e80d2e83e4034ca58b9f99f27ea2743e74664330c1b47aff8e1987a323",
+        "date_utc": "2026-01-02T14:11:17+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00006414",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xb19447e8d08b6b1c5dd3d8fb39eb5a0176eae93938bc2ebbcfb5ad09b9519213",
+        "date_utc": "2026-01-03T11:29:32+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000146998",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x3b7378f70b6340737f42089c021e81fbf6847d0e0514dd27089533a471b3c0fc",
+        "date_utc": "2026-01-04T07:04:56+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000148829",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4519f0fe111c13fcf16ad933059645eebd54c4125b54fd48bf629243f90df232",
+        "date_utc": "2026-01-04T07:05:44+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000063645",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xcce1b5b81a97087b65cfa14ab63a1f64554d24dd0e2292add1d7952e02bac851",
+        "date_utc": "2026-01-05T04:44:13+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000147857",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x8fe8dc8e8426ab62eb2616865b43d7cfc69f3179f556cf3a922ff697f9c2c95d",
+        "date_utc": "2026-01-05T04:44:55+00:00",
+        "aci_in_observed": "11",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00006285",
+        "weth_in_observed": "0.00001676",
+        "aci_rows": 2,
+        "weth_rows": 6,
+        "methods": [
+          "bulkInteractWith"
+        ],
+        "review_flags": [
+          "BIDIRECTIONAL_FLOW",
+          "MULTIPLE_WETH_ROWS"
+        ],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x799fbb26671078c153c012e0b734b176622129dd5bbecbbec92ec3ddea4de5da",
+        "date_utc": "2026-01-05T04:46:46+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00001257",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x884c132c2e2e5563b5c88722525c7b6b6ff076899c210dbab95efb3d0e1ad82a",
+        "date_utc": "2026-01-07T03:46:17+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.0004227",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x867e55e3069eb158ff3dbce8c80d7a5ff31e8a1e5a57be6aba4bcc5cda437745",
+        "date_utc": "2026-01-08T13:28:22+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000012246",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xfda8ecea12c638c4b21fb22a43aeed286268cefef9095ffd4d3b5cc24141e36d",
+        "date_utc": "2026-01-16T07:35:15+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00005787",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xdac09b37088a252aad8ab901394a4378d197f1a36a05e4684c1913a554eadec4",
+        "date_utc": "2026-01-17T10:29:59+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000132989",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa114d0bfe6f8f6a074436b9fde9d0b4464d640ba799dbfb1de977aa4d5845f6b",
+        "date_utc": "2026-01-17T14:12:50+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00005694",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xcab375d3cff2bd30da0cab9f0fefff12f79976031020a80b6a9b962c539877b7",
+        "date_utc": "2026-01-18T15:29:56+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00005724",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x86b5ff9c9bda3464a48ed931b1a6eec2f6fb3a1457c616d5010f19216649d866",
+        "date_utc": "2026-01-19T09:59:38+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00013354",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x3e54b7e40f6d517fa8c6f59767a3488c297150876cc0d1cf3804ca3ea641d829",
+        "date_utc": "2026-01-20T03:09:56+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00005925",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4e2b4048ef2fdc1115420406d4b96a6f365b1181efa35219a5607a6ec6b5228e",
+        "date_utc": "2026-01-20T03:17:38+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00012",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x02c9c68a170a43f4128ad35442cf7445dcb5c988f708760163d6118dcfabe11a",
+        "date_utc": "2026-01-21T03:33:52+00:00",
+        "aci_in_observed": "5",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00064247",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xf2718b5654ac078221ffe0ff906810dc36d9b01ece8d46bde4dcc19af01640fa",
+        "date_utc": "2026-01-21T03:36:40+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000057",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x660f7014eb743e43e7ddb053dffd400048ca6c114cea99138331f6a0b77f7e88",
+        "date_utc": "2026-01-22T08:50:32+00:00",
+        "aci_in_observed": "4",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00052316",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x9cc9a7786d72eb1d7d1a3409ba1f5cf995ebad8a6669387c39756dbf9fb7dd1a",
+        "date_utc": "2026-01-23T04:55:26+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000130797",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x704c0ff82f5f7bfdc2ea7207a09d735124a66a1d54df3e2ff71a65483cbb38a1",
+        "date_utc": "2026-01-25T11:42:32+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000081",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xc9e1764ec6ab25d1ee1ec57a70432c85e795e310502637bd79d38ac39d6ca3ed",
+        "date_utc": "2026-01-26T11:38:53+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000123486",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x0900583baa9c9cefc6e17ae3b28ddea12d2a9413db7877d5dd1754b84e26777f",
+        "date_utc": "2026-01-27T05:23:27+00:00",
+        "aci_in_observed": "4",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000493772",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x19bc3888de9103706034d3e0c7f729cea928036944eb58e0371d5f8fee53e11d",
+        "date_utc": "2026-01-29T03:21:08+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00011127",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2ca06fe20d958ef5b48febe2a6148e5feeb13e23020ee71f0075c2e220c306d4",
+        "date_utc": "2026-01-29T05:17:02+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000077055",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xa52a26b85c49bb275aca37927338ce831cfa9afdcc21fa81648868e850256c66",
+        "date_utc": "2026-01-31T03:44:09+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000075735",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x022cb6945c8c0e50b2ec62966415287f182a64ea8e252c6bb68bcac954e7b9f8",
+        "date_utc": "2026-02-01T03:51:58+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000109988",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xb2215eb9c362fba169cd562b4ad57d4e85f510337e9aa2fa3a6e8fd13616b8b8",
+        "date_utc": "2026-02-01T03:52:52+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00007554",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xfee48dd92a5101cb19758c26a769b6b87d4670718cb7259b46eccdfaa3a04fa9",
+        "date_utc": "2026-02-02T08:58:36+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00010996",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xc9f63d6c34e5cc74b073e24361a00ea08fe3441891516d8b095d32924cd11ac3",
+        "date_utc": "2026-02-03T04:34:20+00:00",
+        "aci_in_observed": "3",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000329889",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x7aa2f9092eac5163681af713747098bf63490526214cbe29b4c68f093fe2bc4c",
+        "date_utc": "2026-02-04T03:07:23+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000097989",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2fa82730e35ef1200e68bb8ac7c0d9b46f2a00de044fd48a6a19e05e5c611753",
+        "date_utc": "2026-02-05T10:00:17+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000069",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x7a4a2e8fe762f06e3b1bfc7a702cf39c04d25f9635fc10df04fd28189be793fd",
+        "date_utc": "2026-02-09T03:39:42+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00009689",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4493e692b8f129d553a7fdf03a78235417c725750e36f857bc9def0abcd1bbd3",
+        "date_utc": "2026-02-10T03:31:48+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000063",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x4ce1a1b4b74b56c176f0ef4572d1358e3c3db861d9ea08f99b71a24e373b32fc",
+        "date_utc": "2026-02-12T06:17:00+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000081225",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xdecaba4fb6d2cb550933caa36625fddbd778baa6d066215f83c45c161b0e6871",
+        "date_utc": "2026-02-13T03:59:46+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000081195",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x2dec3900bd4f204ed229c3dd44258b40ecd51b0f6f8c8339269645d12452a9fe",
+        "date_utc": "2026-02-18T03:32:39+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00018999",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xf71017cd47ee871818b8622771973a6043971669178de2cb168e5c5b233a045e",
+        "date_utc": "2026-02-18T03:35:45+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000117",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x40b00da6b1089060234f98ab489ab0397254a9eb163ff2406f4bfcdc96b574a8",
+        "date_utc": "2026-02-21T04:40:10+00:00",
+        "aci_in_observed": "4",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.00072",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0xc849a7a6ab861b4c70b84864cae8065600f3a28abc09d9235c1612d0d888998d",
+        "date_utc": "2026-02-22T05:17:53+00:00",
+        "aci_in_observed": "1",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000192893",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      },
+      {
+        "txhash": "0x85e2845b9e881c2e2f397f33212c68c155a86dd17ef59d1f8bf34a6f036d3311",
+        "date_utc": "2026-03-02T04:38:28+00:00",
+        "aci_in_observed": "15",
+        "aci_out_observed": "0",
+        "weth_out_observed": "0.000119985",
+        "weth_in_observed": "0",
+        "aci_rows": 1,
+        "weth_rows": 1,
+        "methods": [
+          "interactWith"
+        ],
+        "review_flags": [],
+        "token_id": null,
+        "accepted_basis": null,
+        "accepted_financial_value": null
+      }
+    ]
+  },
+  "refresh_coverage": {
+    "rows": 598,
+    "earliest_utc": "2026-05-13T05:49:15+00:00",
+    "latest_utc": "2026-07-06T01:51:07+00:00"
+  },
+  "financial_totals": "UNKNOWN",
+  "checkpoint96": "OPEN",
+  "database_opened": false,
+  "database_writes": 0,
+  "network_calls": 0
+}
