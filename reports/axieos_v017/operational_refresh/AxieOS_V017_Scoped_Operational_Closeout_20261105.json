@@ -1,0 +1,18 @@
+{
+  "project": "AxieOS",
+  "version": "0.17",
+  "task": "SCOPED_OPERATIONAL_CLOSEOUT",
+  "status": "READY_FOR_REPOSITORY_RELEASE",
+  "source_sha256": "a336f4bd260b73b56f8992096fcbc68161bd024f48c46b2928275d5774401c5b",
+  "applied_sha256": "d980fc2c78eb7ed005a4f9ffd56e4e6f1fc26816784f4b318054a7628c6d8222",
+  "backup": "C:\\Users\\Erickson Tan\\AxieOSBackups\\axieos_before_v017_raw_20261105T095321_730521Z_e914f4.db",
+  "owned_axies": 162,
+  "raw_transactions_inserted": 7,
+  "raw_transfers_inserted": 7,
+  "levels_unknown": 29,
+  "database_writes": 0,
+  "network_calls": 0,
+  "financial_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN"
+}

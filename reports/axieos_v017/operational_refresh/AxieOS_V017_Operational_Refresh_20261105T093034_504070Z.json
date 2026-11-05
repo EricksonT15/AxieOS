@@ -1,0 +1,170 @@
+{
+  "project": "AxieOS",
+  "version": "0.17",
+  "task": "OPERATIONAL_SOURCE_REFRESH",
+  "generated_utc": "2026-11-05T09:30:34.498309+00:00",
+  "status": "CHANGES_REQUIRE_GUARDED_REVIEW",
+  "baseline_v016": {
+    "filename": "AxieOS_V016_Operational_Dashboard_2026-11-05_all.json",
+    "sha256": "772d4cdc428a12f16c13c6ae12d6135e6330afc5161c6a0b934ca017397899d7",
+    "as_of_philippines_date": "2026-11-05",
+    "pinned_owned_count": 162,
+    "closed_trade_pairs_at_baseline": 26
+  },
+  "ownership": {
+    "status": "COMPLETE_AT_PINNED_BLOCK",
+    "error": null,
+    "block": "0x3c45f1e",
+    "block_timestamp_utc": "2026-11-05T09:28:15+00:00",
+    "wallet_balances": {
+      "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8": 162,
+      "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610": 0
+    },
+    "saved_owned_count": 162,
+    "pinned_chain_owned_count": 162,
+    "chain_only_ids": [],
+    "saved_only_ids": []
+  },
+  "raw_coverage": {
+    "routes": [
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "transactions",
+        "cutoff_utc": "2026-11-05T02:06:35+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [
+          "0x0ae39c67270d8bfb189b57535a67d21b646c1898558cd8b0bc13369af07c98a2",
+          "0xbe9f6e844086fda92451d225447c54d4ed924e5ea59c766c2b83b7329d14d785",
+          "0xbec6195dcd04cc29505ad894d31b46a2c18458eed24b2874b74e11079bf3ede1",
+          "0xdea6ed2f6463da564b43ef125c1bb54aad14799da3f4824ac35051d6f9ca4b36",
+          "0xe54562c33524025d83d70fd03cbf5a6a7d051826e7f1b614e3777c7bced8f58a",
+          "0xe8129e9458430f8ec26e865e179d480f9d6ecc7427ba0a5fc5c87df742e5a646",
+          "0xeb1059af1c3d05c9dd7c2f2a5009e39390b885d771d16b41c7255e40caeef7c2",
+          "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698"
+        ],
+        "latest_utc": "2026-11-05T06:54:57+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "token-transfers",
+        "cutoff_utc": "2026-11-01T05:31:41+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [
+          "0x0ae39c67270d8bfb189b57535a67d21b646c1898558cd8b0bc13369af07c98a2",
+          "0xbe9f6e844086fda92451d225447c54d4ed924e5ea59c766c2b83b7329d14d785",
+          "0xbec6195dcd04cc29505ad894d31b46a2c18458eed24b2874b74e11079bf3ede1",
+          "0xdea6ed2f6463da564b43ef125c1bb54aad14799da3f4824ac35051d6f9ca4b36",
+          "0xe8129e9458430f8ec26e865e179d480f9d6ecc7427ba0a5fc5c87df742e5a646",
+          "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698",
+          "0xfb13f58c11c22e7cb3894047f5ce50c23ae748ae97b6bfbc3fd9f33b6bde4344"
+        ],
+        "latest_utc": "2026-11-05T06:54:57+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "transactions",
+        "cutoff_utc": "2026-11-05T02:06:35+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [],
+        "latest_utc": "2026-07-26T11:01:59+00:00",
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "token-transfers",
+        "cutoff_utc": "2026-11-01T05:31:41+00:00",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "hashes_at_or_after_cutoff": [],
+        "latest_utc": "2026-07-26T11:01:59+00:00",
+        "error": null
+      }
+    ],
+    "all_four_complete": true,
+    "local_cutoff_utc": {
+      "transactions": "2026-11-05T02:06:35+00:00",
+      "token-transfers": "2026-11-01T05:31:41+00:00"
+    },
+    "saved_unique_raw_transaction_hashes": 1196,
+    "saved_unique_raw_transfer_hashes": 1693,
+    "transaction_hashes_absent_from_raw": [
+      "0x0ae39c67270d8bfb189b57535a67d21b646c1898558cd8b0bc13369af07c98a2",
+      "0xbe9f6e844086fda92451d225447c54d4ed924e5ea59c766c2b83b7329d14d785",
+      "0xbec6195dcd04cc29505ad894d31b46a2c18458eed24b2874b74e11079bf3ede1",
+      "0xdea6ed2f6463da564b43ef125c1bb54aad14799da3f4824ac35051d6f9ca4b36",
+      "0xe8129e9458430f8ec26e865e179d480f9d6ecc7427ba0a5fc5c87df742e5a646",
+      "0xeb1059af1c3d05c9dd7c2f2a5009e39390b885d771d16b41c7255e40caeef7c2",
+      "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698"
+    ],
+    "transfer_hashes_absent_from_raw": [
+      "0x0ae39c67270d8bfb189b57535a67d21b646c1898558cd8b0bc13369af07c98a2",
+      "0xbe9f6e844086fda92451d225447c54d4ed924e5ea59c766c2b83b7329d14d785",
+      "0xbec6195dcd04cc29505ad894d31b46a2c18458eed24b2874b74e11079bf3ede1",
+      "0xdea6ed2f6463da564b43ef125c1bb54aad14799da3f4824ac35051d6f9ca4b36",
+      "0xe8129e9458430f8ec26e865e179d480f9d6ecc7427ba0a5fc5c87df742e5a646",
+      "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698"
+    ],
+    "interpretation": "Hash gaps are candidates, not verified economics. An incomplete route cannot establish zero gaps."
+  },
+  "metadata": {
+    "class_unknown_ids": [],
+    "level_unknown_ids": [
+      "1110058",
+      "2072470",
+      "3212156",
+      "3510808",
+      "4269065",
+      "4505379",
+      "5471342",
+      "6678762",
+      "6709319",
+      "6853681",
+      "7229551",
+      "8640076",
+      "9771328",
+      "11299415",
+      "11309255",
+      "11619123",
+      "11707178",
+      "12168528",
+      "12258233",
+      "12258831",
+      "12261102",
+      "12261909",
+      "12262509",
+      "12264249",
+      "12264396",
+      "12265423",
+      "12265705",
+      "12266445",
+      "12267585"
+    ],
+    "breed_unknown_ids": [],
+    "wallet_not_in_scope_ids": []
+  },
+  "latest_saved_gameplay_dates": {
+    "gameplay_daily_sessions": "2026-08-26",
+    "terrarium_snapshots": "2026-08-26",
+    "marketplace_events": "2026-08-14 20:20:37",
+    "inventory_events": "2026-08-14 11:57:05",
+    "staking_reward_events": "2026-08-14 11:53:17"
+  },
+  "finance": {
+    "verified_income": "UNKNOWN",
+    "verified_expenses": "UNKNOWN",
+    "verified_profit": "UNKNOWN",
+    "verified_php_recovery": "UNKNOWN",
+    "unified_finance": "HOLD",
+    "checkpoint96": "OPEN"
+  },
+  "production_database": "READ_ONLY",
+  "database_writes": 0,
+  "network_calls_attempted": 233,
+  "network_call_cap": 400,
+  "rpc_http_400_batch_fallbacks": 96
+}
