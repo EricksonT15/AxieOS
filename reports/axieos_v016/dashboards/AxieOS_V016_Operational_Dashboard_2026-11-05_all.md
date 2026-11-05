@@ -1,11 +1,15 @@
 # AxieOS V0.16 operational dashboard
 
-Generated UTC: 2026-11-05T07:09:55+00:00
+Generated UTC: 2026-11-05T08:46:27+00:00
 Calendar: Philippines (+08:00); raw wallet UTC timestamps converted for day buckets.
 
 Financial totals: **UNKNOWN**. Unified Finance: **HOLD**. Checkpoint 96: **OPEN**.
 
 Catch-up source: **POST_APPLY_ROSTER_RECONCILED** | AxieOS_V015_Source_Catchup_20261105T030132_927019Z.json | SHA-256: 32260f4e5b7472a3b2c5c8d3c07ebe5664cf051cd70d8126d8fdd893551550fa
+
+New Axie class source: **APPLIED_CLASS_RECONCILED** | AxieOS_V016_Offline_Class_Apply_20261105T084245_362537Z.json | SHA-256: c9182118786743d3364f649604dc98026ee2994f5f687f496bfed02900da60af
+
+Newly owned cohort: **29**; class known: **29**; class unknown: **0**; level unknown: **29**; breed unknown: **0**.
 
 ## Daily (2026-11-05 to 2026-11-06 exclusive)
 
@@ -26,6 +30,10 @@ Catch-up source: **POST_APPLY_ROSTER_RECONCILED** | AxieOS_V015_Source_Catchup_2
 | chain only axie ids for review | 0 |
 | saved only axie ids for review | 0 |
 | axies with unknown class level breed | 29 |
+| newly owned axies class known | 29 |
+| newly owned axies class unknown | 0 |
+| newly owned axies level unknown | 29 |
+| newly owned axies breed unknown | 0 |
 | corroborated explorer transactions missing raw | 0 |
 
 | Source | Status | Period rows | Latest recorded event | Local date | Age (days) |
@@ -60,6 +68,10 @@ Counts are observed rows, not proof of no activity when zero or proof of complet
 | chain only axie ids for review | 0 |
 | saved only axie ids for review | 0 |
 | axies with unknown class level breed | 29 |
+| newly owned axies class known | 29 |
+| newly owned axies class unknown | 0 |
+| newly owned axies level unknown | 29 |
+| newly owned axies breed unknown | 0 |
 | corroborated explorer transactions missing raw | 0 |
 
 | Source | Status | Period rows | Latest recorded event | Local date | Age (days) |
@@ -94,6 +106,10 @@ Counts are observed rows, not proof of no activity when zero or proof of complet
 | chain only axie ids for review | 0 |
 | saved only axie ids for review | 0 |
 | axies with unknown class level breed | 29 |
+| newly owned axies class known | 29 |
+| newly owned axies class unknown | 0 |
+| newly owned axies level unknown | 29 |
+| newly owned axies breed unknown | 0 |
 | corroborated explorer transactions missing raw | 0 |
 
 | Source | Status | Period rows | Latest recorded event | Local date | Age (days) |

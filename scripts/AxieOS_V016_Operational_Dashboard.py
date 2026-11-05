@@ -24,6 +24,7 @@ DEFAULT_CATCHUP_DIR = ROOT / "reports" / "axieos_v015" / "source_catchup"
 DEFAULT_TRADE_DIR = ROOT / "reports" / "axieos_v016" / "scoped_closeout"
 DEFAULT_TRADE_EVIDENCE_DIR = ROOT / "reports" / "axieos_v016" / "closed_trades"
 DEFAULT_BN_DIR = ROOT / "reports" / "axieos_v014" / "task136bn"
+DEFAULT_CLASS_DIR = ROOT / "reports" / "axieos_v016" / "onchain_class"
 PHT = timezone(timedelta(hours=8))
 
 # Fixed names and columns only: a missing or older table yields a coverage gap.
@@ -131,7 +132,7 @@ def catchup_snapshot(conn, path, as_of, roster_refresh=None):
              "block_timestamp_utc": None, "chain_owned_count": None,
              "chain_only_ids": [], "saved_only_ids": [], "transaction_gap_details": [],
              "wallet_routes_complete": None, "roster_refresh": None,
-             "metadata_unknown_ids": [], "error": None}
+             "metadata_unknown_ids": [], "original_metadata_ids": [], "error": None}
     if path is None:
         return state
     state["filename"] = path.name
@@ -187,6 +188,7 @@ def catchup_snapshot(conn, path, as_of, roster_refresh=None):
                         "sha256": hashlib.sha256(refresh_bytes).hexdigest(),
                         "chain_only_inserted": len(chain_only),
                         "saved_only_to_unknown": len(saved_only)}
+                    state["original_metadata_ids"] = sorted(unknown, key=int)
                     state["metadata_unknown_ids"] = sorted((str(row[0]) for row in conn.execute(
                         "SELECT axie_id FROM gameplay_owned_axies WHERE axie_id IN (" +
                         ",".join("?" for _ in chain_only) + ") AND "
@@ -217,7 +219,7 @@ def catchup_snapshot(conn, path, as_of, roster_refresh=None):
     except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
         state.update(status="INVALID_OR_CHANGED_SNAPSHOT", chain_owned_count=None,
                      chain_only_ids=[], saved_only_ids=[], transaction_gap_details=[],
-                     roster_refresh=None, metadata_unknown_ids=[],
+                     roster_refresh=None, metadata_unknown_ids=[], original_metadata_ids=[],
                      error=f"{type(exc).__name__}: {exc}")
     return state
 
@@ -247,6 +249,60 @@ def latest_scoped_trade_closeout(directory):
         return None
     matches = sorted(directory.glob("AxieOS_V016_Scoped_Closeout_*.json"))
     return matches[-1] if matches else None
+
+
+def latest_class_apply(directory):
+    if not directory.is_dir():
+        return None
+    for path in reversed(sorted(directory.glob("AxieOS_V016_Offline_Class_Apply_*.json"))):
+        try:
+            if json.loads(path.read_text(encoding="utf-8-sig")).get("status") == "APPLIED_AND_RECONCILED":
+                return path
+        except (OSError, ValueError, TypeError):
+            continue
+    return None
+
+
+def class_coverage(conn, snapshot, path):
+    result = {"status": "NO_APPLIED_CLASS_REPORT", "filename": None, "sha256": None,
+              "cohort_axies": None, "class_known": None, "class_unknown": None,
+              "level_unknown": None, "breed_unknown": None, "error": None}
+    if path is None or snapshot["status"] != "POST_APPLY_ROSTER_RECONCILED":
+        return result
+    result["filename"] = path.name
+    try:
+        raw = path.read_bytes()
+        result["sha256"] = hashlib.sha256(raw).hexdigest()
+        doc = json.loads(raw)
+        planned = doc.get("class_results")
+        original = snapshot["original_metadata_ids"]
+        if (doc.get("task") != "OFFLINE_GENE_CLASS_APPLY" or doc.get("version") != "0.16" or
+                doc.get("status") != "APPLIED_AND_RECONCILED" or doc.get("class_controls") != 133 or
+                doc.get("class_plan_count") != 29 or doc.get("class_updated") != 29 or
+                doc.get("level_updated") != 0 or doc.get("network_calls") != 0 or
+                doc.get("finance_writes") != 0 or doc.get("checkpoint96") != "OPEN" or
+                doc.get("roster_report_sha256") != snapshot["roster_refresh"]["sha256"] or
+                not doc.get("backup") or not isinstance(planned, dict) or
+                len(planned) != len(original) or len(original) != 29 or
+                set(planned) != set(original) or
+                not all(v in {"Aquatic", "Beast", "Bird", "Bug", "Dawn", "Dusk", "Mech", "Plant", "Reptile"}
+                        for v in planned.values())):
+            raise ValueError("class application source or roster link differs")
+        observed = {str(row[0]): row[1:] for row in conn.execute(
+            "SELECT axie_id,axie_class,level,breed_count,ownership_status FROM gameplay_owned_axies "
+            "WHERE axie_id IN (" + ",".join("?" for _ in original) + ")", original)}
+        if (set(observed) != set(original) or
+                any(observed[aid][0] != planned[aid] or observed[aid][3] != "OWNED"
+                    for aid in original)):
+            raise ValueError("current roster differs from class application report")
+        result.update(status="APPLIED_CLASS_RECONCILED", cohort_axies=len(original),
+                      class_known=sum(v[0] is not None for v in observed.values()),
+                      class_unknown=sum(v[0] is None for v in observed.values()),
+                      level_unknown=sum(v[1] is None for v in observed.values()),
+                      breed_unknown=sum(v[2] is None for v in observed.values()))
+    except (OSError, ValueError, TypeError, KeyError, AttributeError, json.JSONDecodeError) as exc:
+        result.update(status="INVALID_OR_CHANGED_CLASS_SOURCE", error=f"{type(exc).__name__}: {exc}")
+    return result
 
 
 def linked_report(directory, reference):
@@ -356,7 +412,7 @@ def scoped_trades(path, evidence_dir, bn_dir, as_of):
     return state
 
 
-def make_view(conn, period, as_of, catchup=None):
+def make_view(conn, period, as_of, catchup=None, classes=None):
     start, end = bounds(period, as_of)
     p = (start, end)
     states = {key: source_state(conn, key, start, end, as_of) for key in SOURCES}
@@ -387,6 +443,11 @@ def make_view(conn, period, as_of, catchup=None):
         metrics["saved_only_axie_ids_for_review"] = len(catchup["saved_only_ids"])
         if catchup["status"] == "POST_APPLY_ROSTER_RECONCILED":
             metrics["axies_with_unknown_class_level_breed"] = len(catchup["metadata_unknown_ids"])
+            if classes and classes["status"] == "APPLIED_CLASS_RECONCILED":
+                metrics["newly_owned_axies_class_known"] = classes["class_known"]
+                metrics["newly_owned_axies_class_unknown"] = classes["class_unknown"]
+                metrics["newly_owned_axies_level_unknown"] = classes["level_unknown"]
+                metrics["newly_owned_axies_breed_unknown"] = classes["breed_unknown"]
         metrics["corroborated_explorer_transactions_missing_raw"] = sum(
             start <= datetime.fromisoformat(d["timestamp"]).astimezone(PHT).date().isoformat() < end
             for d in catchup["transaction_gap_details"])
@@ -398,6 +459,14 @@ def markdown(report):
     lines = ["# AxieOS V0.16 operational dashboard", "", f"Generated UTC: {report['generated_utc']}", "Calendar: Philippines (+08:00); raw wallet UTC timestamps converted for day buckets.", "", "Financial totals: **UNKNOWN**. Unified Finance: **HOLD**. Checkpoint 96: **OPEN**.", ""]
     snap = report["catchup_source"]
     lines += [f"Catch-up source: **{snap['status']}** | {snap['filename'] or 'none'} | SHA-256: {snap['sha256'] or 'n/a'}", ""]
+    classes = report["new_axie_class_coverage"]
+    lines += [f"New Axie class source: **{classes['status']}** | {classes['filename'] or 'none'} | "
+              f"SHA-256: {classes['sha256'] or 'n/a'}", ""]
+    if classes["status"] == "APPLIED_CLASS_RECONCILED":
+        lines += [f"Newly owned cohort: **{classes['cohort_axies']}**; class known: "
+                  f"**{classes['class_known']}**; class unknown: **{classes['class_unknown']}**; "
+                  f"level unknown: **{classes['level_unknown']}**; breed unknown: "
+                  f"**{classes['breed_unknown']}**.", ""]
     for view in report["views"]:
         lines += [f"## {view['period'].title()} ({view['start_date_inclusive']} to {view['end_date_exclusive']} exclusive)", "", "| Observation | Value |", "| --- | ---: |"]
         for name, value in view["observations"].items():
@@ -450,17 +519,21 @@ def main():
     parser.add_argument("--trade-dir", type=Path, default=DEFAULT_TRADE_DIR)
     parser.add_argument("--trade-evidence-dir", type=Path, default=DEFAULT_TRADE_EVIDENCE_DIR)
     parser.add_argument("--bn-dir", type=Path, default=DEFAULT_BN_DIR)
+    parser.add_argument("--class-apply", type=Path, help="Exact applied V0.16 offline class JSON")
+    parser.add_argument("--class-dir", type=Path, default=DEFAULT_CLASS_DIR)
     args = parser.parse_args()
     generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with closing(read_only(args.db)) as conn:
         snapshot = catchup_snapshot(conn, args.catchup or latest_catchup(args.catchup_dir),
                                     args.as_of, args.roster_refresh or latest_roster_refresh(args.catchup_dir))
-        views = [make_view(conn, p, args.as_of, snapshot) for p in (("daily", "weekly", "monthly") if args.period == "all" else (args.period,))]
+        classes = class_coverage(conn, snapshot, args.class_apply or latest_class_apply(args.class_dir))
+        views = [make_view(conn, p, args.as_of, snapshot, classes) for p in (("daily", "weekly", "monthly") if args.period == "all" else (args.period,))]
     trades = scoped_trades(args.trade_closeout or latest_scoped_trade_closeout(args.trade_dir),
                            args.trade_evidence_dir, args.bn_dir, args.as_of)
     report = {"version": "0.16", "generated_utc": generated, "as_of_philippines_date": args.as_of.isoformat(), "calendar_timezone": "Asia/Manila (+08:00)", "views": views,
               "catchup_source": snapshot, "verified_financial_totals": "UNKNOWN", "unified_finance": "HOLD", "checkpoint96": "OPEN", "database_opened": "READ_ONLY", "database_writes": 0, "network_calls": 0}
     report["scoped_closed_trades"] = trades
+    report["new_axie_class_coverage"] = classes
     args.output_dir.mkdir(parents=True, exist_ok=True)
     basename = f"AxieOS_V016_Operational_Dashboard_{args.as_of.isoformat()}_{args.period}"
     (args.output_dir / (basename + ".json")).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
@@ -468,6 +541,7 @@ def main():
     print(f"AXIEOS V0.16 - OPERATIONAL DASHBOARD | {args.period.upper()} | as of {args.as_of}")
     print(f"Reports: {args.output_dir / (basename + '.json')} {args.output_dir / (basename + '.md')}")
     print(f"Catch-up source: {snapshot['status']} | Pinned chain Axies: {snapshot['chain_owned_count'] if snapshot['chain_owned_count'] is not None else 'UNKNOWN'}")
+    print(f"New Axie class: {classes['status']} | Known: {classes['class_known'] if classes['class_known'] is not None else 'UNKNOWN'}/29 | Level unknown: {classes['level_unknown'] if classes['level_unknown'] is not None else 'UNKNOWN'}")
     print(f"Scoped closed trades: {trades['status']} | Pairs through as-of: {trades['pairs_through_as_of'] if trades['pairs_through_as_of'] is not None else 'UNKNOWN'}")
     if trades["status"] == "CORROBORATED_SCOPED_WALLET_FLOW":
         print(f"Observed WETH difference before gas: {trades['observed_weth_difference_before_gas']} | Candidate purchase gas: {trades['candidate_purchase_gas_ron']} RON")

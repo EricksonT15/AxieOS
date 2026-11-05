@@ -1,6 +1,6 @@
 {
   "version": "0.16",
-  "generated_utc": "2026-11-05T07:09:55+00:00",
+  "generated_utc": "2026-11-05T08:46:27+00:00",
   "as_of_philippines_date": "2026-11-05",
   "calendar_timezone": "Asia/Manila (+08:00)",
   "views": [
@@ -90,6 +90,10 @@
         "chain_only_axie_ids_for_review": 0,
         "saved_only_axie_ids_for_review": 0,
         "axies_with_unknown_class_level_breed": 29,
+        "newly_owned_axies_class_known": 29,
+        "newly_owned_axies_class_unknown": 0,
+        "newly_owned_axies_level_unknown": 29,
+        "newly_owned_axies_breed_unknown": 0,
         "corroborated_explorer_transactions_missing_raw": 0
       },
       "interpretation": "Counts are observed rows, not proof of no activity when zero or proof of complete source coverage when positive. Saved owned Axie rows reflect the database at report time; pinned chain ownership is a dated snapshot. The roster refresh is recognized only when its linked applied report and current statuses agree. Explorer transaction gaps are separate from raw counts and must not be added to financial events. CocoChoco event count is not stock on hand; ending slips is one latest observation. Raw wallet UTC timestamps are grouped into Philippines calendar days (+08:00); gameplay timestamps are source-local or timezone unspecified."
@@ -180,6 +184,10 @@
         "chain_only_axie_ids_for_review": 0,
         "saved_only_axie_ids_for_review": 0,
         "axies_with_unknown_class_level_breed": 29,
+        "newly_owned_axies_class_known": 29,
+        "newly_owned_axies_class_unknown": 0,
+        "newly_owned_axies_level_unknown": 29,
+        "newly_owned_axies_breed_unknown": 0,
         "corroborated_explorer_transactions_missing_raw": 0
       },
       "interpretation": "Counts are observed rows, not proof of no activity when zero or proof of complete source coverage when positive. Saved owned Axie rows reflect the database at report time; pinned chain ownership is a dated snapshot. The roster refresh is recognized only when its linked applied report and current statuses agree. Explorer transaction gaps are separate from raw counts and must not be added to financial events. CocoChoco event count is not stock on hand; ending slips is one latest observation. Raw wallet UTC timestamps are grouped into Philippines calendar days (+08:00); gameplay timestamps are source-local or timezone unspecified."
@@ -270,6 +278,10 @@
         "chain_only_axie_ids_for_review": 0,
         "saved_only_axie_ids_for_review": 0,
         "axies_with_unknown_class_level_breed": 29,
+        "newly_owned_axies_class_known": 29,
+        "newly_owned_axies_class_unknown": 0,
+        "newly_owned_axies_level_unknown": 29,
+        "newly_owned_axies_breed_unknown": 0,
         "corroborated_explorer_transactions_missing_raw": 0
       },
       "interpretation": "Counts are observed rows, not proof of no activity when zero or proof of complete source coverage when positive. Saved owned Axie rows reflect the database at report time; pinned chain ownership is a dated snapshot. The roster refresh is recognized only when its linked applied report and current statuses agree. Explorer transaction gaps are separate from raw counts and must not be added to financial events. CocoChoco event count is not stock on hand; ending slips is one latest observation. Raw wallet UTC timestamps are grouped into Philippines calendar days (+08:00); gameplay timestamps are source-local or timezone unspecified."
@@ -292,6 +304,37 @@
       "saved_only_to_unknown": 3
     },
     "metadata_unknown_ids": [
+      "1110058",
+      "2072470",
+      "3212156",
+      "3510808",
+      "4269065",
+      "4505379",
+      "5471342",
+      "6678762",
+      "6709319",
+      "6853681",
+      "7229551",
+      "8640076",
+      "9771328",
+      "11299415",
+      "11309255",
+      "11619123",
+      "11707178",
+      "12168528",
+      "12258233",
+      "12258831",
+      "12261102",
+      "12261909",
+      "12262509",
+      "12264249",
+      "12264396",
+      "12265423",
+      "12265705",
+      "12266445",
+      "12267585"
+    ],
+    "original_metadata_ids": [
       "1110058",
       "2072470",
       "3212156",
@@ -574,6 +617,17 @@
         "accepted_profit": null
       }
     ],
+    "error": null
+  },
+  "new_axie_class_coverage": {
+    "status": "APPLIED_CLASS_RECONCILED",
+    "filename": "AxieOS_V016_Offline_Class_Apply_20261105T084245_362537Z.json",
+    "sha256": "c9182118786743d3364f649604dc98026ee2994f5f687f496bfed02900da60af",
+    "cohort_axies": 29,
+    "class_known": 29,
+    "class_unknown": 0,
+    "level_unknown": 29,
+    "breed_unknown": 0,
     "error": null
   }
 }
