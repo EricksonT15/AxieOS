@@ -1,0 +1,1927 @@
+{
+  "project": "AxieOS",
+  "version": "1.0-pilot",
+  "task": "CONSUMABLE_BASIS_CROSSWALK",
+  "created_utc": "2026-11-06T07:56:42.388972+00:00",
+  "sources": {
+    "96BV": {
+      "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v013\\checkpoint96\\AxieOS_Checkpoint96BV_Finance_Source_Rows_20261030T022027_384339Z.json",
+      "sha256": "33d3b63a0da4e9daf29b24217b58a7319ceaf217438e5289156f6166c74384c7"
+    },
+    "136F": {
+      "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v014\\task136f\\AxieOS_V014_Task136F_Consumable_Transfer_Evidence_20261030T081304_450317Z_6952a1.json",
+      "sha256": "dfaebe6dc3476d04c98183299cd8b7ebdce3b7eb8a28414e4d80da8471df56e8"
+    },
+    "136BO": {
+      "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v014\\task136bo\\AxieOS_V014_Task136BO_Consumable_Purchase_History_20261104T080009_820432Z_6b4ff0.json",
+      "sha256": "83426a88d1081b744d95f4999fc8af1eb980b811d761afbf9761512155001772"
+    },
+    "136BM": {
+      "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v014\\task136bm\\AxieOS_V014_Task136BM_Finance_Resolution_Batch_20261104T053256_758175Z_506d83.json",
+      "sha256": "44125805b6f98992e33588c7dfbb3fe42bff2fd9b3a2d735c557bef810caf0e9"
+    },
+    "136BS": {
+      "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v014\\task136bs\\AxieOS_V014_Task136BS_Legacy_Consumable_Crosswalk_f22c342cdf5a.json",
+      "sha256": "8fba4a7628309e6a714272fcc709f0cb315db50e7e18d4fb528aaebdeff40d54"
+    }
+  },
+  "summary": {
+    "conflicts": 24,
+    "by_token_id": {
+      "1": 6,
+      "2": 18
+    },
+    "sales_with_saved_outgoing_transfer": 24,
+    "corroborated_purchase_hashes": 26,
+    "legacy_purchase_candidates_without_token_id": 116,
+    "cases_with_prior_purchase_candidates": 24
+  },
+  "cases": [
+    {
+      "sale_hash": "0x0101cff8969f4800cd10b0241c388257cb7485b1337971a76c3cb465880d9350",
+      "sale_utc": "2026-08-20T04:20:05+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "4",
+      "sale_transfer_key": "0x0101cff8969f4800cd10b0241c388257cb7485b1337971a76c3cb465880d9350:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x327c0d2ef2a917e5ab5b07807a4c5fe71eb0df3c999d7ae3ba6fde03449c77ae",
+          "purchase_utc": "2026-08-09T05:46:15+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000584298",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x74d9fe632e8f79ad349eff11dcf271bb3e1aa7b7973bd529b85188379ecca958",
+          "purchase_utc": "2026-08-13T03:48:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000188",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe4a34455b084e209185b0f1825f0908013d11f56ab109b24f2e10690bba37de7",
+          "purchase_utc": "2026-08-16T04:31:13+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xadd6fb6aba6dd1fefb00ea039557377d1eb934c1e8880fbba49b2790246da3da",
+          "purchase_utc": "2026-08-17T03:35:11+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194255",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x9ebf83889f43721058adce64d0edeba9e316081b52b669b66342b253bb70aa9d",
+          "purchase_utc": "2026-08-20T04:14:35+00:00",
+          "observed_quantity_in": "5",
+          "observed_weth_out": "0.000867995",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 18,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x0c47b253d0ec041ce91f6b115505c0c66eb21f596fc23372d72f16f2bab0a0cf",
+      "sale_utc": "2026-08-21T03:31:03+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "10",
+      "sale_transfer_key": "0x0c47b253d0ec041ce91f6b115505c0c66eb21f596fc23372d72f16f2bab0a0cf:20:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe878f0c82da22085fcdb4622bf46772ae108f9d829f1c1d0cdb1c46c58bb2dcf",
+          "purchase_utc": "2026-08-17T03:25:47+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00009549",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x56fb88dd71a42608bf4d99381b24b750f6e1a2be59fb48e359a5eb87e3486b96",
+          "purchase_utc": "2026-08-20T04:19:15+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000087495",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xbf67626c6baff1f1087f2013b8422587c9bcab06b4151118cef404ca9e9925da",
+          "purchase_utc": "2026-08-21T03:23:31+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000085155",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 7,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x0d313cdd8479bc8f7d1f35ec7edb8b54e5aeffd719bff21227c54e628f090c1c",
+      "sale_utc": "2026-08-14T03:33:41+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x0d313cdd8479bc8f7d1f35ec7edb8b54e5aeffd719bff21227c54e628f090c1c:37:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x327c0d2ef2a917e5ab5b07807a4c5fe71eb0df3c999d7ae3ba6fde03449c77ae",
+          "purchase_utc": "2026-08-09T05:46:15+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000584298",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x74d9fe632e8f79ad349eff11dcf271bb3e1aa7b7973bd529b85188379ecca958",
+          "purchase_utc": "2026-08-13T03:48:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000188",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 15,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x2af8cd12d10193dc5105c349b6800245d892ebca3173e2ecee0c38d208a49b92",
+      "sale_utc": "2026-08-06T04:05:23+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x2af8cd12d10193dc5105c349b6800245d892ebca3173e2ecee0c38d208a49b92:11:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 11,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x2bb83d5b39a54268fe12cde98cfb00eadca9e6c305d023514fcbda59b5ff5e87",
+      "sale_utc": "2026-07-20T03:56:37+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x2bb83d5b39a54268fe12cde98cfb00eadca9e6c305d023514fcbda59b5ff5e87:13:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 2,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x36e3b6892b8e8e1891b8d73e7e1a8c1fa740b364da82dee4c2fc74232edd5b8d",
+      "sale_utc": "2026-08-12T06:28:29+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "2",
+      "sale_transfer_key": "0x36e3b6892b8e8e1891b8d73e7e1a8c1fa740b364da82dee4c2fc74232edd5b8d:4:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x327c0d2ef2a917e5ab5b07807a4c5fe71eb0df3c999d7ae3ba6fde03449c77ae",
+          "purchase_utc": "2026-08-09T05:46:15+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000584298",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 14,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x3d271c68c5fd9cfbb265fded24af52ed2e82dcd31f2e8e063435b7749f750202",
+      "sale_utc": "2026-07-30T03:28:57+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x3d271c68c5fd9cfbb265fded24af52ed2e82dcd31f2e8e063435b7749f750202:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 6,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x42ac0a3ba7148e49c815a66da54f59310a945778ac343e323356e787c4dc3005",
+      "sale_utc": "2026-07-24T03:47:47+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x42ac0a3ba7148e49c815a66da54f59310a945778ac343e323356e787c4dc3005:29:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 4,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x478e077dc792df75dc0c8ed94e17ee4012ef129318a3e1b2f1f031e0cf7ada8e",
+      "sale_utc": "2026-08-22T11:10:11+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "7",
+      "sale_transfer_key": "0x478e077dc792df75dc0c8ed94e17ee4012ef129318a3e1b2f1f031e0cf7ada8e:16:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe878f0c82da22085fcdb4622bf46772ae108f9d829f1c1d0cdb1c46c58bb2dcf",
+          "purchase_utc": "2026-08-17T03:25:47+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00009549",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x56fb88dd71a42608bf4d99381b24b750f6e1a2be59fb48e359a5eb87e3486b96",
+          "purchase_utc": "2026-08-20T04:19:15+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000087495",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xbf67626c6baff1f1087f2013b8422587c9bcab06b4151118cef404ca9e9925da",
+          "purchase_utc": "2026-08-21T03:23:31+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000085155",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x1e87df71c1c0d499f10449ebe45f9d1a7fc219b6a168d1f2b36be36c6a70278b",
+          "purchase_utc": "2026-08-22T11:06:41+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000080925",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 8,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x52374a870640737caf37175b390bc45008e093c301ca67c05b6df112ecc08706",
+      "sale_utc": "2026-08-07T03:34:21+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x52374a870640737caf37175b390bc45008e093c301ca67c05b6df112ecc08706:18:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 12,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x56f2f3ead16b190c504e7a0ab71c14a3ff99656cd6c1dd5bf7467027d232eab9",
+      "sale_utc": "2026-08-16T04:56:21+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x56f2f3ead16b190c504e7a0ab71c14a3ff99656cd6c1dd5bf7467027d232eab9:17:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x327c0d2ef2a917e5ab5b07807a4c5fe71eb0df3c999d7ae3ba6fde03449c77ae",
+          "purchase_utc": "2026-08-09T05:46:15+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000584298",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x74d9fe632e8f79ad349eff11dcf271bb3e1aa7b7973bd529b85188379ecca958",
+          "purchase_utc": "2026-08-13T03:48:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000188",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe4a34455b084e209185b0f1825f0908013d11f56ab109b24f2e10690bba37de7",
+          "purchase_utc": "2026-08-16T04:31:13+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 16,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x5a46c7058a14ee6444b874606f7a4969511d71e53f2a5149849e79afc801ba43",
+      "sale_utc": "2026-07-19T08:08:51+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x5a46c7058a14ee6444b874606f7a4969511d71e53f2a5149849e79afc801ba43:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 1,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x620ddba8b33aa026d05acd096dbb7fc2ae13db5c2b9d778fd488cec39191ad56",
+      "sale_utc": "2026-08-06T04:00:17+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "3",
+      "sale_transfer_key": "0x620ddba8b33aa026d05acd096dbb7fc2ae13db5c2b9d778fd488cec39191ad56:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 10,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x6c3814285cebcf084f81b6c3c0dc90f3e4fb1eaad9da1342899d0e14f95dd0d9",
+      "sale_utc": "2026-08-21T03:31:05+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "15",
+      "sale_transfer_key": "0x6c3814285cebcf084f81b6c3c0dc90f3e4fb1eaad9da1342899d0e14f95dd0d9:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe878f0c82da22085fcdb4622bf46772ae108f9d829f1c1d0cdb1c46c58bb2dcf",
+          "purchase_utc": "2026-08-17T03:25:47+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00009549",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x56fb88dd71a42608bf4d99381b24b750f6e1a2be59fb48e359a5eb87e3486b96",
+          "purchase_utc": "2026-08-20T04:19:15+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000087495",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xbf67626c6baff1f1087f2013b8422587c9bcab06b4151118cef404ca9e9925da",
+          "purchase_utc": "2026-08-21T03:23:31+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000085155",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 7,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x84d12abc1f402b223649f763d4f4baa2c74e3d61fcfa7d047fe8fe4b74b2683a",
+      "sale_utc": "2026-08-08T03:44:13+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x84d12abc1f402b223649f763d4f4baa2c74e3d61fcfa7d047fe8fe4b74b2683a:16:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 4,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x9234deddf489357df0003aba68cf0e341247e9f19fb1819e6e815b45c8b41f0b",
+      "sale_utc": "2026-07-26T04:24:47+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x9234deddf489357df0003aba68cf0e341247e9f19fb1819e6e815b45c8b41f0b:72:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 5,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0x9bf013e552fd91fcbcaffe6dc4fbeb950f28563b8e5f3ea596189749d0836829",
+      "sale_utc": "2026-07-31T04:20:15+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0x9bf013e552fd91fcbcaffe6dc4fbeb950f28563b8e5f3ea596189749d0836829:3:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 7,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xa79e4179e2519ec6a890597d90dd896e1b53fc0a6c90985ac03035f827867348",
+      "sale_utc": "2026-08-03T03:46:11+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0xa79e4179e2519ec6a890597d90dd896e1b53fc0a6c90985ac03035f827867348:21:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 8,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xae61961731e2ee63da09e6131f9fff60f6de89976d9b52e1155f8e0075210773",
+      "sale_utc": "2026-08-22T11:07:57+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "8",
+      "sale_transfer_key": "0xae61961731e2ee63da09e6131f9fff60f6de89976d9b52e1155f8e0075210773:29:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe878f0c82da22085fcdb4622bf46772ae108f9d829f1c1d0cdb1c46c58bb2dcf",
+          "purchase_utc": "2026-08-17T03:25:47+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00009549",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x56fb88dd71a42608bf4d99381b24b750f6e1a2be59fb48e359a5eb87e3486b96",
+          "purchase_utc": "2026-08-20T04:19:15+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000087495",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xbf67626c6baff1f1087f2013b8422587c9bcab06b4151118cef404ca9e9925da",
+          "purchase_utc": "2026-08-21T03:23:31+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000085155",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x1e87df71c1c0d499f10449ebe45f9d1a7fc219b6a168d1f2b36be36c6a70278b",
+          "purchase_utc": "2026-08-22T11:06:41+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000080925",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 8,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xce120597e92cbaef6526b3e32645c585afadab5a8bae374d01ed7f9d6a54d617",
+      "sale_utc": "2026-08-20T04:21:41+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0xce120597e92cbaef6526b3e32645c585afadab5a8bae374d01ed7f9d6a54d617:12:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x327c0d2ef2a917e5ab5b07807a4c5fe71eb0df3c999d7ae3ba6fde03449c77ae",
+          "purchase_utc": "2026-08-09T05:46:15+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000584298",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x74d9fe632e8f79ad349eff11dcf271bb3e1aa7b7973bd529b85188379ecca958",
+          "purchase_utc": "2026-08-13T03:48:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000188",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe4a34455b084e209185b0f1825f0908013d11f56ab109b24f2e10690bba37de7",
+          "purchase_utc": "2026-08-16T04:31:13+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xadd6fb6aba6dd1fefb00ea039557377d1eb934c1e8880fbba49b2790246da3da",
+          "purchase_utc": "2026-08-17T03:35:11+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194255",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x9ebf83889f43721058adce64d0edeba9e316081b52b669b66342b253bb70aa9d",
+          "purchase_utc": "2026-08-20T04:14:35+00:00",
+          "observed_quantity_in": "5",
+          "observed_weth_out": "0.000867995",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 18,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xdc5131f5a7f07ef6e6d3ccfae53933eb3f436a4ff142471dd7176d699b799855",
+      "sale_utc": "2026-07-22T04:31:49+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "4",
+      "sale_transfer_key": "0xdc5131f5a7f07ef6e6d3ccfae53933eb3f436a4ff142471dd7176d699b799855:36:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 3,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xdf2147ea4ea55d8386c68ce2a939244eb1f28d81d91b2bc947469adfcd139174",
+      "sale_utc": "2026-08-08T18:22:15+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0xdf2147ea4ea55d8386c68ce2a939244eb1f28d81d91b2bc947469adfcd139174:18:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0af8a6910db1372e78e7b052e0fd7bc5503a1576a4950cd588204506cce1d34a",
+          "purchase_utc": "2026-08-06T03:28:55+00:00",
+          "observed_quantity_in": "3",
+          "observed_weth_out": "0.000579",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc9ecef0b7a43ac1d92eb06202485ad82bc17e638b4440575a03c4ca138a40de1",
+          "purchase_utc": "2026-08-06T04:01:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00019398",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x5a9a3d9f0606a57e2355fa738314da64b5b99dd0281b6e9607c27f53e3a8ab65",
+          "purchase_utc": "2026-08-07T03:33:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0001897",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xfc763b3069231d468220cf3f29488b0c19a5727bc64789cc67df289bf26a55bb",
+          "purchase_utc": "2026-08-08T03:15:23+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000193999",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 13,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xf3004531b438079d2bd27ea66feba664d3a30abdfec06091976a801bace1f6b9",
+      "sale_utc": "2026-08-08T03:44:01+00:00",
+      "token_id": "1",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0xf3004531b438079d2bd27ea66feba664d3a30abdfec06091976a801bace1f6b9:29:0x737b80335a9396A8658405d7ADCbc57343Ff0558:1",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x35c5245c3c1b107efca4b50a2131086372043254abfc29f739f439328ad89cd1",
+          "purchase_utc": "2026-08-04T03:22:37+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x6300938b291617029d42dc6a09255d65b9689cf23b6336acb91783304e6d11b0",
+          "purchase_utc": "2026-08-05T08:08:21+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.00010095",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xb92b99d8288a7dc4b7de22e013b732d1b0e69562defc2beb9ad532ce02da8181",
+          "purchase_utc": "2026-08-06T04:02:01+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000100965",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x68d095ec925e45e512f32f425583580dd3cedb525af116b8faf28c071ba7cea2",
+          "purchase_utc": "2026-08-08T03:20:53+00:00",
+          "observed_quantity_in": "15",
+          "observed_weth_out": "0.000099645",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 4,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    },
+    {
+      "sale_hash": "0xff12d99d5af68dd2ea7a62b04c071e950e4cbeb1eb943571d21a09996f7b99a0",
+      "sale_utc": "2026-08-04T03:17:57+00:00",
+      "token_id": "2",
+      "sale_quantity_as_stored": "1",
+      "sale_transfer_key": "0xff12d99d5af68dd2ea7a62b04c071e950e4cbeb1eb943571d21a09996f7b99a0:29:0x737b80335a9396A8658405d7ADCbc57343Ff0558:2",
+      "accounting_status": "READY",
+      "stored_cost_basis_conflict": true,
+      "stored_profit_conflict": true,
+      "corroborated_prior_purchase_candidates": [
+        {
+          "purchase_hash": "0x240bdea2fb2356f4687aab2b3cd7417d25345c76f6f1ca6e98847945eb97a741",
+          "purchase_utc": "2026-07-19T04:25:09+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.00021719",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xc48b0b98836e4d97e7ed1f1ec42d77f3097cc0182951c7ea94ba477d569be7bc",
+          "purchase_utc": "2026-07-20T03:54:27+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000213778",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x3e1d997ea78cf8b3854eac13116808cb9c0d78bf51b2bfc2935b8e4382ef37a6",
+          "purchase_utc": "2026-07-22T04:28:29+00:00",
+          "observed_quantity_in": "4",
+          "observed_weth_out": "0.000846",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xab6ba236f5ae43f007fabce221ee250ad8bcb5b4dab70725ec0952afc443a847",
+          "purchase_utc": "2026-07-24T03:46:41+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.0002039",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xec616cc62ac96d86acea6902289551aeb95e1e26924373f965c0a6af62bbb7c3",
+          "purchase_utc": "2026-07-26T04:16:07+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195617",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe197ee7284c08035d9599ba402961e0b8de628fad3e97442d7d249fa41450a5d",
+          "purchase_utc": "2026-07-30T03:25:35+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000195585",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x0a213a4b1bd84bab8a6200444843f16da94f57744a0e0aa7ebfbce868bea5539",
+          "purchase_utc": "2026-07-31T04:17:49+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194884",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0x93a252376ca335ae4dd70cfb6ffce20a0b3161a22e773bf7a0e0276965242052",
+          "purchase_utc": "2026-08-03T03:44:53+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000194254",
+          "basis_assigned": false
+        },
+        {
+          "purchase_hash": "0xe47309510f72ebf42925d357e8c7b75dc99614cd011f8183e8e10ccbf383b961",
+          "purchase_utc": "2026-08-04T03:16:29+00:00",
+          "observed_quantity_in": "1",
+          "observed_weth_out": "0.000189976",
+          "basis_assigned": false
+        }
+      ],
+      "prior_purchase_candidate_count": 9,
+      "legacy_unidentified_purchase_candidates_available": 116,
+      "accepted_cost_basis": null,
+      "accepted_profit": null,
+      "resolution": "OPEN: lot assignment, opening balance and intervening consumption unverified"
+    }
+  ],
+  "accepted_cost_basis": null,
+  "accepted_realized_profit": null,
+  "financial_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN",
+  "database_opened": false,
+  "database_writes": 0,
+  "network_calls": 0
+}
