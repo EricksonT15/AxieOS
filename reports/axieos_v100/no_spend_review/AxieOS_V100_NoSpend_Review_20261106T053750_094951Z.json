@@ -1,0 +1,722 @@
+{
+  "project": "AxieOS",
+  "version": "1.0-pilot",
+  "task": "NO_SPEND_INVENTORY_REVIEW",
+  "generated_utc": "2026-11-06T05:37:50.094577+00:00",
+  "as_of_philippines_date": "2026-11-06",
+  "operational_sync": {
+    "path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos\\operational_sync\\AxieOS_Operational_Sync_20261106T030810_455599Z.json",
+    "sha256": "dfd118b0d817862ecfe1186402d6acf7e3a6be0b22b97cb73ad03aad09c7d166",
+    "pinned_utc": "2026-11-06T03:05:47+00:00",
+    "pinned_philippines_date": "2026-11-06",
+    "age_days": 0,
+    "saved_owned_count": 162,
+    "status": "CURRENT_NO_WRITES"
+  },
+  "counts": {
+    "owned": 162,
+    "exception_axies": 29,
+    "missing_class": 0,
+    "missing_level": 29,
+    "missing_breed": 0,
+    "collection_trait_missing": 0,
+    "collection_trait_source_review": 0,
+    "collection_status_conflict": 0,
+    "recorded_collectibles": 16,
+    "blank_collectible_type": 16,
+    "collectibles_with_source_backed_traits": 16
+  },
+  "dojo_register": {
+    "status": "HISTORICAL_ONLY_NO_CURRENT_ASSIGNMENT",
+    "source": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos_v013\\checkpoint95\\dojo_weekly_register_5.csv",
+    "sha256": "2352af9ba5e08dd06dd36a46e2ee9c439f8d62d808ec7499b906b7b72e5e61dd",
+    "rows": 5,
+    "observation_dates": [
+      "2026-10-27"
+    ],
+    "ids_still_saved_owned": [
+      "3212156",
+      "7140614",
+      "12148372",
+      "12198498",
+      "12213537"
+    ],
+    "current_training_verified": false,
+    "reassignment_authorized": false
+  },
+  "exception_rows": [
+    {
+      "axie_id": "1110058",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 4,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "2072470",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "3212156",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 3,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "3510808",
+      "axie_class": "Bug",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "4269065",
+      "axie_class": "Aquatic",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "4505379",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "5471342",
+      "axie_class": "Aquatic",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "6678762",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "6709319",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "6853681",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "7229551",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "8640076",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "9771328",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "11299415",
+      "axie_class": "Bug",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "11309255",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 2,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "11619123",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "11707178",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 3,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12168528",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12258233",
+      "axie_class": "Mech",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12258831",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12261102",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12261909",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12262509",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12264249",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 1,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12264396",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12265423",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12265705",
+      "axie_class": "Mech",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12266445",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    },
+    {
+      "axie_id": "12267585",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "is_collectible_recorded": false,
+      "collectible_type": null,
+      "is_evolved_recorded": false,
+      "collections": [],
+      "collection_trait_sources": [],
+      "issues": [
+        "LEVEL_SOURCE_MISSING"
+      ]
+    }
+  ],
+  "collectible_rows": [
+    {
+      "axie_id": "20013",
+      "axie_class": "Plant",
+      "level": 44,
+      "breed_count": 7,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "MEO_CORP_II"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "22995",
+      "axie_class": "Aquatic",
+      "level": 32,
+      "breed_count": 4,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "XMAS"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "51471",
+      "axie_class": "Aquatic",
+      "level": 38,
+      "breed_count": 4,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "JAPANESE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "3918209",
+      "axie_class": "Reptile",
+      "level": 45,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "8080015",
+      "axie_class": "Aquatic",
+      "level": 30,
+      "breed_count": 2,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "8724306",
+      "axie_class": "Dusk",
+      "level": 53,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "9771044",
+      "axie_class": "Plant",
+      "level": 48,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11404905",
+      "axie_class": "Beast",
+      "level": 41,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "SUMMER"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11451464",
+      "axie_class": "Plant",
+      "level": 45,
+      "breed_count": 1,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "SHINY",
+        "SUMMER"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11511206",
+      "axie_class": "Beast",
+      "level": 39,
+      "breed_count": 4,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11661183",
+      "axie_class": "Reptile",
+      "level": 52,
+      "breed_count": 3,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11703802",
+      "axie_class": "Reptile",
+      "level": 47,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "11905379",
+      "axie_class": "Reptile",
+      "level": 49,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "12028904",
+      "axie_class": "Plant",
+      "level": 50,
+      "breed_count": 1,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "12072579",
+      "axie_class": "Bird",
+      "level": 44,
+      "breed_count": 0,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    },
+    {
+      "axie_id": "12163788",
+      "axie_class": "Dusk",
+      "level": 32,
+      "breed_count": 3,
+      "is_collectible_recorded": true,
+      "collectible_type": null,
+      "is_evolved_recorded": true,
+      "collections": [
+        "NIGHTMARE"
+      ],
+      "collection_trait_sources": [
+        "RONIN_AXIE_GENES"
+      ],
+      "issues": []
+    }
+  ],
+  "bounty_board": "PAUSED_NO_OPERATING_FUNDS",
+  "finance_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN",
+  "automatic_execution": false,
+  "database_opened": "READ_ONLY",
+  "database_writes": 0,
+  "network_calls": 0
+}

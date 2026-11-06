@@ -1,0 +1,82 @@
+{
+  "project": "AxieOS",
+  "task": "REUSABLE_OPERATIONAL_SYNC",
+  "created_at_utc": "2026-11-06T03:08:10.454682+00:00",
+  "status": "CURRENT_NO_WRITES",
+  "mode": "APPLY_GUARDED",
+  "ownership": {
+    "status": "COMPLETE_AT_PINNED_BLOCK",
+    "error": null,
+    "pinned_block": "0x3c4db0c",
+    "pinned_block_timestamp_utc": "2026-11-06T03:05:47+00:00",
+    "saved_owned_count": 162,
+    "pinned_chain_owned_count": 162,
+    "chain_only_ids": [],
+    "saved_only_ids": []
+  },
+  "raw_coverage": {
+    "routes": [
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "transactions",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "cutoff_utc": "2026-11-05T06:54:57+00:00",
+        "hashes_at_or_after_cutoff": [
+          "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698"
+        ],
+        "error": null
+      },
+      {
+        "wallet": "0x1ed8b3f3bd6a624de47f81beea101f0d15cdfbc8",
+        "kind": "token-transfers",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "cutoff_utc": "2026-11-05T06:54:57+00:00",
+        "hashes_at_or_after_cutoff": [
+          "0xf3735f3677199dc6b612881f1302da57a7e8a4b7c1539b19c48bbd233c74b698"
+        ],
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "transactions",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "cutoff_utc": "2026-11-05T06:54:57+00:00",
+        "hashes_at_or_after_cutoff": [],
+        "error": null
+      },
+      {
+        "wallet": "0x5c32ce3b21e786dcaf11d9c64dec31b21a2c6610",
+        "kind": "token-transfers",
+        "status": "REACHED_LOCAL_CUTOFF",
+        "pages": 1,
+        "cutoff_utc": "2026-11-05T06:54:57+00:00",
+        "hashes_at_or_after_cutoff": [],
+        "error": null
+      }
+    ],
+    "all_four_complete": true,
+    "scope": "incremental explorer pages at or after saved raw UTC cutoffs",
+    "local_cutoff_utc": {
+      "transactions": "2026-11-05T06:54:57+00:00",
+      "token-transfers": "2026-11-05T06:54:57+00:00"
+    },
+    "transaction_hashes_absent_from_raw": [],
+    "transfer_hashes_absent_from_raw": []
+  },
+  "plan_sha256": "aec1def7891ad54ee4fe18c139059d36ca18a9b7c440b553e7c4f3115d65fd9e",
+  "clone_first": null,
+  "clone_second": null,
+  "raw_writes": {
+    "ronin_api_transactions_raw": 0,
+    "ronin_token_transfers_raw": 0
+  },
+  "backup": null,
+  "production_database_opened": "READ_ONLY",
+  "network_calls": 233,
+  "finance_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN"
+}
