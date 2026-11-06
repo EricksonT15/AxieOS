@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
-import html
 import json
 import webbrowser
 from collections import Counter
@@ -138,18 +137,7 @@ def write_reports(report):
 
 
 def write_dashboard(watch_path, watch, report, report_path):
-    page = render_watchlist(watch_path, watch)
-    marker = '<div class="notice">Finance remains on hold.'
-    require(page.count(marker) == 1, "watchlist HTML layout changed; cannot add exception summary")
-    token_floor = report["minimum_starting_units_for_observed_path_only"]
-    insert = (
-        '<div class="cards"><div class="card">Consumable sale exceptions<strong>24 open</strong></div>'
-        '<div class="card">Regular starting floor<strong>' + str(token_floor["1"]) + '</strong></div>'
-        '<div class="card">Premium starting floor<strong>' + str(token_floor["2"]) + '</strong></div></div>'
-        '<p class="muted">Saved finance source exception report: ' + html.escape(report_path.name) +
-        '. Starting floors apply only to the observed transfer path; actual opening inventory '
-        'and profit remain unknown.</p>\n')
-    page = page.replace(marker, insert + marker, 1)
+    page = render_watchlist(watch_path, watch, report, report_path.name)
     path = WATCHLIST / "AxieOS_V100_NoSpend_Portfolio_Watchlist_Latest.html"
     path.write_text(page, encoding="utf-8")
     return path

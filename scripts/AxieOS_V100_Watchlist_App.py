@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports/axieos_v100/no_spend_watchlist"
+FINANCE_REPORTS = ROOT / "reports/axieos_v100/finance_basis_review"
 PREFIX = "AxieOS_V100_NoSpend_Portfolio_Watchlist_"
 LANES = {"OBSERVE_ONLY", "PROTECTED_COLLECTIBLE", "SOURCE_EXCEPTION",
          "COLLECTION_EVIDENCE_REVIEW"}
@@ -66,7 +67,35 @@ def esc(value):
     return html.escape(str(value), quote=True)
 
 
-def render(path, doc):
+def load_finance_exception(folder):
+    matches = sorted(folder.glob("AxieOS_V100_Finance_Source_Exceptions_*.json"))
+    if not matches:
+        return None, None
+    path = matches[-1]
+    raw = path.read_bytes()
+    require(len(raw) <= 5_000_000, "Finance exception report exceeds size limit")
+    report = json.loads(raw.decode("utf-8-sig"))
+    exceptions = report.get("exceptions")
+    floors = report.get("minimum_starting_units_for_observed_path_only")
+    require(report.get("task") == "FINANCE_SOURCE_EXCEPTION_CLOSEOUT" and
+            report.get("sale_conflicts") == 24 and
+            report.get("by_token_id") == {"1": 6, "2": 18} and
+            isinstance(exceptions, list) and len(exceptions) == 24 and
+            len({r.get("sale_hash") for r in exceptions}) == 24 and
+            all(r.get("exception_status") == "OPEN_SOURCE_GAP" and
+                r.get("accepted_cost_basis") is None and r.get("accepted_profit") is None
+                for r in exceptions) and
+            isinstance(floors, dict) and set(floors) == {"1", "2"} and
+            all(type(floors[t]) is int and floors[t] >= 0 for t in ("1", "2")) and
+            report.get("actual_opening_inventory") is None and
+            report.get("accepted_cost_basis") is None and report.get("accepted_profit") is None and
+            report.get("unified_finance") == "HOLD" and report.get("checkpoint96") == "OPEN" and
+            report.get("database_opened") is False and report.get("database_writes") == 0 and
+            report.get("network_calls") == 0, "Finance exception boundary differs")
+    return path, report
+
+
+def render(path, doc, finance=None, finance_name=None):
     options = ['<option value="">All review lanes</option>']
     for lane, count in sorted(doc["review_lanes"].items()):
         options.append(f'<option value="{esc(lane)}">{esc(lane.replace("_", " ").title())} ({count})</option>')
@@ -81,6 +110,16 @@ def render(path, doc):
         trs.append(f'<tr data-lane="{esc(row["review_lane"])}" data-id="{esc(row["axie_id"])}">' +
                    "".join(f"<td>{esc(v)}</td>" for v in values) + "</tr>")
     headings = ("Axie ID", "Class", "Level", "Breed", "Lane", "Collections", "Flags", "Next review")
+    finance_panel = ""
+    if finance is not None:
+        floors = finance["minimum_starting_units_for_observed_path_only"]
+        finance_panel = (
+            '<div class="cards"><div class="card">Consumable sale exceptions<strong>24 open</strong></div>'
+            f'<div class="card">Regular starting floor<strong>{floors["1"]}</strong></div>'
+            f'<div class="card">Premium starting floor<strong>{floors["2"]}</strong></div></div>'
+            '<p class="muted">Saved finance source exception report: ' + esc(finance_name) +
+            '. Starting floors apply only to the observed transfer path; actual opening inventory '
+            'and profit remain unknown.</p>')
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
@@ -94,6 +133,7 @@ body{{font:16px system-ui,Arial,sans-serif;background:#101723;color:#eaf0f8;marg
 </style></head><body><h1>AxieOS · No-spend portfolio</h1>
 <p class="muted">Saved report: {esc(path.name)} · Philippine as-of date: {esc(doc['as_of_philippines_date'])} · Pinned sync age at report: {esc(doc['sync_age_days'])} day(s)</p>
 <div class="cards"><div class="card">Owned Axies<strong>{doc['owned_axies']}</strong></div><div class="card">Protected collectibles<strong>{doc['source_backed_collectibles']}</strong></div><div class="card">Unknown levels<strong>{doc['unknown_levels']}</strong></div><div class="card">Bounty Board<strong>Paused</strong></div></div>
+{finance_panel}
 <div class="notice">Finance remains on hold. Income, expenses, profit and PHP recovery are UNKNOWN. No sale, release, purchase, reroll, ascension or Dojo reassignment is approved.</div>
 <p class="muted">Saved evidence only; this page does not query live ownership or gameplay state. Checkpoint 96 remains open.</p>
 <div class="controls"><label>Review lane <select id="lane">{''.join(options)}</select></label><label>Axie ID contains <input id="search" placeholder="e.g. 122" autocomplete="off"></label></div>
@@ -106,10 +146,12 @@ lane.addEventListener('change',filter);search.addEventListener('input',filter);f
 
 def main():
     path, doc = load_latest(REPORTS)
+    finance_path, finance = load_finance_exception(FINANCE_REPORTS)
     output = REPORTS / "AxieOS_V100_NoSpend_Portfolio_Watchlist_Latest.html"
-    output.write_text(render(path, doc), encoding="utf-8")
+    output.write_text(render(path, doc, finance, finance_path.name if finance_path else None), encoding="utf-8")
     print("AXIEOS V1.0 - LOCAL NO-SPEND WATCHLIST")
     print("Owned:", doc["owned_axies"], "| Unknown levels:", doc["unknown_levels"])
+    print("Consumable sale exceptions:", "24 OPEN_SOURCE_GAP" if finance else "no saved exception report")
     print("HTML:", output)
     print("Database: not opened | Network: 0 | Report file written: 1")
     if not webbrowser.open(output.resolve().as_uri()):
