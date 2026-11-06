@@ -1,0 +1,163 @@
+﻿axie_id,axie_class,level,breed_count,collection_traits,is_evolved_recorded,review_lane,review_flags,next_review
+20013,Plant,44,7,MEO_CORP_II,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+22995,Aquatic,32,4,XMAS,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+51471,Aquatic,38,4,JAPANESE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+533611,Aquatic,29,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+916706,Beast,19,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+1032716,Plant,20,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+1032889,Beast,41,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+1033103,Aquatic,42,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+1110058,Dusk,,4,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+1187458,Beast,29,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+1453541,Beast,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+1820175,Aquatic,19,3,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+1870486,Plant,39,2,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+2072470,Plant,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+2224575,Aquatic,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+2659909,Plant,9,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+2677328,Beast,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+2713757,Aquatic,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+2798854,Aquatic,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+2910420,Aquatic,19,2,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+3212156,Beast,,3,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+3510808,Bug,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+3576345,Aquatic,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+3900977,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+3918209,Reptile,45,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+4155313,Aquatic,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+4269065,Aquatic,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+4431055,Plant,1,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+4505379,Plant,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+4508051,Plant,29,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+4543561,Bird,39,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+4622432,Dusk,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+4700296,Aquatic,9,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+5131525,Beast,12,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+5471342,Aquatic,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+5480148,Bird,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+5634283,Beast,9,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+5688018,Beast,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+5930821,Aquatic,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+6251324,Plant,10,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+6613980,Aquatic,9,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+6678762,Plant,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+6709319,Reptile,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+6853681,Reptile,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+6947669,Dusk,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+6957699,Plant,9,2,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+6997062,Dusk,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+7140614,Dusk,10,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+7229551,Beast,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+7387240,Reptile,19,2,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+7635720,Mech,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+7913652,Mech,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+8080015,Aquatic,30,2,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+8177414,Mech,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+8239875,Beast,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+8447504,Dusk,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+8452375,Plant,18,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+8640076,Dusk,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+8692112,Beast,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+8724306,Dusk,53,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+8737865,Plant,6,3,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+8842460,Dusk,19,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+8856843,Dusk,29,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+9301471,Beast,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+9349992,Dusk,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+9455318,Reptile,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+9620367,Dusk,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+9689137,Plant,42,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+9771044,Plant,48,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+9771328,Bird,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+10033745,Dusk,29,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+10125998,Mech,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+10192251,Beast,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+10475288,Bird,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+10662850,Reptile,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+10768086,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+10784276,Plant,20,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+10786989,Plant,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11098338,Mech,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11298901,Plant,39,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11299415,Bug,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+11309255,Beast,,2,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+11349626,Mech,53,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11404905,Beast,41,0,SUMMER,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11451464,Plant,45,1,"SHINY, SUMMER",True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11511206,Beast,39,4,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11619123,Bird,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+11627524,Bird,17,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11639138,Dawn,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11649433,Dawn,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11654649,Dawn,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11661183,Reptile,52,3,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11675185,Bird,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11690303,Dawn,32,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11703802,Reptile,47,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11707178,Dawn,,3,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+11726739,Dawn,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11749541,Bug,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11755726,Dawn,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11784034,Bug,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11790190,Dusk,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11800862,Mech,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+11818203,Reptile,34,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11820451,Aquatic,27,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11821595,Dusk,40,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11838210,Bug,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11865423,Aquatic,13,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11899721,Dawn,33,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11903143,Aquatic,24,2,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11905379,Reptile,49,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+11909639,Reptile,32,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11917453,Mech,19,2,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+11957839,Bug,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12016915,Bird,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12020919,Bird,19,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12028904,Plant,50,1,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+12043053,Aquatic,43,3,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12048894,Aquatic,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12055384,Dusk,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12069930,Bug,43,3,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12070349,Bug,18,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12072579,Bird,44,0,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+12080417,Beast,42,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12089959,Dusk,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12116242,Reptile,44,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12120099,Bug,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12133702,Plant,42,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12148372,Bug,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12150942,Plant,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12163788,Dusk,32,3,NIGHTMARE,True,PROTECTED_COLLECTIBLE,"SOURCE_BACKED_COLLECTIBLE, EVOLVED_RECORDED",Keep collectible protection; review only
+12168528,Plant,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12188021,Reptile,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12192348,Dusk,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12196567,Dawn,19,0,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12198498,Plant,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12198760,Dusk,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12201965,Dusk,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12203626,Reptile,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12205901,Reptile,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12209697,Dusk,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12213189,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12213325,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12213537,Mech,9,3,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12217527,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12221190,Dusk,19,1,,True,OBSERVE_ONLY,EVOLVED_RECORDED,No action without a fresh source and separate approval
+12229473,Bird,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12229774,Beast,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12231713,Bug,9,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12232503,Dusk,9,1,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12239698,Bird,5,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12248343,Dusk,1,0,,False,OBSERVE_ONLY,,No action without a fresh source and separate approval
+12258233,Mech,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12258831,Dawn,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12261102,Bird,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12261909,Beast,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12262509,Dusk,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12264249,Beast,,1,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12264396,Reptile,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12265423,Dawn,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12265705,Mech,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12266445,Plant,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence
+12267585,Beast,,0,,False,SOURCE_EXCEPTION,LEVEL_SOURCE_MISSING,Wait for authoritative level or trait evidence

@@ -1,0 +1,2533 @@
+{
+  "project": "AxieOS",
+  "version": "1.0-pilot",
+  "task": "NO_SPEND_PORTFOLIO_WATCHLIST",
+  "generated_utc": "2026-11-06T07:39:49.225374+00:00",
+  "as_of_philippines_date": "2026-11-06",
+  "operational_sync_path": "C:\\Users\\Erickson Tan\\Desktop\\GitHub\\AxieOS\\reports\\axieos\\operational_sync\\AxieOS_Operational_Sync_20261106T030810_455599Z.json",
+  "operational_sync_sha256": "dfd118b0d817862ecfe1186402d6acf7e3a6be0b22b97cb73ad03aad09c7d166",
+  "sync_age_days": 0,
+  "owned_axies": 162,
+  "unknown_levels": 29,
+  "source_backed_collectibles": 16,
+  "review_lanes": {
+    "OBSERVE_ONLY": 117,
+    "PROTECTED_COLLECTIBLE": 16,
+    "SOURCE_EXCEPTION": 29
+  },
+  "axies": [
+    {
+      "axie_id": "20013",
+      "axie_class": "Plant",
+      "level": 44,
+      "breed_count": 7,
+      "collection_traits": [
+        "MEO_CORP_II"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "22995",
+      "axie_class": "Aquatic",
+      "level": 32,
+      "breed_count": 4,
+      "collection_traits": [
+        "XMAS"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "51471",
+      "axie_class": "Aquatic",
+      "level": 38,
+      "breed_count": 4,
+      "collection_traits": [
+        "JAPANESE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "533611",
+      "axie_class": "Aquatic",
+      "level": 29,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "916706",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1032716",
+      "axie_class": "Plant",
+      "level": 20,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1032889",
+      "axie_class": "Beast",
+      "level": 41,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1033103",
+      "axie_class": "Aquatic",
+      "level": 42,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1110058",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 4,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1187458",
+      "axie_class": "Beast",
+      "level": 29,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1453541",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1820175",
+      "axie_class": "Aquatic",
+      "level": 19,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "1870486",
+      "axie_class": "Plant",
+      "level": 39,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2072470",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2224575",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2659909",
+      "axie_class": "Plant",
+      "level": 9,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2677328",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2713757",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2798854",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "2910420",
+      "axie_class": "Aquatic",
+      "level": 19,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "3212156",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "3510808",
+      "axie_class": "Bug",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "3576345",
+      "axie_class": "Aquatic",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "3900977",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "3918209",
+      "axie_class": "Reptile",
+      "level": 45,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4155313",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4269065",
+      "axie_class": "Aquatic",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4431055",
+      "axie_class": "Plant",
+      "level": 1,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4505379",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4508051",
+      "axie_class": "Plant",
+      "level": 29,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4543561",
+      "axie_class": "Bird",
+      "level": 39,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4622432",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "4700296",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5131525",
+      "axie_class": "Beast",
+      "level": 12,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5471342",
+      "axie_class": "Aquatic",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5480148",
+      "axie_class": "Bird",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5634283",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5688018",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "5930821",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6251324",
+      "axie_class": "Plant",
+      "level": 10,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6613980",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6678762",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6709319",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6853681",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6947669",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6957699",
+      "axie_class": "Plant",
+      "level": 9,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "6997062",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "7140614",
+      "axie_class": "Dusk",
+      "level": 10,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "7229551",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "7387240",
+      "axie_class": "Reptile",
+      "level": 19,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "7635720",
+      "axie_class": "Mech",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "7913652",
+      "axie_class": "Mech",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8080015",
+      "axie_class": "Aquatic",
+      "level": 30,
+      "breed_count": 2,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8177414",
+      "axie_class": "Mech",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8239875",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8447504",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8452375",
+      "axie_class": "Plant",
+      "level": 18,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8640076",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8692112",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8724306",
+      "axie_class": "Dusk",
+      "level": 53,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8737865",
+      "axie_class": "Plant",
+      "level": 6,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8842460",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "8856843",
+      "axie_class": "Dusk",
+      "level": 29,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9301471",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9349992",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9455318",
+      "axie_class": "Reptile",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9620367",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9689137",
+      "axie_class": "Plant",
+      "level": 42,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9771044",
+      "axie_class": "Plant",
+      "level": 48,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "9771328",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10033745",
+      "axie_class": "Dusk",
+      "level": 29,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10125998",
+      "axie_class": "Mech",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10192251",
+      "axie_class": "Beast",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10475288",
+      "axie_class": "Bird",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10662850",
+      "axie_class": "Reptile",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10768086",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10784276",
+      "axie_class": "Plant",
+      "level": 20,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "10786989",
+      "axie_class": "Plant",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11098338",
+      "axie_class": "Mech",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11298901",
+      "axie_class": "Plant",
+      "level": 39,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11299415",
+      "axie_class": "Bug",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11309255",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11349626",
+      "axie_class": "Mech",
+      "level": 53,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11404905",
+      "axie_class": "Beast",
+      "level": 41,
+      "breed_count": 0,
+      "collection_traits": [
+        "SUMMER"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11451464",
+      "axie_class": "Plant",
+      "level": 45,
+      "breed_count": 1,
+      "collection_traits": [
+        "SHINY",
+        "SUMMER"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11511206",
+      "axie_class": "Beast",
+      "level": 39,
+      "breed_count": 4,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11619123",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11627524",
+      "axie_class": "Bird",
+      "level": 17,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11639138",
+      "axie_class": "Dawn",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11649433",
+      "axie_class": "Dawn",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11654649",
+      "axie_class": "Dawn",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11661183",
+      "axie_class": "Reptile",
+      "level": 52,
+      "breed_count": 3,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11675185",
+      "axie_class": "Bird",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11690303",
+      "axie_class": "Dawn",
+      "level": 32,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11703802",
+      "axie_class": "Reptile",
+      "level": 47,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11707178",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11726739",
+      "axie_class": "Dawn",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11749541",
+      "axie_class": "Bug",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11755726",
+      "axie_class": "Dawn",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11784034",
+      "axie_class": "Bug",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11790190",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11800862",
+      "axie_class": "Mech",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11818203",
+      "axie_class": "Reptile",
+      "level": 34,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11820451",
+      "axie_class": "Aquatic",
+      "level": 27,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11821595",
+      "axie_class": "Dusk",
+      "level": 40,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11838210",
+      "axie_class": "Bug",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11865423",
+      "axie_class": "Aquatic",
+      "level": 13,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11899721",
+      "axie_class": "Dawn",
+      "level": 33,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11903143",
+      "axie_class": "Aquatic",
+      "level": 24,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11905379",
+      "axie_class": "Reptile",
+      "level": 49,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11909639",
+      "axie_class": "Reptile",
+      "level": 32,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11917453",
+      "axie_class": "Mech",
+      "level": 19,
+      "breed_count": 2,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "11957839",
+      "axie_class": "Bug",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12016915",
+      "axie_class": "Bird",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12020919",
+      "axie_class": "Bird",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12028904",
+      "axie_class": "Plant",
+      "level": 50,
+      "breed_count": 1,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12043053",
+      "axie_class": "Aquatic",
+      "level": 43,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12048894",
+      "axie_class": "Aquatic",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12055384",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12069930",
+      "axie_class": "Bug",
+      "level": 43,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12070349",
+      "axie_class": "Bug",
+      "level": 18,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12072579",
+      "axie_class": "Bird",
+      "level": 44,
+      "breed_count": 0,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12080417",
+      "axie_class": "Beast",
+      "level": 42,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12089959",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12116242",
+      "axie_class": "Reptile",
+      "level": 44,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12120099",
+      "axie_class": "Bug",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12133702",
+      "axie_class": "Plant",
+      "level": 42,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12148372",
+      "axie_class": "Bug",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12150942",
+      "axie_class": "Plant",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12163788",
+      "axie_class": "Dusk",
+      "level": 32,
+      "breed_count": 3,
+      "collection_traits": [
+        "NIGHTMARE"
+      ],
+      "is_evolved_recorded": true,
+      "review_lane": "PROTECTED_COLLECTIBLE",
+      "review_flags": [
+        "SOURCE_BACKED_COLLECTIBLE",
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "Keep collectible protection; review only",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12168528",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12188021",
+      "axie_class": "Reptile",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12192348",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12196567",
+      "axie_class": "Dawn",
+      "level": 19,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12198498",
+      "axie_class": "Plant",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12198760",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12201965",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12203626",
+      "axie_class": "Reptile",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12205901",
+      "axie_class": "Reptile",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12209697",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12213189",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12213325",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12213537",
+      "axie_class": "Mech",
+      "level": 9,
+      "breed_count": 3,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12217527",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12221190",
+      "axie_class": "Dusk",
+      "level": 19,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": true,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [
+        "EVOLVED_RECORDED"
+      ],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12229473",
+      "axie_class": "Bird",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12229774",
+      "axie_class": "Beast",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12231713",
+      "axie_class": "Bug",
+      "level": 9,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12232503",
+      "axie_class": "Dusk",
+      "level": 9,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12239698",
+      "axie_class": "Bird",
+      "level": 5,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12248343",
+      "axie_class": "Dusk",
+      "level": 1,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "OBSERVE_ONLY",
+      "review_flags": [],
+      "next_review": "No action without a fresh source and separate approval",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12258233",
+      "axie_class": "Mech",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12258831",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12261102",
+      "axie_class": "Bird",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12261909",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12262509",
+      "axie_class": "Dusk",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12264249",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 1,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12264396",
+      "axie_class": "Reptile",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12265423",
+      "axie_class": "Dawn",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12265705",
+      "axie_class": "Mech",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12266445",
+      "axie_class": "Plant",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    },
+    {
+      "axie_id": "12267585",
+      "axie_class": "Beast",
+      "level": null,
+      "breed_count": 0,
+      "collection_traits": [],
+      "is_evolved_recorded": false,
+      "review_lane": "SOURCE_EXCEPTION",
+      "review_flags": [
+        "LEVEL_SOURCE_MISSING"
+      ],
+      "next_review": "Wait for authoritative level or trait evidence",
+      "sale_approved": false,
+      "release_approved": false,
+      "dojo_reassignment_authorized": false
+    }
+  ],
+  "bounty_board": "PAUSED_NO_OPERATING_FUNDS",
+  "financial_totals": "UNKNOWN",
+  "unified_finance": "HOLD",
+  "checkpoint96": "OPEN",
+  "automatic_execution": false,
+  "database_opened": "READ_ONLY",
+  "database_writes": 0,
+  "network_calls": 0
+}
