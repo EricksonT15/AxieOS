@@ -125,7 +125,7 @@ def render(path, doc, finance=None, finance_name=None):
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
 <title>AxieOS | No-spend watchlist</title><style>
 body{{font:16px system-ui,Arial,sans-serif;background:#101723;color:#eaf0f8;margin:0 auto;padding:28px;max-width:1500px}}
-.muted{{color:#aebbd0}}.cards{{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}}
+.muted{{color:#aebbd0;overflow-wrap:anywhere}}.cards{{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}}
 .card{{background:#1b2738;border-radius:12px;padding:14px 20px;min-width:170px}}.card strong{{display:block;font-size:26px}}
 .notice{{background:#302b1d;border:1px solid #9b7b31;padding:14px;border-radius:10px;margin:18px 0}}
 .controls{{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}}input,select{{font:inherit;padding:10px;border-radius:8px;background:#1b2738;color:#fff;border:1px solid #516079}}
