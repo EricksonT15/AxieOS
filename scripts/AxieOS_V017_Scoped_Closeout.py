@@ -151,7 +151,7 @@ def block(source_path, source_sha, applied_path, applied_sha):
         "- Axie class and breed known for this cohort; **29 Axie levels remain UNKNOWN**. "
         "The V0.16 dashboard and 26 closed-trade pairs are dated, historical scoped evidence.",
         "- Verified all-time income, expenses, realized profit, PHP recovery and complete gas: **UNKNOWN**. "
-        "The 24 consumable basis conflicts and historical export gap remain unresolved.",
+        "The 24 consumable basis conflicts remain unresolved; the March–May interval is reported inactivity, not a proven missing-transaction gap.",
         "",
         f"Sources: `{source_path.relative_to(ROOT).as_posix()}` (SHA-256 `{source_sha}`); "
         f"`{applied_path.relative_to(ROOT).as_posix()}` (SHA-256 `{applied_sha}`).",

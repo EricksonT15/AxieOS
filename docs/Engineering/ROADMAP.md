@@ -1,5 +1,20 @@
 # AxieOS Roadmap
 
+<!-- AXIEOS_FINANCE_SOURCE_EXCEPTION_20261106_START -->
+## Historical consumable source exception — 2026-11-06
+
+The legacy export ends March 3 and the refresh starts May 13, 2026. The owner reports no Ronin
+activity during the intervening months; the supplied transaction files contain no rows in that
+interval. This is **reported inactivity consistent with saved records**, not evidence of missing
+transactions. Task136BT attempted two of 116 historical consumable candidates through the current
+explorer token-transfer route; both returned HTTP 404. The other 114 were not tested. No token IDs,
+opening inventory, or cost basis were accepted. The 24 consumable sale-basis cases remain UNKNOWN
+and outside accepted profit. Unified Finance stays HOLD; Checkpoint 96 stays OPEN.
+
+Source: `reports/axieos_v014/task136bt/AxieOS_V014_Task136BT_Legacy_Token_Identity_20261106T022833_637395Z.json` (SHA-256 `981bdd3e05adb8cc5a22f747ae16af5e246c8a38d4fc2e2f45d277eaac3b254d`).
+<!-- AXIEOS_FINANCE_SOURCE_EXCEPTION_20261106_END -->
+
+
 <!-- AXIEOS_V017_SCOPED_CLOSEOUT_START -->
 ## V0.17 — Scoped operational raw catch-up (2026-11-05)
 
@@ -9,7 +24,7 @@
 - Four explorer routes complete; **7 raw transaction rows and 7 raw transfer rows** inserted after clone rehearsal and a persistent backup. The six missing transfer hashes accounted for seven transfer rows.
 - The post-apply comparison confirms the inserted plan SHA, preserves prior raw rows and all watched ledger, roster, classification and accounting tables.
 - Axie class and breed known for this cohort; **29 Axie levels remain UNKNOWN**. The V0.16 dashboard and 26 closed-trade pairs are dated, historical scoped evidence.
-- Verified all-time income, expenses, realized profit, PHP recovery and complete gas: **UNKNOWN**. The 24 consumable basis conflicts and historical export gap remain unresolved.
+- Verified all-time income, expenses, realized profit, PHP recovery and complete gas: **UNKNOWN**. The 24 consumable basis conflicts remain unresolved; the March–May interval is reported inactivity, not a proven missing-transaction gap.
 
 Sources: `reports/axieos_v017/operational_refresh/AxieOS_V017_Operational_Refresh_20261105T093034_504070Z.json` (SHA-256 `a336f4bd260b73b56f8992096fcbc68161bd024f48c46b2928275d5774401c5b`); `reports/axieos_v017/operational_refresh/AxieOS_V017_Gap_Batch_20261105T095321_944253Z.json` (SHA-256 `d980fc2c78eb7ed005a4f9ffd56e4e6f1fc26816784f4b318054a7628c6d8222`).
 <!-- AXIEOS_V017_SCOPED_CLOSEOUT_END -->
@@ -24,7 +39,7 @@ This dated closeout governs current scoped status. Older release and next-task l
 - Pinned chain ownership: **162 Axies**; the guarded roster is reconciled to its saved snapshot.
 - New Axie cohort: **29/29 classes** reconciled from gene evidence validated against **133 controls / nine classes**. The **29 levels remain UNKNOWN**. No level values were inferred from unreliable contract readings.
 - Closed Axie trades: **26/26** corroborated purchase/sale wallet flows. Observed WETH difference before gas is **0.000155213253102621 WETH**; candidate purchase gas is **0.160638235692803757 RON**. Neither amount is accepted all-time profit or a verified portfolio expense.
-- Task136BS refresh coverage: legacy export ends **2026-03-03**; the separate 598-row refresh begins **2026-05-13**. The **2026-03-04 through 2026-05-12** interval lacks export coverage. The **24 consumable sale-basis conflicts** remain unresolved.
+- Task136BS refresh coverage: legacy export ends **2026-03-03**; the separate 598-row refresh begins **2026-05-13**. The **2026-03-04 through 2026-05-12** interval is reported inactivity consistent with the saved transaction files, not an established missing-transaction gap. The **24 consumable sale-basis conflicts** remain unresolved.
 - Verified all-time income, expenses, realized profit, PHP recovery and complete gas: **UNKNOWN**. No automatic sale, release or financial acceptance follows from this scoped milestone.
 
 Evidence: `reports/axieos_v016/dashboards/AxieOS_V016_Operational_Dashboard_2026-11-05_all.json` (SHA-256 `772d4cdc428a12f16c13c6ae12d6135e6330afc5161c6a0b934ca017397899d7`); `reports/axieos_v014/task136bs/AxieOS_V014_Task136BS_Legacy_Consumable_Crosswalk_f22c342cdf5a.json` (SHA-256 `8fba4a7628309e6a714272fcc709f0cb315db50e7e18d4fb528aaebdeff40d54`). The dashboard carries SHA-matched references to the class application and closed-trade closeout reports.

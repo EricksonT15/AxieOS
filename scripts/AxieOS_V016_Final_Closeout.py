@@ -148,7 +148,7 @@ def section(repo: Path, data: dict) -> str:
         "is **0.000155213253102621 WETH**; candidate purchase gas is **0.160638235692803757 RON**. "
         "Neither amount is accepted all-time profit or a verified portfolio expense.",
         "- Task136BS refresh coverage: legacy export ends **2026-03-03**; the separate 598-row refresh begins "
-        "**2026-05-13**. The **2026-03-04 through 2026-05-12** interval lacks export coverage. "
+        "**2026-05-13**. The intervening period is reported inactivity consistent with the saved exports. "
         "The **24 consumable sale-basis conflicts** remain unresolved.",
         "- Verified all-time income, expenses, realized profit, PHP recovery and complete gas: **UNKNOWN**. "
         "No automatic sale, release or financial acceptance follows from this scoped milestone.",
@@ -236,7 +236,7 @@ def main() -> None:
         print("GitHub push: NO — use GitHub Desktop Push origin")
     print("AXIEOS V0.16 - FINAL SCOPED CLOSEOUT")
     print("Ownership: 162 | New classes: 29/29 | Levels unknown: 29 | Closed trade pairs: 26")
-    print("Task136BS: 598-row refresh checked | Gap: 2026-03-04 through 2026-05-12 | Basis conflicts: 24")
+    print("Task136BS: 598-row refresh checked | Reported inactivity: 2026-03-04 through 2026-05-12 | Basis conflicts: 24")
     print("Documentation:", context, roadmap, closeout)
     print("Files updated:", len(changes), "| Database opened: NO | Network: 0")
     print("Financial totals: UNKNOWN | Unified Finance: HOLD | Checkpoint 96: OPEN")

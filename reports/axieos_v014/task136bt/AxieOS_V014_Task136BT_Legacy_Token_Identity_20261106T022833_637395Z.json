@@ -1,0 +1,54 @@
+{
+  "project": "AxieOS",
+  "version": "0.14",
+  "task": "136BT",
+  "source": {
+    "path": "reports\\axieos_v014\\task136bs\\AxieOS_V014_Task136BS_Legacy_Consumable_Crosswalk_f22c342cdf5a.json",
+    "sha256": "8fba4a7628309e6a714272fcc709f0cb315db50e7e18d4fb528aaebdeff40d54"
+  },
+  "coverage": {
+    "candidate_hashes": 116,
+    "attempted": 2,
+    "token_id_candidates_matched": 0,
+    "unattempted": 114,
+    "network_calls_attempted": 2
+  },
+  "checks": [
+    {
+      "txhash": "0xd87a11f88d6ce5207951726fb330e205330ee0eb67cb5918ee6d1156d5be51a6",
+      "legacy_date_utc": "2025-08-19T03:31:02+00:00",
+      "legacy_quantity_observed": "1",
+      "legacy_weth_out_observed": "0.00028943",
+      "legacy_review_flags": [],
+      "status": "SOURCE_UNAVAILABLE_OR_REVIEW",
+      "error_type": "HTTPError",
+      "http_status": 404,
+      "reason": "HTTP Error 404: Not Found",
+      "accepted_cost_basis": null
+    },
+    {
+      "txhash": "0x2b4ebab284bd5c6c9006d64efc81147d98c2b0374e29f394b9daa5fa9d2c2e5a",
+      "legacy_date_utc": "2025-08-22T13:01:57+00:00",
+      "legacy_quantity_observed": "3",
+      "legacy_weth_out_observed": "0.001116399",
+      "legacy_review_flags": [
+        "BIDIRECTIONAL_FLOW",
+        "MULTIPLE_WETH_ROWS"
+      ],
+      "status": "SOURCE_UNAVAILABLE_OR_REVIEW",
+      "error_type": "HTTPError",
+      "http_status": 404,
+      "reason": "HTTP Error 404: Not Found",
+      "accepted_cost_basis": null
+    }
+  ],
+  "status": "INCOMPLETE_OR_SOURCE_UNAVAILABLE",
+  "financial_totals": null,
+  "accepted_opening_balance": null,
+  "accepted_cost_basis": null,
+  "accepted_profit": null,
+  "checkpoint96": "OPEN",
+  "database_opened": false,
+  "database_writes": 0,
+  "created_at_utc": "2026-11-06T02:28:33.632639+00:00"
+}
